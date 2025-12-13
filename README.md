@@ -23,7 +23,7 @@ The Logitech G13 is a programmable gaming keypad featuring 25 programmable G-key
    - Enables context-aware profiles that adapt to running applications
 
 3. **LCD Display Optimization**
-   - Enhanced control over the 160x43 monochrome LCD display
+   - Enhanced control over the 160×43 monochrome LCD display
    - Custom application integrations for displaying system stats, game information, or custom graphics
    - API for developers to create their own LCD applets
 
@@ -52,7 +52,7 @@ The Logitech G13 is a programmable gaming keypad featuring 25 programmable G-key
 - **Full G-Key Programmability**: All 25 G-keys plus M1/M2/M3 mode keys fully customizable
 - **Analog Stick Mapping**: Map the analog stick to mouse movement, WASD keys, or custom functions
 - **LED Backlighting Control**: Programmable RGB backlight colors per mode or application
-- **LCD Display Driver**: Complete control over the 160x43 pixel monochrome display
+- **LCD Display Driver**: Complete control over the 160×43 pixel monochrome display
 
 #### Software Capabilities
 - **Multi-layered Keybindings**: Support for multiple layers activated by modifier keys

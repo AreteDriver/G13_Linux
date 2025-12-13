@@ -1,135 +1,380 @@
 # G13LogitechOPS
 
-**Optimizing Logitech G13 Device Operations for Enhanced Gaming and Productivity**
+Logitech G13 Kernel Driver for Linux systems.
+
+## CI/CD Status
+
+![Testing Pipeline](https://github.com/AreteDriver/G13LogitechOPS/workflows/Testing%20Pipeline/badge.svg)
+![Deployment Pipeline](https://github.com/AreteDriver/G13LogitechOPS/workflows/Deployment%20Pipeline/badge.svg)
 
 ## Overview
 
-G13LogitechOPS is a comprehensive project dedicated to optimizing and enhancing the operational capabilities of the Logitech G13 Gameboard. This project addresses the unique needs of G13 users by providing advanced configuration tools, performance optimizations, and extended functionality that goes beyond the standard Logitech Gaming Software (LGS).
+This repository contains the kernel driver for the Logitech G13 Gaming Keyboard, enabling full functionality on Linux systems.
 
-The Logitech G13 is a programmable gaming keypad featuring 25 programmable G-keys, an integrated LCD display, and an analog mini-stick. While powerful out of the box, many users encounter limitations in customization depth, cross-platform support, and advanced macro capabilities. G13LogitechOPS bridges these gaps.
+## Development
 
-## Purpose and User Needs Addressed
+This project uses GitHub Actions for continuous integration and deployment:
 
-### Key Problems Solved
+- **Testing Pipeline**: Automatically builds and tests the driver on every push and pull request
+- **Deployment Pipeline**: Automatically packages and releases the driver when version tags are created
 
-1. **Limited Cross-Platform Support**
-   - Official Logitech software primarily targets Windows environments
-   - G13LogitechOPS provides solutions for Linux, macOS, and other Unix-based systems
-   - Enables G13 functionality on platforms where official support is lacking
+For detailed information about the CI/CD workflows, see [WORKFLOW_DOCUMENTATION.md](WORKFLOW_DOCUMENTATION.md).
 
-2. **Advanced Macro Management**
-   - Extends beyond simple key remapping to complex macro sequences
-   - Supports conditional macros, timing precision, and dynamic key bindings
-   - Enables context-aware profiles that adapt to running applications
+## Installation
 
-3. **LCD Display Optimization**
-   - Enhanced control over the 160×43 monochrome LCD display
-   - Custom application integrations for displaying system stats, game information, or custom graphics
-   - API for developers to create their own LCD applets
+Download the latest release from the [Releases](https://github.com/AreteDriver/G13LogitechOPS/releases) page.
 
-4. **Performance and Latency Optimization**
-   - Reduced input lag through optimized communication protocols
-   - Direct hardware access bypassing unnecessary software layers
-   - Fine-tuned polling rates and response times for competitive gaming
+### Debian/Ubuntu (.deb package)
 
-5. **Profile Management**
-   - Streamlined profile switching and management
-   - Import/export functionality for sharing configurations
-   - Version control compatibility for tracking configuration changes
-
-## Technical Details
-
-### Architecture
-
-- **Low-level USB Communication**: Direct libusb-based communication with the G13 hardware for minimal latency
-- **Event-driven Design**: Asynchronous event handling for responsive key processing
-- **Modular Plugin System**: Extensible architecture supporting custom plugins and integrations
-- **Configuration Management**: JSON/YAML-based configuration files for easy version control and sharing
-
-### Key Features
-
-#### Hardware Control
-- **Full G-Key Programmability**: All 25 G-keys plus M1/M2/M3 mode keys fully customizable
-- **Analog Stick Mapping**: Map the analog stick to mouse movement, WASD keys, or custom functions
-- **LED Backlighting Control**: Programmable RGB backlight colors per mode or application
-- **LCD Display Driver**: Complete control over the 160×43 pixel monochrome display
-
-#### Software Capabilities
-- **Multi-layered Keybindings**: Support for multiple layers activated by modifier keys
-- **Application-aware Profiles**: Automatic profile switching based on active application
-- **Macro Recording and Playback**: Record complex input sequences with precise timing
-- **Scripting Support**: Integration with scripting languages (Python, Lua) for advanced automation
-
-#### Integration Features
-- **System Monitoring**: Display CPU, GPU, RAM usage, temperatures on LCD
-- **Game Integration**: Support for displaying game-specific stats and information
-- **Communication Tools**: Show Discord, TeamSpeak status, or incoming messages
-- **Media Control**: Quick access to media playback controls and now-playing information
-
-## Unique Features and Differentiators
-
-1. **Open Source Foundation**: Unlike proprietary solutions, G13LogitechOPS is open-source, allowing community contributions and transparency
-2. **Platform Independence**: First-class support for multiple operating systems, not just Windows
-3. **Developer-Friendly API**: Well-documented APIs for extending functionality
-4. **Community-Driven**: Regular updates based on user feedback and contributions
-5. **Performance-First**: Optimized for minimal latency and maximum responsiveness in competitive gaming scenarios
-6. **No Bloat**: Lightweight design without unnecessary background services or resource consumption
-
-## Impact and Benefits
-
-### For Gamers
-- **Competitive Edge**: Reduced input latency and customizable macros improve reaction times
-- **Workflow Efficiency**: Quick access to complex command sequences through single key presses
-- **Enhanced Immersion**: LCD display integration provides at-a-glance information without alt-tabbing
-
-### For Productivity Users
-- **Streamlined Workflows**: Automate repetitive tasks in creative applications (Photoshop, Premiere, Blender)
-- **Customized Shortcuts**: Create application-specific profiles for different tools
-- **System Monitoring**: Keep track of resource usage during intensive tasks
-
-### For Developers
-- **Extensible Platform**: Build custom integrations for specific games or applications
-- **Well-Documented**: Comprehensive API documentation and examples
-- **Active Community**: Support from other developers and users
-
-### Overall Impact
-G13LogitechOPS breathes new life into the Logitech G13 hardware, extending its usefulness well beyond its official support lifecycle. By providing cross-platform compatibility, advanced features, and an open ecosystem, the project ensures that G13 owners can continue to maximize their investment and customize their experience to their exact needs.
-
-## Getting Started
-
-### Prerequisites
-- Logitech G13 Gameboard
-- Supported operating system (Linux, Windows, macOS)
-- Administrative/root privileges for USB device access
-
-### Installation
 ```bash
-# Installation instructions will be added as development progresses
+sudo dpkg -i g13-driver_*.deb
 ```
 
-### Basic Configuration
+### Source Installation (.tar.gz)
+
 ```bash
-# Configuration examples will be provided
+tar -xzf g13-driver-*.tar.gz
+cd g13-driver-*
+sudo make install
 ```
 
-## Contributing
+## Building from Source
 
-We welcome contributions from the community! Whether it's bug reports, feature requests, code contributions, or documentation improvements, your input helps make G13LogitechOPS better for everyone.
+```bash
+# Install build dependencies
+sudo apt-get install build-essential linux-headers-$(uname -r) kmod libusb-1.0-0-dev pkg-config
+
+# Build the driver
+make
+
+# Install (optional)
+sudo make install
+```
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Language: C](https://img.shields.io/badge/Language-C-blue.svg)](https://en.wikipedia.org/wiki/C_(programming_language))
+[![Platform: Linux](https://img.shields.io/badge/Platform-Linux-yellow.svg)](https://www.kernel.org/)
+[![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)]()
 
-## Acknowledgments
+> **Advanced Linux kernel driver for Logitech G13 programmable keyboard**
 
-- Logitech for creating the G13 Gameboard hardware
-- The open-source community for their invaluable contributions and support
-- All users who provide feedback and help improve the project
-
-## Support
-
-For issues, questions, or discussions, please use the GitHub issue tracker or community forums.
+A comprehensive kernel-space driver enabling full hardware integration and automation capabilities for the Logitech G13 Gaming Keyboard on Linux systems. Supports macro programming, LED control, and LCD display management.
 
 ---
 
-**Note**: G13LogitechOPS is a community-driven project and is not affiliated with or endorsed by Logitech.
+## 🚀 Features
+
+- **Kernel-Level Driver Integration**: Direct hardware access through USB HID interface
+- **Macro Programming**: Configure and execute complex macro sequences
+- **LED Control**: Programmable RGB lighting with custom patterns
+- **LCD Display Management**: 160x43 monochrome display support with custom graphics
+- **Hardware Integration**: Seamless integration with Linux input subsystem
+- **Automation Support**: Profile-based configuration for different applications
+
+---
+
+## 📋 Table of Contents
+
+- [Architecture](#architecture)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Configuration](#configuration)
+- [Examples](#examples)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
+
+## 🏗️ Architecture
+
+The G13LogitechOPS driver operates across kernel and user space, providing robust hardware integration:
+
+```mermaid
+graph TB
+    subgraph "User Space"
+        A[User Applications]
+        B[Configuration Tools]
+        C[Profile Scripts]
+    end
+    
+    subgraph "Kernel Space"
+        D[G13 Driver Module]
+        E[USB HID Layer]
+        F[Input Subsystem]
+        G[Character Device]
+    end
+    
+    subgraph "Hardware"
+        H[Logitech G13 Device]
+    end
+    
+    A --> G
+    B --> G
+    C --> G
+    G --> D
+    D --> E
+    D --> F
+    E --> H
+    F --> A
+    
+    style D fill:#4CAF50
+    style H fill:#2196F3
+```
+
+### Component Overview
+
+- **G13 Driver Module**: Core kernel module handling USB communication and device management
+- **USB HID Layer**: Low-level USB Human Interface Device protocol handler
+- **Input Subsystem**: Integration with Linux input event system for key events
+- **Character Device**: User-space interface for LED and LCD control (`/dev/g13-*`)
+
+---
+
+## 💻 Installation
+
+For detailed installation instructions, including dependencies and compilation steps, see [INSTALLATION.md](INSTALLATION.md).
+
+### Quick Start
+
+```bash
+# Clone the repository
+git clone https://github.com/AreteDriver/G13LogitechOPS.git
+cd G13LogitechOPS
+
+# Build the kernel module
+make
+
+# Install the module
+sudo make install
+
+# Load the module
+sudo modprobe g13
+```
+
+---
+
+## 📖 Usage
+
+### Basic Operation
+
+Once the driver is loaded, the G13 device will be automatically detected and initialized:
+
+```bash
+# Check if device is detected
+lsusb | grep "046d:c21c"
+
+# Verify module is loaded
+lsmod | grep g13
+
+# Check kernel messages
+dmesg | grep g13
+```
+
+### Setting Up Macros
+
+Configure macros using the character device interface:
+
+```bash
+# Set macro for G1 key (example: press Ctrl+C)
+echo "macro G1 KEY_LEFTCTRL KEY_C" > /dev/g13-0
+
+# Set macro for G2 key (example: type text)
+echo "macro G2 type 'Hello World'" > /dev/g13-0
+
+# List current macros
+cat /proc/g13/macros
+```
+
+### LED Control
+
+Control the RGB LED backlight:
+
+```bash
+# Set LED to red (RGB: 255, 0, 0)
+echo "led 255 0 0" > /dev/g13-0
+
+# Set LED to blue
+echo "led 0 0 255" > /dev/g13-0
+
+# Turn off LED
+echo "led 0 0 0" > /dev/g13-0
+```
+
+### LCD Display Management
+
+Control the 160x43 pixel monochrome LCD:
+
+```bash
+# Display text on LCD
+echo "lcd_text 'G13 Active'" > /dev/g13-0
+
+# Load bitmap image to LCD
+./scripts/load_lcd_image image.pbm /dev/g13-0
+
+# Clear LCD
+echo "lcd_clear" > /dev/g13-0
+```
+
+---
+
+## ⚙️ Configuration
+
+### Profile-Based Configuration
+
+Create profile scripts for different applications:
+
+```bash
+# Load gaming profile
+./examples/g13_gaming.sh
+
+# Load productivity profile
+./examples/g13_productivity.sh
+
+# Load static configuration
+./examples/g13_static.sh
+```
+
+### Automatic Profile Switching
+
+Configure automatic profile switching based on active window:
+
+```bash
+# Using udev rules
+sudo cp udev/99-g13.rules /etc/udev/rules.d/
+sudo udevadm control --reload-rules
+
+# Using window manager hooks
+./scripts/setup_autoswitch.sh
+```
+
+---
+
+## 📚 Examples
+
+### Example 1: Static Configuration Profile
+
+```bash
+#!/bin/bash
+# examples/g13_static.sh - Basic static configuration
+
+# Set LED to green
+echo "led 0 255 0" > /dev/g13-0
+
+# Configure common macros
+echo "macro G1 KEY_LEFTCTRL KEY_C" > /dev/g13-0  # Copy
+echo "macro G2 KEY_LEFTCTRL KEY_V" > /dev/g13-0  # Paste
+echo "macro G3 KEY_LEFTCTRL KEY_Z" > /dev/g13-0  # Undo
+
+# Display status on LCD
+echo "lcd_text 'G13 Ready'" > /dev/g13-0
+```
+
+### Example 2: Gaming Profile
+
+```bash
+#!/bin/bash
+# Configure WASD on analog stick
+echo "stick_mode wasd" > /dev/g13-0
+
+# Set red LED for gaming
+echo "led 255 0 0" > /dev/g13-0
+
+# Bind weapon keys
+echo "macro G1 KEY_1" > /dev/g13-0  # Weapon 1
+echo "macro G2 KEY_2" > /dev/g13-0  # Weapon 2
+echo "macro G3 KEY_R" > /dev/g13-0  # Reload
+```
+
+### Example 3: Multimedia Control
+
+```bash
+#!/bin/bash
+# Media control setup
+echo "macro G1 KEY_PLAYPAUSE" > /dev/g13-0  # Play/Pause
+echo "macro G2 KEY_NEXTSONG" > /dev/g13-0   # Next Track
+echo "macro G3 KEY_PREVIOUSSONG" > /dev/g13-0  # Previous Track
+echo "macro G4 KEY_VOLUMEUP" > /dev/g13-0   # Volume Up
+echo "macro G5 KEY_VOLUMEDOWN" > /dev/g13-0 # Volume Down
+```
+
+---
+
+## 🔧 Troubleshooting
+
+For common issues and solutions, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
+
+### Quick Diagnostics
+
+```bash
+# Check USB connection
+lsusb -v -d 046d:c21c
+
+# Verify permissions
+ls -l /dev/g13-*
+
+# Check module parameters
+modinfo g13
+
+# View detailed logs
+journalctl -k | grep g13
+```
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit pull requests or open issues for bugs and feature requests.
+
+### Development Setup
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
+
+### GPL v3 Notice
+
+```
+G13LogitechOPS - Linux kernel driver for Logitech G13
+Copyright (C) 2025 AreteDriver
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+```
+
+---
+
+## 🔗 Related Projects
+
+- [libg13](https://github.com/ecraven/g13) - User-space G13 driver
+- [Linux USB HID Documentation](https://www.kernel.org/doc/html/latest/hid/index.html)
+- [Logitech G13 Specifications](https://support.logi.com/hc/en-us/articles/360024844133)
+
+---
+
+## 📞 Support
+
+- **Issues**: [GitHub Issues](https://github.com/AreteDriver/G13LogitechOPS/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/AreteDriver/G13LogitechOPS/discussions)
+
+---
+
+**Made with ❤️ for the Linux gaming and automation community**

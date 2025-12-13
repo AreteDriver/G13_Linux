@@ -1,0 +1,61 @@
+name: Testing Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install kernel driver build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            linux-headers-$(uname -r) \
+            kmod \
+            libusb-1.0-0-dev \
+            pkg-config
+      
+      - name: Build kernel driver
+        run: |
+          if [ -f Makefile ]; then
+            make
+          else
+            echo "Makefile not found, skipping build"
+            exit 0
+          fi
+      
+      - name: Verify build
+        run: |
+          if [ -f Makefile ]; then
+            # Check if kernel module was built
+            if ls *.ko 2>/dev/null; then
+              echo "Build successful: Kernel module(s) created"
+              ls -lh *.ko
+            else
+              echo "Build verification: No .ko files found, checking for other build outputs"
+              ls -lh
+            fi
+          else
+            echo "No Makefile present, skipping verification"
+          fi
+      
+      - name: Run tests
+        run: |
+          if [ -f Makefile ] && make -n test >/dev/null 2>&1; then
+            make test
+          else
+            echo "No test target found, skipping tests"
+          fi

@@ -1,0 +1,153 @@
+name: Deployment Pipeline
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install kernel driver build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            linux-headers-$(uname -r) \
+            kmod \
+            libusb-1.0-0-dev \
+            pkg-config \
+            debhelper \
+            dkms
+      
+      - name: Build kernel driver
+        run: |
+          if [ -f Makefile ]; then
+            make
+          else
+            echo "Error: Makefile not found"
+            exit 1
+          fi
+      
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      
+      - name: Package as tar.gz
+        run: |
+          mkdir -p g13-driver-${{ steps.get_version.outputs.VERSION }}
+          
+          # Copy kernel modules if they exist
+          if ls *.ko 2>/dev/null; then
+            cp *.ko g13-driver-${{ steps.get_version.outputs.VERSION }}/
+          fi
+          
+          # Copy additional files
+          [ -f README.md ] && cp README.md g13-driver-${{ steps.get_version.outputs.VERSION }}/
+          [ -f LICENSE ] && cp LICENSE g13-driver-${{ steps.get_version.outputs.VERSION }}/
+          [ -f Makefile ] && cp Makefile g13-driver-${{ steps.get_version.outputs.VERSION }}/
+          
+          # Copy any installation scripts if they exist
+          if [ -f install.sh ]; then
+            cp install.sh g13-driver-${{ steps.get_version.outputs.VERSION }}/
+          fi
+          
+          # Create tarball
+          tar -czf g13-driver-${{ steps.get_version.outputs.VERSION }}.tar.gz \
+            g13-driver-${{ steps.get_version.outputs.VERSION }}/
+          
+          echo "Created g13-driver-${{ steps.get_version.outputs.VERSION }}.tar.gz"
+          ls -lh g13-driver-${{ steps.get_version.outputs.VERSION }}.tar.gz
+      
+      - name: Build Debian package
+        run: |
+          # Create debian package structure
+          PKG_NAME="g13-driver"
+          PKG_VERSION="${{ steps.get_version.outputs.VERSION }}"
+          PKG_DIR="${PKG_NAME}_${PKG_VERSION}"
+          
+          mkdir -p ${PKG_DIR}/DEBIAN
+          mkdir -p ${PKG_DIR}/usr/share/doc/${PKG_NAME}
+          mkdir -p ${PKG_DIR}/lib/modules/$(uname -r)/extra
+          
+          # Create control file
+          cat > ${PKG_DIR}/DEBIAN/control << EOF
+          Package: ${PKG_NAME}
+          Version: ${PKG_VERSION}
+          Section: kernel
+          Priority: optional
+          Architecture: amd64
+          Maintainer: AreteDriver
+          Description: Logitech G13 Kernel Driver
+           Kernel driver for Logitech G13 Gaming Keyboard.
+           This package contains the kernel module for the G13 device.
+          EOF
+          
+          # Copy kernel modules if they exist
+          if ls *.ko 2>/dev/null; then
+            cp *.ko ${PKG_DIR}/lib/modules/$(uname -r)/extra/
+          fi
+          
+          # Copy documentation
+          [ -f README.md ] && cp README.md ${PKG_DIR}/usr/share/doc/${PKG_NAME}/
+          [ -f LICENSE ] && cp LICENSE ${PKG_DIR}/usr/share/doc/${PKG_NAME}/copyright
+          
+          # Create postinst script to run depmod
+          cat > ${PKG_DIR}/DEBIAN/postinst << 'EOF'
+          #!/bin/bash
+          set -e
+          depmod -a
+          EOF
+          chmod +x ${PKG_DIR}/DEBIAN/postinst
+          
+          # Create postrm script
+          cat > ${PKG_DIR}/DEBIAN/postrm << 'EOF'
+          #!/bin/bash
+          set -e
+          depmod -a
+          EOF
+          chmod +x ${PKG_DIR}/DEBIAN/postrm
+          
+          # Build the package
+          dpkg-deb --build ${PKG_DIR}
+          
+          echo "Created ${PKG_DIR}.deb"
+          ls -lh ${PKG_DIR}.deb
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            g13-driver-${{ steps.get_version.outputs.VERSION }}.tar.gz
+            g13-driver_${{ steps.get_version.outputs.VERSION }}.deb
+          body: |
+            ## G13 Logitech Driver Release ${{ steps.get_version.outputs.VERSION }}
+            
+            ### Installation
+            
+            #### From tar.gz:
+            ```bash
+            tar -xzf g13-driver-${{ steps.get_version.outputs.VERSION }}.tar.gz
+            cd g13-driver-${{ steps.get_version.outputs.VERSION }}
+            sudo make install
+            ```
+            
+            #### From .deb (Debian/Ubuntu):
+            ```bash
+            sudo dpkg -i g13-driver_${{ steps.get_version.outputs.VERSION }}.deb
+            ```
+            
+            ### Files
+            - `g13-driver-${{ steps.get_version.outputs.VERSION }}.tar.gz` - Source and compiled driver archive
+            - `g13-driver_${{ steps.get_version.outputs.VERSION }}.deb` - Debian package
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

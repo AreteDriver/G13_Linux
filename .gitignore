@@ -1,0 +1,37 @@
+# Build artifacts
+*.o
+*.ko
+*.mod
+*.mod.c
+*.order
+*.symvers
+*.cmd
+.tmp_versions/
+Module.markers
+Module.symvers
+modules.order
+
+# Debian package build files
+g13-driver_*/
+*.deb
+
+# Release archives
+*.tar.gz
+
+# Compiler and linker files
+*.a
+*.so
+*.so.*
+*.d
+
+# Editor and IDE files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db

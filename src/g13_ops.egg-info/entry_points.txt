@@ -1,0 +1,3 @@
+[console_scripts]
+g13-ops = g13_ops.cli:main
+g13-ops-gui = g13_ops.gui.main:main

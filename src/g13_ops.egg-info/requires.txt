@@ -1,0 +1,10 @@
+hidapi>=0.10.0
+evdev>=1.4.0
+PyQt6>=6.4.0
+
+[dev]
+pytest>=7.0
+pytest-cov>=3.0
+black>=22.0
+flake8>=4.0
+mypy>=0.950

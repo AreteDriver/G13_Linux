@@ -1,11 +1,11 @@
-# G13LogitechOPS
+# G13_Linux
 
 Logitech G13 Kernel Driver for Linux systems.
 
 ## CI/CD Status
 
-![Testing Pipeline](https://github.com/AreteDriver/G13LogitechOPS/workflows/Testing%20Pipeline/badge.svg)
-![Deployment Pipeline](https://github.com/AreteDriver/G13LogitechOPS/workflows/Deployment%20Pipeline/badge.svg)
+![Testing Pipeline](https://github.com/AreteDriver/G13_Linux/workflows/Testing%20Pipeline/badge.svg)
+![Deployment Pipeline](https://github.com/AreteDriver/G13_Linux/workflows/Deployment%20Pipeline/badge.svg)
 
 ## Overview
 
@@ -22,7 +22,7 @@ For detailed information about the CI/CD workflows, see [WORKFLOW_DOCUMENTATION.
 
 ## Installation
 
-Download the latest release from the [Releases](https://github.com/AreteDriver/G13LogitechOPS/releases) page.
+Download the latest release from the [Releases](https://github.com/AreteDriver/G13_Linux/releases) page.
 
 ### Debian/Ubuntu (.deb package)
 
@@ -91,7 +91,7 @@ A comprehensive kernel-space driver enabling full hardware integration and autom
 
 ## 🏗️ Architecture
 
-The G13LogitechOPS driver operates across kernel and user space, providing robust hardware integration:
+The G13_Linux driver operates across kernel and user space, providing robust hardware integration:
 
 ```mermaid
 graph TB
@@ -142,8 +142,8 @@ For detailed installation instructions, including dependencies and compilation s
 
 ```bash
 # Clone the repository
-git clone https://github.com/AreteDriver/G13LogitechOPS.git
-cd G13LogitechOPS
+git clone https://github.com/AreteDriver/G13_Linux.git
+cd G13_Linux
 
 # Build the kernel module
 make
@@ -346,7 +346,7 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
 ### GPL v3 Notice
 
 ```
-G13LogitechOPS - Linux kernel driver for Logitech G13
+G13_Linux - Linux kernel driver for Logitech G13
 Copyright (C) 2025 AreteDriver
 
 This program is free software: you can redistribute it and/or modify
@@ -372,8 +372,8 @@ GNU General Public License for more details.
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/AreteDriver/G13LogitechOPS/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/AreteDriver/G13LogitechOPS/discussions)
+- **Issues**: [GitHub Issues](https://github.com/AreteDriver/G13_Linux/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/AreteDriver/G13_Linux/discussions)
 
 ---
 

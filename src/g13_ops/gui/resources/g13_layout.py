@@ -2,60 +2,103 @@
 G13 Button Layout Geometry
 
 Defines the visual positions and sizes of all G13 buttons for the GUI.
-Coordinates are approximate based on G13 physical layout.
+Layout matches the physical Logitech G13 device exactly.
+
+Physical G13 (portrait orientation - taller than wide):
+- LCD at very top (centered)
+- M1, M2, M3, MR buttons beside LCD on right
+- G1-G22 keys in grid below
+- Joystick at BOTTOM LEFT
+- Palm rest at bottom
+- Angular wedge shape (wider at top)
 """
 
-# Button positions for visual layout
-# Format: 'button_id': {'x': int, 'y': int, 'width': int, 'height': int}
+# Key dimensions
+KEY_W = 32
+KEY_H = 28
+SMALL_BTN_W = 24
+SMALL_BTN_H = 18
+
+# Base positions
+LCD_TOP = 15
+KEY_START_Y = 70
 
 G13_BUTTON_POSITIONS = {
-    # Top row (G1-G5)
-    'G1': {'x': 50, 'y': 50, 'width': 50, 'height': 40},
-    'G2': {'x': 110, 'y': 50, 'width': 50, 'height': 40},
-    'G3': {'x': 170, 'y': 50, 'width': 50, 'height': 40},
-    'G4': {'x': 230, 'y': 50, 'width': 50, 'height': 40},
-    'G5': {'x': 290, 'y': 50, 'width': 50, 'height': 40},
+    # === M-keys: Right side of LCD area ===
+    'M1': {'x': 200, 'y': 20, 'width': 28, 'height': 20},
+    'M2': {'x': 232, 'y': 20, 'width': 28, 'height': 20},
+    'M3': {'x': 264, 'y': 20, 'width': 28, 'height': 20},
+    'MR': {'x': 296, 'y': 20, 'width': 28, 'height': 20},
 
-    # Second row (G6-G10)
-    'G6': {'x': 50, 'y': 100, 'width': 50, 'height': 40},
-    'G7': {'x': 110, 'y': 100, 'width': 50, 'height': 40},
-    'G8': {'x': 170, 'y': 100, 'width': 50, 'height': 40},
-    'G9': {'x': 230, 'y': 100, 'width': 50, 'height': 40},
-    'G10': {'x': 290, 'y': 100, 'width': 50, 'height': 40},
+    # === G-Key Row 1: G1-G7 ===
+    'G1':  {'x': 70,  'y': KEY_START_Y,      'width': KEY_W, 'height': KEY_H},
+    'G2':  {'x': 105, 'y': KEY_START_Y,      'width': KEY_W, 'height': KEY_H},
+    'G3':  {'x': 140, 'y': KEY_START_Y,      'width': KEY_W, 'height': KEY_H},
+    'G4':  {'x': 175, 'y': KEY_START_Y,      'width': KEY_W, 'height': KEY_H},
+    'G5':  {'x': 210, 'y': KEY_START_Y,      'width': KEY_W, 'height': KEY_H},
+    'G6':  {'x': 245, 'y': KEY_START_Y,      'width': KEY_W, 'height': KEY_H},
+    'G7':  {'x': 280, 'y': KEY_START_Y,      'width': KEY_W, 'height': KEY_H},
 
-    # Third row (G11-G14)
-    'G11': {'x': 50, 'y': 150, 'width': 50, 'height': 40},
-    'G12': {'x': 110, 'y': 150, 'width': 50, 'height': 40},
-    'G13': {'x': 170, 'y': 150, 'width': 50, 'height': 40},
-    'G14': {'x': 230, 'y': 150, 'width': 50, 'height': 40},
+    # === G-Key Row 2: G8-G14 (slight stagger) ===
+    'G8':  {'x': 78,  'y': KEY_START_Y + 32, 'width': KEY_W, 'height': KEY_H},
+    'G9':  {'x': 113, 'y': KEY_START_Y + 32, 'width': KEY_W, 'height': KEY_H},
+    'G10': {'x': 148, 'y': KEY_START_Y + 32, 'width': KEY_W, 'height': KEY_H},
+    'G11': {'x': 183, 'y': KEY_START_Y + 32, 'width': KEY_W, 'height': KEY_H},
+    'G12': {'x': 218, 'y': KEY_START_Y + 32, 'width': KEY_W, 'height': KEY_H},
+    'G13': {'x': 253, 'y': KEY_START_Y + 32, 'width': KEY_W, 'height': KEY_H},
+    'G14': {'x': 288, 'y': KEY_START_Y + 32, 'width': KEY_W, 'height': KEY_H},
 
-    # Fourth row (G15-G18)
-    'G15': {'x': 50, 'y': 200, 'width': 50, 'height': 40},
-    'G16': {'x': 110, 'y': 200, 'width': 50, 'height': 40},
-    'G17': {'x': 170, 'y': 200, 'width': 50, 'height': 40},
-    'G18': {'x': 230, 'y': 200, 'width': 50, 'height': 40},
+    # === G-Key Row 3: G15-G19 ===
+    'G15': {'x': 86,  'y': KEY_START_Y + 64, 'width': KEY_W, 'height': KEY_H},
+    'G16': {'x': 121, 'y': KEY_START_Y + 64, 'width': KEY_W, 'height': KEY_H},
+    'G17': {'x': 156, 'y': KEY_START_Y + 64, 'width': KEY_W, 'height': KEY_H},
+    'G18': {'x': 191, 'y': KEY_START_Y + 64, 'width': KEY_W, 'height': KEY_H},
+    'G19': {'x': 226, 'y': KEY_START_Y + 64, 'width': KEY_W, 'height': KEY_H},
 
-    # Bottom row (G19-G22)
-    'G19': {'x': 50, 'y': 250, 'width': 50, 'height': 40},
-    'G20': {'x': 110, 'y': 250, 'width': 50, 'height': 40},
-    'G21': {'x': 170, 'y': 250, 'width': 50, 'height': 40},
-    'G22': {'x': 230, 'y': 250, 'width': 50, 'height': 40},
+    # === G-Key Row 4: G20-G22 (thumb row - left side) ===
+    'G20': {'x': 70,  'y': KEY_START_Y + 100, 'width': 40, 'height': 30},
+    'G21': {'x': 115, 'y': KEY_START_Y + 100, 'width': 40, 'height': 30},
+    'G22': {'x': 160, 'y': KEY_START_Y + 100, 'width': 40, 'height': 30},
 
-    # M-keys (mode keys) - right side
-    'M1': {'x': 380, 'y': 50, 'width': 45, 'height': 35},
-    'M2': {'x': 380, 'y': 95, 'width': 45, 'height': 35},
-    'M3': {'x': 380, 'y': 140, 'width': 45, 'height': 35},
-
-    # MR key (record macro)
-    'MR': {'x': 380, 'y': 185, 'width': 45, 'height': 35},
+    # === Utility buttons (small, near LCD) ===
+    'BD': {'x': 40, 'y': 25, 'width': 22, 'height': 16},
+    'L1': {'x': 40, 'y': 45, 'width': 22, 'height': 16},
+    'L2': {'x': 40, 'y': 65, 'width': 22, 'height': 16},
+    'L3': {'x': 40, 'y': 85, 'width': 22, 'height': 16},
+    'L4': {'x': 40, 'y': 105, 'width': 22, 'height': 16},
 }
 
-# Joystick area (drawn separately, not a button)
-JOYSTICK_AREA = {'x': 450, 'y': 200, 'width': 100, 'height': 100}
+# Joystick area - BOTTOM RIGHT of device (where thumb rests)
+JOYSTICK_AREA = {'x': 270, 'y': 200, 'width': 70, 'height': 70}
 
-# LCD display area
-LCD_AREA = {'x': 500, 'y': 30, 'width': 160, 'height': 43}
+# LCD display area (top center)
+LCD_AREA = {'x': 70, 'y': 12, 'width': 120, 'height': 35}
 
-# Overall keyboard dimensions
-KEYBOARD_WIDTH = 700
-KEYBOARD_HEIGHT = 350
+# Overall widget dimensions (portrait - taller than wide)
+KEYBOARD_WIDTH = 365
+KEYBOARD_HEIGHT = 310
+
+# Device body shape - angular wedge matching G13
+# Joystick bump on the RIGHT side
+DEVICE_OUTLINE = [
+    (30, 8),        # Top-left
+    (320, 8),       # Top-right
+    (350, 50),      # Upper-right corner
+    (355, 190),     # Right side before joystick
+    (355, 290),     # Right side joystick area
+    (280, 300),     # Bottom-right
+    (85, 300),      # Bottom-left
+    (15, 200),      # Left side
+    (10, 50),       # Upper-left corner
+    (30, 8),        # Back to start
+]
+
+# Thumb/joystick rest area on RIGHT side
+THUMB_REST_OUTLINE = [
+    (220, 180),
+    (355, 180),
+    (355, 290),
+    (280, 300),
+    (220, 280),
+    (220, 180),
+]

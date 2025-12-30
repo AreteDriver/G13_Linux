@@ -1,13 +1,13 @@
 """
 G13 LCD Control
 
-Controls the G13's 160x43 monochrome LCD display via USB HID output reports.
+Controls the G13's 160x43 monochrome LCD display.
 
-Protocol (from libg13/kernel driver):
+Protocol (from g13-rs/libg13):
 - LCD is 160x43 pixels, monochrome (1 bit per pixel)
-- Data is sent in 32-byte chunks as output reports
-- Report ID: 0x03
-- Total framebuffer size: 960 bytes (includes padding)
+- Framebuffer size: 960 bytes
+- Send format: 32-byte header (first byte = 0x03) + 960-byte framebuffer
+- Total packet: 992 bytes via interrupt transfer to endpoint 2
 """
 
 
@@ -17,9 +17,9 @@ class G13LCD:
     WIDTH = 160
     HEIGHT = 43
     BYTES_PER_ROW = WIDTH // 8  # 20 bytes per row
-    FRAMEBUFFER_SIZE = 960  # Padded size used by libg13
-    REPORT_ID = 0x03
-    CHUNK_SIZE = 32
+    FRAMEBUFFER_SIZE = 960
+    HEADER_SIZE = 32
+    COMMAND_BYTE = 0x03
 
     def __init__(self, device_handle=None):
         """
@@ -95,12 +95,16 @@ class G13LCD:
             return
 
         try:
-            # Send framebuffer in 32-byte chunks
-            for offset in range(0, self.FRAMEBUFFER_SIZE, self.CHUNK_SIZE):
-                chunk = self._framebuffer[offset:offset + self.CHUNK_SIZE]
-                # Prepend report ID
-                report = bytes([self.REPORT_ID]) + bytes(chunk)
-                self.device.write(report)
+            # Build packet: 32-byte header + 960-byte framebuffer
+            # First byte of header is command 0x03
+            header = bytearray(self.HEADER_SIZE)
+            header[0] = self.COMMAND_BYTE
+
+            # Full packet is 992 bytes
+            packet = bytes(header) + bytes(self._framebuffer)
+
+            # Send as single write
+            self.device.write(packet)
         except OSError as e:
             print(f"[LCD] Failed to send framebuffer: {e}")
 

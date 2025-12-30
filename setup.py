@@ -8,7 +8,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name="g13-ops",
-    version="0.2.0",
+    version="1.0.0",
     author="AreteDriver",
     author_email="",
     description="Python userspace driver for the Logitech G13 Gaming Keyboard on Linux",
@@ -23,7 +23,7 @@ setup(
     package_dir={"": "src"},
     packages=find_packages(where="src"),
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: End Users/Desktop",
         "Topic :: System :: Hardware :: Hardware Drivers",
         "Topic :: Games/Entertainment",

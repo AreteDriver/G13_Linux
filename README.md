@@ -1,6 +1,11 @@
 # G13_Linux
 
-Logitech G13 Kernel Driver for Linux systems.
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/AreteDriver/G13LogitechOPS/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Platform: Linux](https://img.shields.io/badge/Platform-Linux-orange.svg)](https://www.kernel.org/)
+
+Python userspace driver for the Logitech G13 Gaming Keyboard on Linux.
 
 ## CI/CD Status
 
@@ -54,10 +59,6 @@ sudo make install
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Language: C](https://img.shields.io/badge/Language-C-blue.svg)](https://en.wikipedia.org/wiki/C_(programming_language))
-[![Platform: Linux](https://img.shields.io/badge/Platform-Linux-yellow.svg)](https://www.kernel.org/)
-[![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)]()
 
 > **Advanced Linux kernel driver for Logitech G13 programmable keyboard**
 

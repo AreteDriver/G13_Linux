@@ -12,13 +12,20 @@ from dataclasses import dataclass, asdict, field
 
 @dataclass
 class ProfileData:
-    """Profile data structure matching JSON format"""
+    """
+    Profile data structure matching JSON format.
+
+    Supports two mapping formats:
+    - Simple: {'G1': 'KEY_1', ...}
+    - Combo:  {'G1': {'keys': ['KEY_LEFTCTRL', 'KEY_B'], 'label': '...'}, ...}
+    """
     name: str
     description: str = ""
     version: str = "0.1.0"
-    mappings: dict[str, str] = field(default_factory=dict)
+    mappings: dict = field(default_factory=dict)  # str | dict values
     lcd: dict = field(default_factory=lambda: {"enabled": True, "default_text": ""})
     backlight: dict = field(default_factory=lambda: {"color": "#FFFFFF", "brightness": 100})
+    joystick: dict = field(default_factory=dict)  # Optional joystick config
 
 
 class ProfileManager:

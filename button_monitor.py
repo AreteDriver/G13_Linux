@@ -10,7 +10,7 @@ import sys
 import select
 import time
 
-# Known button mappings (CONFIRMED from hardware testing 2024-12-31)
+# Known button mappings (from hardware testing + ecraven/g13 reference)
 KNOWN_BUTTONS = {
     # Byte 3: G1-G8 (confirmed)
     (3, 0): 'G1', (3, 1): 'G2', (3, 2): 'G3', (3, 3): 'G4', (3, 4): 'G5',
@@ -18,15 +18,14 @@ KNOWN_BUTTONS = {
     # Byte 4: G9-G16 (confirmed)
     (4, 0): 'G9', (4, 1): 'G10', (4, 2): 'G11', (4, 3): 'G12',
     (4, 4): 'G13', (4, 5): 'G14', (4, 6): 'G15', (4, 7): 'G16',
-    # Byte 5: G17-G22 (confirmed - NOT byte 6!)
+    # Byte 5: G17-G22 (confirmed)
     (5, 0): 'G17', (5, 1): 'G18', (5, 2): 'G19',
     (5, 3): 'G20', (5, 4): 'G21', (5, 5): 'G22',
-    # Byte 6: Mode/function buttons
-    (6, 5): 'BD',  # Backlight/Display? (needs label confirmation)
-    (6, 6): 'M1',  # Needs label confirmation
-    (6, 7): 'M3',  # Physical button labeled "M3"
-    # Byte 7: MR button
-    (7, 0): 'MR',  # Physical button labeled "MR"
+    # Byte 6: Mode/function buttons (from reference)
+    (6, 0): 'BD', (6, 1): 'L1', (6, 2): 'L2', (6, 3): 'L3', (6, 4): 'L4',
+    (6, 5): 'M1', (6, 6): 'M2', (6, 7): 'M3',
+    # Byte 7: MR and joystick
+    (7, 0): 'MR', (7, 1): 'LEFT', (7, 2): 'DOWN', (7, 3): 'TOP',
 }
 
 # Bits to ignore (always set, not buttons)

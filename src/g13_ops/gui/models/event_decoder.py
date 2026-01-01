@@ -72,18 +72,21 @@ class EventDecoder:
         'G21': (5, 4),  # 0x10 ✓
         'G22': (5, 5),  # 0x20 ✓
 
-        # Byte 6: M-keys and other buttons
-        'BD': (6, 5),   # 0x20 - Backlight/Display button (needs confirmation)
-        'M1': (6, 6),   # 0x40 - needs confirmation (may be different button)
-        'M3': (6, 7),   # 0x80 ✓ (physical button labeled "M3")
+        # Byte 6: Mode and function buttons (from ecraven/g13 reference)
+        'BD': (6, 0),   # 0x01 - Backlight/Display toggle
+        'L1': (6, 1),   # 0x02 - Left button 1 (if present)
+        'L2': (6, 2),   # 0x04 - Left button 2 (if present)
+        'L3': (6, 3),   # 0x08 - Left button 3 (if present)
+        'L4': (6, 4),   # 0x10 - Left button 4 (if present)
+        'M1': (6, 5),   # 0x20 ✓ - Mode 1
+        'M2': (6, 6),   # 0x40 ✓ - Mode 2
+        'M3': (6, 7),   # 0x80 ✓ - Mode 3
 
-        # Byte 7: MR button
-        # NOTE: Physical button labeled "MR" maps here
-        'MR': (7, 0),   # 0x01 ✓ (physical button labeled "MR")
-
-        # M2 does not appear to send HID events (hardware mode switch only)
-        # Joystick click - needs verification
-        # 'JOYSTICK': (7, 2),  # Unconfirmed
+        # Byte 7: MR and joystick buttons
+        'MR': (7, 0),   # 0x01 ✓ - Macro Record
+        'LEFT': (7, 1), # 0x02 - Joystick left?
+        'DOWN': (7, 2), # 0x04 - Joystick down?
+        'TOP': (7, 3),  # 0x08 - Joystick click/top?
     }
 
     # Joystick byte positions - CONFIRMED via hardware testing

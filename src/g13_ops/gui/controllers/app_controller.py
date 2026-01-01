@@ -13,6 +13,7 @@ from ..models.hardware_controller import HardwareController
 from ..models.macro_recorder import MacroRecorder, RecorderState
 from ..models.macro_player import MacroPlayer
 from ..models.macro_manager import MacroManager
+from ..models.global_hotkeys import GlobalHotkeyManager
 from .device_event_controller import DeviceEventThread
 from ..widgets.key_selector import KeySelectorDialog
 
@@ -34,6 +35,7 @@ class ApplicationController(QObject):
         self.macro_recorder = MacroRecorder()
         self.macro_player = MacroPlayer()
         self.macro_manager = MacroManager()
+        self.hotkey_manager = GlobalHotkeyManager()
 
         # State
         self.current_mappings = {}
@@ -78,6 +80,13 @@ class ApplicationController(QObject):
         self.macro_player.playback_complete.connect(self._on_playback_complete)
         self.macro_player.error_occurred.connect(self._on_error)
 
+        # Global hotkey signals
+        self.hotkey_manager.hotkey_triggered.connect(self._on_hotkey_triggered)
+        self.hotkey_manager.error_occurred.connect(self._on_error)
+
+        # Macro editor signals - refresh hotkeys when macros are saved
+        self.main_window.macro_widget.macro_saved.connect(self._on_macro_saved)
+
     def start(self):
         """Initialize application"""
         # Connect to device
@@ -103,6 +112,10 @@ class ApplicationController(QObject):
         # Load example profile if exists
         if "example" in profiles:
             self._load_profile("example")
+
+        # Register global hotkeys from saved macros
+        self._register_all_macro_hotkeys()
+        self.hotkey_manager.start()
 
     @pyqtSlot(bytes)
     def _on_raw_event(self, data: bytes):
@@ -322,6 +335,42 @@ class ApplicationController(QObject):
         """Handle macro playback completion"""
         self.main_window.set_status("Macro playback complete")
 
+    # Global hotkey methods
+
+    def _register_all_macro_hotkeys(self) -> None:
+        """Load all macros and register their hotkeys."""
+        self.hotkey_manager.clear_all()
+        for macro_id in self.macro_manager.list_macros():
+            try:
+                macro = self.macro_manager.load_macro(macro_id)
+                if macro.global_hotkey:
+                    self.hotkey_manager.register_hotkey(macro.global_hotkey, macro.id)
+            except FileNotFoundError:
+                pass
+
+    @pyqtSlot(str)
+    def _on_hotkey_triggered(self, macro_id: str) -> None:
+        """Handle global hotkey press - play the macro."""
+        try:
+            macro = self.macro_manager.load_macro(macro_id)
+            self.macro_player.play(macro)
+            self.main_window.set_status(f"Hotkey triggered: {macro.name}")
+        except FileNotFoundError:
+            self._on_error(f"Macro not found: {macro_id}")
+
+    @pyqtSlot(object)
+    def _on_macro_saved(self, macro) -> None:
+        """Handle macro save - update hotkey registrations."""
+        # Unregister old hotkey for this macro
+        self.hotkey_manager.unregister_macro(macro.id)
+
+        # Register new hotkey if set
+        if macro.global_hotkey:
+            if self.hotkey_manager.register_hotkey(macro.global_hotkey, macro.id):
+                self.main_window.set_status(
+                    f"Hotkey registered: {macro.global_hotkey} → {macro.name}"
+                )
+
     def shutdown(self):
         """Cleanup on application exit"""
         # Stop any active recording/playback
@@ -329,6 +378,9 @@ class ApplicationController(QObject):
             self.macro_recorder.cancel()
         if self.macro_player.is_playing:
             self.macro_player.stop()
+
+        # Stop hotkey listener
+        self.hotkey_manager.stop()
 
         if self.event_thread:
             self.event_thread.stop()

@@ -48,6 +48,7 @@ class MacroEditorWidget(QWidget):
     """
 
     macro_assigned = pyqtSignal(str, str)  # (button_id, macro_id)
+    macro_saved = pyqtSignal(object)  # Emits Macro when saved
 
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
@@ -113,6 +114,16 @@ class MacroEditorWidget(QWidget):
         self.description_edit.setPlaceholderText("Description (optional)")
         self.description_edit.textChanged.connect(self._on_property_changed)
         props_layout.addRow("Description:", self.description_edit)
+
+        self.hotkey_edit = QLineEdit()
+        self.hotkey_edit.setPlaceholderText("e.g., Ctrl+Shift+F1")
+        self.hotkey_edit.setToolTip(
+            "Global hotkey to trigger this macro.\n"
+            "Format: Ctrl+Shift+F1, Alt+F12, etc.\n"
+            "Leave empty for no hotkey."
+        )
+        self.hotkey_edit.textChanged.connect(self._on_property_changed)
+        props_layout.addRow("Global Hotkey:", self.hotkey_edit)
 
         props_group.setLayout(props_layout)
         right_layout.addWidget(props_group)
@@ -262,6 +273,7 @@ class MacroEditorWidget(QWidget):
         # Block signals to prevent triggering save
         self.name_edit.blockSignals(True)
         self.description_edit.blockSignals(True)
+        self.hotkey_edit.blockSignals(True)
         self.speed_spin.blockSignals(True)
         self.repeat_spin.blockSignals(True)
         self.repeat_delay_spin.blockSignals(True)
@@ -270,6 +282,7 @@ class MacroEditorWidget(QWidget):
 
         self.name_edit.setText(self._current_macro.name)
         self.description_edit.setText(self._current_macro.description)
+        self.hotkey_edit.setText(self._current_macro.global_hotkey or "")
         self.speed_spin.setValue(self._current_macro.speed_multiplier)
         self.repeat_spin.setValue(self._current_macro.repeat_count)
         self.repeat_delay_spin.setValue(self._current_macro.repeat_delay_ms)
@@ -285,6 +298,7 @@ class MacroEditorWidget(QWidget):
         # Unblock signals
         self.name_edit.blockSignals(False)
         self.description_edit.blockSignals(False)
+        self.hotkey_edit.blockSignals(False)
         self.speed_spin.blockSignals(False)
         self.repeat_spin.blockSignals(False)
         self.repeat_delay_spin.blockSignals(False)
@@ -306,6 +320,7 @@ class MacroEditorWidget(QWidget):
         """Enable/disable editor controls."""
         self.name_edit.setEnabled(enabled)
         self.description_edit.setEnabled(enabled)
+        self.hotkey_edit.setEnabled(enabled)
         self.speed_spin.setEnabled(enabled)
         self.repeat_spin.setEnabled(enabled)
         self.repeat_delay_spin.setEnabled(enabled)
@@ -329,6 +344,8 @@ class MacroEditorWidget(QWidget):
 
         self._current_macro.name = self.name_edit.text()
         self._current_macro.description = self.description_edit.text()
+        hotkey = self.hotkey_edit.text().strip()
+        self._current_macro.global_hotkey = hotkey if hotkey else None
         self._current_macro.speed_multiplier = self.speed_spin.value()
         self._current_macro.repeat_count = self.repeat_spin.value()
         self._current_macro.repeat_delay_ms = self.repeat_delay_spin.value()
@@ -448,6 +465,7 @@ class MacroEditorWidget(QWidget):
             self.macro_manager.save_macro(self._current_macro)
             self._refresh_macro_list()
             self.save_btn.setEnabled(False)
+            self.macro_saved.emit(self._current_macro)
 
     def _on_playback_state_changed(self, state: PlaybackState) -> None:
         """Update UI based on playback state."""

@@ -11,6 +11,7 @@ from g13_ops.gui.models.macro_types import (
 )
 from g13_ops.gui.models.macro_manager import MacroManager
 from g13_ops.gui.models.macro_recorder import MacroRecorder, RecorderState
+from g13_ops.gui.models.global_hotkeys import GlobalHotkeyManager
 
 
 class TestMacroStep:
@@ -330,3 +331,94 @@ class TestMacroRecorder:
 
         recorder.stop_recording()
         assert RecorderState.IDLE in state_changes
+
+
+class TestGlobalHotkeyManager:
+    """Tests for GlobalHotkeyManager."""
+
+    @pytest.fixture
+    def manager(self):
+        return GlobalHotkeyManager()
+
+    def test_initial_state(self, manager):
+        assert not manager.is_running
+        assert manager.registered_hotkeys == {}
+
+    def test_register_hotkey(self, manager):
+        result = manager.register_hotkey("ctrl+shift+f1", "macro-123")
+        assert result is True
+        assert "ctrl+shift+f1" in manager.registered_hotkeys
+        assert manager.registered_hotkeys["ctrl+shift+f1"] == "macro-123"
+
+    def test_register_multiple_hotkeys(self, manager):
+        manager.register_hotkey("ctrl+f1", "macro-1")
+        manager.register_hotkey("alt+f2", "macro-2")
+        assert len(manager.registered_hotkeys) == 2
+
+    def test_unregister_hotkey(self, manager):
+        manager.register_hotkey("ctrl+f1", "macro-123")
+        result = manager.unregister_hotkey("ctrl+f1")
+        assert result is True
+        assert "ctrl+f1" not in manager.registered_hotkeys
+
+    def test_unregister_nonexistent(self, manager):
+        result = manager.unregister_hotkey("ctrl+f99")
+        assert result is False
+
+    def test_unregister_macro(self, manager):
+        manager.register_hotkey("ctrl+f1", "macro-123")
+        manager.register_hotkey("ctrl+f2", "macro-123")
+        manager.register_hotkey("ctrl+f3", "other-macro")
+
+        removed = manager.unregister_macro("macro-123")
+        assert removed == 2
+        assert len(manager.registered_hotkeys) == 1
+
+    def test_get_macro_for_hotkey(self, manager):
+        manager.register_hotkey("ctrl+f1", "macro-123")
+        assert manager.get_macro_for_hotkey("ctrl+f1") == "macro-123"
+        assert manager.get_macro_for_hotkey("ctrl+f99") is None
+
+    def test_get_hotkey_for_macro(self, manager):
+        manager.register_hotkey("ctrl+f1", "macro-123")
+        assert manager.get_hotkey_for_macro("macro-123") == "ctrl+f1"
+        assert manager.get_hotkey_for_macro("other-macro") is None
+
+    def test_normalize_hotkey(self, manager):
+        # Various formats should normalize
+        manager.register_hotkey("Ctrl+Shift+F1", "m1")
+        manager.register_hotkey("CTRL + SHIFT + F2", "m2")
+
+        # Both should be normalized
+        assert manager.get_macro_for_hotkey("ctrl+shift+f1") == "m1"
+        assert manager.get_macro_for_hotkey("ctrl+shift+f2") == "m2"
+
+    def test_invalid_hotkey(self, manager):
+        errors = []
+        manager.error_occurred.connect(errors.append)
+
+        result = manager.register_hotkey("", "macro-123")
+        assert result is False
+        assert len(errors) == 1
+
+    def test_to_pynput_format(self, manager):
+        # Test internal conversion
+        assert manager._to_pynput_format("ctrl+shift+f1") == "<ctrl>+<shift>+<f1>"
+        assert manager._to_pynput_format("alt+a") == "<alt>+a"
+        assert manager._to_pynput_format("ctrl+space") == "<ctrl>+<space>"
+
+    def test_clear_all(self, manager):
+        manager.register_hotkey("ctrl+f1", "macro-1")
+        manager.register_hotkey("ctrl+f2", "macro-2")
+
+        manager.clear_all()
+        assert manager.registered_hotkeys == {}
+
+    def test_start_stop_without_hotkeys(self, manager):
+        # Should be able to start/stop even without hotkeys
+        result = manager.start()
+        assert result is True
+        assert manager.is_running
+
+        manager.stop()
+        assert not manager.is_running

@@ -38,46 +38,52 @@ class EventDecoder:
     Reference implementation: https://github.com/ecraven/g13
     """
 
-    # Button bit positions - DISCOVERED via hardware testing
+    # Button bit positions - CONFIRMED via hardware testing (2024-12-31)
     # Format: 'button_id': (byte_index, bit_position)
     # Based on capture data showing 8-byte HID reports
     BUTTON_MAP = {
-        # G-keys Row 1 (Byte 3, bits 0-7)
-        'G1': (3, 0),   # 0x01
-        'G2': (3, 1),   # 0x02
-        'G3': (3, 2),   # 0x04
-        'G4': (3, 3),   # 0x08
-        'G5': (3, 4),   # 0x10
-        'G6': (3, 5),   # 0x20 - predicted
-        'G7': (3, 6),   # 0x40 - predicted
-        'G8': (3, 7),   # 0x80 - predicted
+        # G-keys Row 1 (Byte 3, bits 0-7) - ALL CONFIRMED
+        'G1': (3, 0),   # 0x01 ✓
+        'G2': (3, 1),   # 0x02 ✓
+        'G3': (3, 2),   # 0x04 ✓
+        'G4': (3, 3),   # 0x08 ✓
+        'G5': (3, 4),   # 0x10 ✓
+        'G6': (3, 5),   # 0x20 ✓
+        'G7': (3, 6),   # 0x40 ✓
+        'G8': (3, 7),   # 0x80 ✓
 
-        # G-keys Row 2 (Byte 4, bits 0-7) - predicted
-        'G9': (4, 0),   # 0x01
-        'G10': (4, 1),  # 0x02
-        'G11': (4, 2),  # 0x04
-        'G12': (4, 3),  # 0x08
-        'G13': (4, 4),  # 0x10
-        'G14': (4, 5),  # 0x20
-        'G15': (4, 6),  # 0x40
-        'G16': (4, 7),  # 0x80
+        # G-keys Row 2 (Byte 4, bits 0-7) - ALL CONFIRMED
+        'G9': (4, 0),   # 0x01 ✓
+        'G10': (4, 1),  # 0x02 ✓
+        'G11': (4, 2),  # 0x04 ✓
+        'G12': (4, 3),  # 0x08 ✓
+        'G13': (4, 4),  # 0x10 ✓
+        'G14': (4, 5),  # 0x20 ✓
+        'G15': (4, 6),  # 0x40 ✓
+        'G16': (4, 7),  # 0x80 ✓
 
-        # G-keys Row 3 (Byte 6, bits 0-5) - predicted
-        'G17': (6, 0),  # 0x01
-        'G18': (6, 1),  # 0x02
-        'G19': (6, 2),  # 0x04
-        'G20': (6, 3),  # 0x08
-        'G21': (6, 4),  # 0x10
-        'G22': (6, 5),  # 0x20
+        # G-keys Row 3-4 (Byte 5, bits 0-5) - ALL CONFIRMED
+        # NOTE: These are on Byte 5, NOT Byte 6 as previously predicted!
+        # Byte 5 bit 7 (0x80) is always set - status flag, not a button
+        'G17': (5, 0),  # 0x01 ✓
+        'G18': (5, 1),  # 0x02 ✓
+        'G19': (5, 2),  # 0x04 ✓
+        'G20': (5, 3),  # 0x08 ✓
+        'G21': (5, 4),  # 0x10 ✓
+        'G22': (5, 5),  # 0x20 ✓
 
-        # M-keys (Byte 6, bits 6-7 or Byte 7) - predicted, needs verification
-        'M1': (6, 6),   # 0x40 - predicted
-        'M2': (6, 7),   # 0x80 - predicted
-        'M3': (7, 0),   # 0x01 - predicted
+        # Byte 6: M-keys and other buttons
+        'BD': (6, 5),   # 0x20 - Backlight/Display button (needs confirmation)
+        'M1': (6, 6),   # 0x40 - needs confirmation (may be different button)
+        'M3': (6, 7),   # 0x80 ✓ (physical button labeled "M3")
 
-        # MR button and Joystick button (Byte 7)
-        'MR': (7, 1),   # 0x02 - CONFIRMED from hardware capture
-        'JOYSTICK': (7, 2),  # 0x04 - needs verification (user forgot to test)
+        # Byte 7: MR button
+        # NOTE: Physical button labeled "MR" maps here
+        'MR': (7, 0),   # 0x01 ✓ (physical button labeled "MR")
+
+        # M2 does not appear to send HID events (hardware mode switch only)
+        # Joystick click - needs verification
+        # 'JOYSTICK': (7, 2),  # Unconfirmed
     }
 
     # Joystick byte positions - CONFIRMED via hardware testing

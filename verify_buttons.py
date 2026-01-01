@@ -84,13 +84,21 @@ def main():
         with open(device_path, 'rb') as f:
             print("✓ Device opened successfully!")
 
-            # Capture baseline from idle state
+            # Set baseline - button bytes are 0 when idle, joystick varies
             global BASELINE
-            print("  Capturing baseline (don't touch anything)...", end=" ", flush=True)
-            time.sleep(0.3)
-            baseline_data = f.read(64)
-            BASELINE = list(baseline_data[:8])
-            print(f"OK: {' '.join(f'{b:02x}' for b in BASELINE)}\n")
+            print("  Waiting for first input to sync...", end=" ", flush=True)
+
+            # Read first packet to sync
+            ready = select.select([f], [], [], 10.0)
+            if ready[0]:
+                data = f.read(64)
+                # Use this data but zero out button bytes for baseline
+                BASELINE = list(data[:8])
+                BASELINE[3] = 0  # G1-G8 buttons
+                BASELINE[4] = 0  # G9-G16 buttons
+                BASELINE[6] = 0  # G17-G22, M1-M2
+                BASELINE[7] = BASELINE[7] & 0x80  # Keep joystick Y high bit, clear M3/MR/etc
+                print(f"OK\n")
 
             current_idx = 0
             waiting_for_press = True
@@ -118,7 +126,19 @@ def main():
                         # Find changes from baseline
                         changes = find_changed_bits(BASELINE, data)
 
-                        if waiting_for_press and changes:
+                        # Filter to only button-related changes
+                        button_changes = []
+                        for chg_byte, chg_bit, is_set in changes:
+                            if chg_byte == 3:  # G1-G8
+                                button_changes.append((chg_byte, chg_bit, is_set))
+                            elif chg_byte == 4:  # G9-G16
+                                button_changes.append((chg_byte, chg_bit, is_set))
+                            elif chg_byte == 6:  # G17-G22, M1-M2
+                                button_changes.append((chg_byte, chg_bit, is_set))
+                            elif chg_byte == 7 and chg_bit < 2:  # M3, MR only (not joystick)
+                                button_changes.append((chg_byte, chg_bit, is_set))
+
+                        if waiting_for_press and button_changes:
                             # Button pressed - analyze
                             waiting_for_press = False
 
@@ -130,8 +150,8 @@ def main():
                             predicted = (byte_idx, bit_pos)
                             actual = None
 
-                            for chg_byte, chg_bit, is_set in changes:
-                                if is_set and chg_byte in [3, 4, 6, 7]:  # Button bytes
+                            for chg_byte, chg_bit, is_set in button_changes:
+                                if is_set:
                                     actual = (chg_byte, chg_bit)
                                     break
 
@@ -144,25 +164,27 @@ def main():
                                 print(f"     Actual:    Byte[{actual[0]}] bit {actual[1]}")
                                 results[button] = (predicted, actual, False)
                             else:
-                                # Check joystick bytes changed
-                                joy_changes = [c for c in changes if c[0] in [1, 2, 5]]
-                                if joy_changes and button == 'JOYSTICK':
-                                    print(f"  ⚠️  Joystick movement detected (not click)")
-                                    continue
-                                else:
-                                    print(f"  ⚠️  No button change detected")
-                                    results[button] = (predicted, None, False)
+                                print(f"  ⚠️  No button change detected")
+                                results[button] = (predicted, None, False)
 
                             print()
 
                         elif not waiting_for_press:
-                            # Check if button bytes returned to baseline (ignore joystick)
-                            button_changes = [c for c in changes if c[0] in [3, 4, 6, 7]]
-                            if not button_changes:
+                            # Check if all button bytes are zero (released)
+                            buttons_idle = (
+                                data[3] == 0 and
+                                data[4] == 0 and
+                                data[6] == 0 and
+                                (data[7] & 0x03) == 0  # M3 and MR bits
+                            )
+                            # Debug: show what we're seeing
+                            hex_str = ' '.join(f'{b:02x}' for b in data[:8])
+                            print(f"\r  Waiting release... [{hex_str}] idle={buttons_idle}", end="", flush=True)
+                            if buttons_idle:
                                 # Button released - move to next
                                 waiting_for_press = True
                                 current_idx += 1
-                                print("  (Released)\n")
+                                print("\n  (Released)\n")
 
             # Summary
             print("\n" + "=" * 70)

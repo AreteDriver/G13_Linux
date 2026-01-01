@@ -95,10 +95,6 @@ class ApplicationController(QObject):
             state = self.event_decoder.decode_report(data)
             pressed, released = self.event_decoder.get_button_changes(state)
 
-            # Debug: show button changes
-            if pressed or released:
-                print(f"Buttons - pressed: {pressed}, released: {released}")
-
             # Update button highlights
             for button_id in pressed:
                 self.main_window.button_mapper.highlight_button(button_id, True)

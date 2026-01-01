@@ -95,6 +95,10 @@ class ApplicationController(QObject):
             state = self.event_decoder.decode_report(data)
             pressed, released = self.event_decoder.get_button_changes(state)
 
+            # Debug: show button changes
+            if pressed or released:
+                print(f"Buttons - pressed: {pressed}, released: {released}")
+
             # Update button highlights
             for button_id in pressed:
                 self.main_window.button_mapper.highlight_button(button_id, True)
@@ -104,9 +108,9 @@ class ApplicationController(QObject):
                 self.main_window.button_mapper.highlight_button(button_id, False)
                 self.main_window.monitor_widget.on_button_event(button_id, False)
 
-        except Exception:
-            # Silently ignore decoder errors (expected until button mapping is complete)
-            pass
+        except Exception as e:
+            # Debug: show decoder errors
+            print(f"Decoder error: {e}")
 
     @pyqtSlot()
     def _on_device_connected(self):

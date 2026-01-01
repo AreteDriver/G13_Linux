@@ -132,7 +132,8 @@ class EventDecoder:
             raw_data=data
         )
 
-        self.last_state = state
+        # NOTE: Don't update last_state here - let get_button_changes do it
+        # so it can compare old vs new properly
         return state
 
     def _decode_g_buttons(self, data: bytes) -> int:
@@ -224,6 +225,7 @@ class EventDecoder:
         if self.last_state is None:
             # First state - consider all pressed buttons as new
             pressed = self.get_pressed_buttons(new_state)
+            self.last_state = new_state
             return (pressed, [])
 
         old_pressed = set(self.get_pressed_buttons(self.last_state))
@@ -231,6 +233,9 @@ class EventDecoder:
 
         pressed = list(new_pressed - old_pressed)
         released = list(old_pressed - new_pressed)
+
+        # Update last_state for next comparison
+        self.last_state = new_state
 
         return (pressed, released)
 

@@ -1,6 +1,8 @@
 from evdev import UInput, ecodes as e
 from typing import Union
 
+from g13_ops.gui.models.event_decoder import EventDecoder
+
 
 class G13Mapper:
     """
@@ -13,6 +15,8 @@ class G13Mapper:
         self.ui = UInput()
         # button_id (str) -> list of evdev keycodes (for combos)
         self.button_map: dict[str, list[int]] = {}
+        # Decoder for raw HID reports
+        self.decoder = EventDecoder()
 
     def close(self):
         self.ui.close()
@@ -89,11 +93,17 @@ class G13Mapper:
 
         NOTE: This is the legacy CLI interface. The GUI uses handle_button_event instead.
         """
-        # TODO: decode data -> logical_button_id
-        # For now, just print for debugging
-        print("RAW:", list(data))
-        # Example once you know mapping:
-        # button_id = decode_button(data)
-        # keycode = BUTTON_TO_KEY.get(button_id)
-        # if keycode:
-        #     self.send_key(keycode)
+        try:
+            state = self.decoder.decode_report(data)
+            pressed, released = self.decoder.get_button_changes(state)
+
+            # Emit key events for button changes
+            for button_id in pressed:
+                self.handle_button_event(button_id, is_pressed=True)
+
+            for button_id in released:
+                self.handle_button_event(button_id, is_pressed=False)
+
+        except ValueError:
+            # Invalid report length - ignore
+            pass

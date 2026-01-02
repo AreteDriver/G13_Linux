@@ -15,7 +15,7 @@ except ImportError:
         return None
 
 
-from ...device import open_g13, read_event
+from ...device import open_g13, open_g13_libusb, read_event
 
 
 class G13Device(QObject):
@@ -34,11 +34,12 @@ class G13Device(QObject):
     joystick_moved = pyqtSignal(int, int)  # (x, y)
     error_occurred = pyqtSignal(str)
 
-    def __init__(self):
+    def __init__(self, use_libusb: bool = False):
         super().__init__()
         self._handle = None
         self._event_thread = None
         self._is_connected = False
+        self._use_libusb = use_libusb
 
     @property
     def is_connected(self) -> bool:
@@ -60,9 +61,17 @@ class G13Device(QObject):
         Emits:
             device_connected on success
             error_occurred on failure
+
+        Note:
+            If use_libusb=True was passed to __init__, uses libusb which
+            requires root/sudo but receives button input. Otherwise uses
+            hidraw which works without root but kernel driver blocks input.
         """
         try:
-            self._handle = open_g13()
+            if self._use_libusb:
+                self._handle = open_g13_libusb()
+            else:
+                self._handle = open_g13()
             self._is_connected = True
             self.device_connected.emit()
             return True

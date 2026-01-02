@@ -5,7 +5,7 @@ Background thread for reading G13 USB events.
 """
 
 from PyQt6.QtCore import QThread, pyqtSignal
-from ...device import read_event
+from ...device import read_event, LibUSBDevice
 
 
 class DeviceEventThread(QThread):
@@ -18,12 +18,20 @@ class DeviceEventThread(QThread):
         super().__init__()
         self.device_handle = device_handle
         self.running = True
+        # Check if this is a libusb device (has different read method)
+        self._is_libusb = isinstance(device_handle, LibUSBDevice)
 
     def run(self):
         """Event loop - runs in background thread"""
         while self.running:
             try:
-                data = read_event(self.device_handle)
+                if self._is_libusb:
+                    # LibUSBDevice.read() returns list or None
+                    data = self.device_handle.read(timeout_ms=100)
+                else:
+                    # HidrawDevice via read_event()
+                    data = read_event(self.device_handle)
+
                 if data:
                     self.event_received.emit(bytes(data))
             except Exception as e:

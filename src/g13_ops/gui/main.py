@@ -2,6 +2,10 @@
 G13LogitechOPS GUI Entry Point
 
 Launches the PyQt6 graphical interface for G13 configuration.
+
+Usage:
+    g13-ops-gui              # Normal mode (hidraw, no button input)
+    sudo g13-ops-gui --libusb  # With button input (requires root)
 """
 
 import sys
@@ -11,11 +15,17 @@ from PyQt6.QtWidgets import QApplication, QMessageBox
 def main():
     """GUI application entry point"""
 
+    # Check for --libusb flag
+    use_libusb = "--libusb" in sys.argv
+    if use_libusb:
+        sys.argv.remove("--libusb")
+
     # Check for PyQt6
     try:
         from PyQt6.QtCore import QT_VERSION_STR
 
-        print(f"Starting G13LogitechOPS GUI (Qt {QT_VERSION_STR})")
+        mode = "libusb" if use_libusb else "hidraw"
+        print(f"Starting G13LogitechOPS GUI (Qt {QT_VERSION_STR}, {mode} mode)")
     except ImportError:
         print("ERROR: PyQt6 not installed. Install with: pip install PyQt6")
         return 1
@@ -44,7 +54,7 @@ def main():
         window = MainWindow()
 
         # Create controller (wires everything together)
-        controller = ApplicationController(window)
+        controller = ApplicationController(window, use_libusb=use_libusb)
 
         # Show window
         window.show()

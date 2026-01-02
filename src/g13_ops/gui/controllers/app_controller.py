@@ -21,12 +21,12 @@ from ..widgets.key_selector import KeySelectorDialog
 class ApplicationController(QObject):
     """Main application orchestrator - connects models to views"""
 
-    def __init__(self, main_window):
+    def __init__(self, main_window, use_libusb: bool = False):
         super().__init__()
         self.main_window = main_window
 
         # Models
-        self.device = G13Device()
+        self.device = G13Device(use_libusb=use_libusb)
         self.profile_manager = ProfileManager()
         self.event_decoder = EventDecoder()
         self.hardware = HardwareController()

@@ -7,6 +7,7 @@ The kernel's hid-generic driver must be detached, which requires root.
 
 Usage:
     sudo .venv/bin/python test_buttons_sudo.py
+    sudo .venv/bin/python test_buttons_sudo.py --emit   # Also emit keys
 """
 import sys
 import time
@@ -16,10 +17,28 @@ sys.path.insert(0, 'src')
 from g13_ops.device import open_g13_libusb
 from g13_ops.gui.models.event_decoder import EventDecoder
 
+# Check for --emit flag
+EMIT_KEYS = '--emit' in sys.argv
+
 print("=" * 60)
 print("G13 Button Test (using libusb - requires sudo)")
 print("=" * 60)
 print()
+
+mapper = None
+if EMIT_KEYS:
+    from g13_ops.mapper import G13Mapper
+    mapper = G13Mapper()
+    # Load a basic test profile
+    mapper.load_profile({
+        "mappings": {
+            "G1": "KEY_1", "G2": "KEY_2", "G3": "KEY_3", "G4": "KEY_4",
+            "G5": "KEY_5", "G6": "KEY_6", "G7": "KEY_7", "G8": "KEY_8",
+            "G9": "KEY_9", "G10": "KEY_0",
+        }
+    })
+    print("KEY EMISSION ENABLED - G1-G10 will type 1-0")
+    print()
 
 try:
     print("Opening G13 via libusb...")
@@ -43,8 +62,12 @@ try:
             # Show press/release events
             for btn in pressed:
                 print(f"  PRESSED:  {btn}")
+                if mapper:
+                    mapper.handle_button_event(btn, is_pressed=True)
             for btn in released:
                 print(f"  RELEASED: {btn}")
+                if mapper:
+                    mapper.handle_button_event(btn, is_pressed=False)
 
             # Show joystick if moved
             if abs(state.joystick_x - 128) > 20 or abs(state.joystick_y - 128) > 20:
@@ -65,6 +88,8 @@ except KeyboardInterrupt:
 finally:
     try:
         device.close()
+        if mapper:
+            mapper.close()
         print("Device closed, kernel driver reattached")
     except Exception:
         pass

@@ -1,0 +1,40 @@
+{
+  "name": "Example Gaming Profile",
+  "description": "Example button mappings for demonstration",
+  "version": "0.1.0",
+  "mappings": {
+    "G1": "KEY_1",
+    "G2": "KEY_2",
+    "G3": "KEY_3",
+    "G4": "KEY_4",
+    "G5": "KEY_5",
+    "G6": "KEY_6",
+    "G7": "KEY_7",
+    "G8": "KEY_8",
+    "G9": "KEY_9",
+    "G10": "KEY_0",
+    "G11": "KEY_F1",
+    "G12": "KEY_F2",
+    "G13": "KEY_F3",
+    "G14": "KEY_F4",
+    "G15": "KEY_F5",
+    "G16": "KEY_F6",
+    "G17": "KEY_F7",
+    "G18": "KEY_F8",
+    "G19": "KEY_F9",
+    "G20": "KEY_F10",
+    "G21": "KEY_F11",
+    "G22": "KEY_F12",
+    "M1": "KEY_LEFTMETA",
+    "M2": "KEY_LEFTCTRL",
+    "M3": "KEY_LEFTALT"
+  },
+  "lcd": {
+    "enabled": true,
+    "default_text": "G13 Ready"
+  },
+  "backlight": {
+    "color": "#FF0000",
+    "brightness": 100
+  }
+}

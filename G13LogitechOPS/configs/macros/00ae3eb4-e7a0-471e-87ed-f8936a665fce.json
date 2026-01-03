@@ -1,0 +1,28 @@
+{
+  "id": "00ae3eb4-e7a0-471e-87ed-f8936a665fce",
+  "name": "Recorded Macro (2 steps)",
+  "description": "",
+  "steps": [
+    {
+      "type": "g13_button",
+      "value": "G5",
+      "is_press": true,
+      "timestamp_ms": 0
+    },
+    {
+      "type": "g13_button",
+      "value": "G5",
+      "is_press": false,
+      "timestamp_ms": 0
+    }
+  ],
+  "speed_multiplier": 1.0,
+  "repeat_count": 1,
+  "repeat_delay_ms": 0,
+  "playback_mode": "recorded",
+  "fixed_delay_ms": 10,
+  "assigned_button": null,
+  "global_hotkey": null,
+  "created_at": "2026-01-01T09:10:12Z",
+  "modified_at": "2026-01-01T09:10:12Z"
+}

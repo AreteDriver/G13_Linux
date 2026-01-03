@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=G13 Configuration GUI
+GenericName=Logitech G13 Configuration
+Comment=Configure button mappings and profiles for Logitech G13 Gaming Keyboard
+Exec=bash -c 'cd /home/arete/projects/G13LogitechOPS && source .venv/bin/activate && python3 -m g13_ops.gui.main'
+Icon=/home/arete/projects/G13LogitechOPS/g13-ops.svg
+Terminal=false
+Categories=System;Utility;Settings;
+Keywords=logitech;g13;gaming;keyboard;driver;macro;config;gui;
+StartupNotify=true

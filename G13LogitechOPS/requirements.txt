@@ -1,0 +1,3 @@
+hidapi
+evdev
+PyQt6>=6.4.0

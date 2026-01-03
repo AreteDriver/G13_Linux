@@ -1,0 +1,206 @@
+{
+  "name": "EVE Online",
+  "description": "EVE Online combat and navigation profile",
+  "version": "1.0.0",
+  "mappings": {
+    "G1": {
+      "keys": [
+        "KEY_LEFTCTRL",
+        "KEY_B"
+      ],
+      "label": "Save location"
+    },
+    "G2": {
+      "keys": [
+        "KEY_F1"
+      ],
+      "label": "Module 1"
+    },
+    "G3": {
+      "keys": [
+        "KEY_F2"
+      ],
+      "label": "Module 2"
+    },
+    "G4": {
+      "keys": [
+        "KEY_F3"
+      ],
+      "label": "Module 3"
+    },
+    "G5": {
+      "keys": [
+        "KEY_F4"
+      ],
+      "label": "Module 4"
+    },
+    "G6": {
+      "keys": [
+        "KEY_F5"
+      ],
+      "label": "Module 5"
+    },
+    "G7": {
+      "keys": [
+        "KEY_F10"
+      ],
+      "label": "Open map"
+    },
+    "G8": {
+      "keys": [
+        "KEY_LEFTALT",
+        "KEY_C"
+      ],
+      "label": "Inventory"
+    },
+    "G9": {
+      "keys": [
+        "KEY_F6"
+      ],
+      "label": "Module 6"
+    },
+    "G10": {
+      "keys": [
+        "KEY_F7"
+      ],
+      "label": "Module 7"
+    },
+    "G11": {
+      "keys": [
+        "KEY_F8"
+      ],
+      "label": "Module 8"
+    },
+    "G12": {
+      "keys": [
+        "KEY_LEFTCTRL",
+        "KEY_R"
+      ],
+      "label": "Reload"
+    },
+    "G13": {
+      "keys": [
+        "KEY_F"
+      ],
+      "label": "Drone Attack"
+    },
+    "G14": {
+      "keys": [
+        "KEY_LEFTALT",
+        "KEY_SLASH"
+      ],
+      "label": "Regroup"
+    },
+    "G15": {
+      "keys": [
+        "KEY_S"
+      ],
+      "label": "Warp to"
+    },
+    "G16": {
+      "keys": [
+        "KEY_A"
+      ],
+      "label": "Align to"
+    },
+    "G17": {
+      "keys": [
+        "KEY_E"
+      ],
+      "label": "Keep range"
+    },
+    "G18": {
+      "keys": [
+        "KEY_Z"
+      ],
+      "label": "Overheat High 1"
+    },
+    "G19": {
+      "keys": [
+        "KEY_X"
+      ],
+      "label": "Overheat High 2"
+    },
+    "G20": {
+      "keys": [
+        "KEY_LEFTSHIFT",
+        "KEY_A"
+      ],
+      "label": "Align to (alt)"
+    },
+    "G21": {
+      "keys": [
+        "KEY_LEFTCTRL",
+        "KEY_SPACE"
+      ],
+      "label": "Stop ship"
+    },
+    "G22": {
+      "keys": [
+        "KEY_C"
+      ],
+      "label": "Overheat High 3"
+    },
+    "M1": {
+      "keys": [
+        "KEY_LEFTMETA"
+      ],
+      "label": "Mode 1"
+    },
+    "M2": {
+      "keys": [
+        "KEY_LEFTCTRL"
+      ],
+      "label": "Mode 2"
+    },
+    "M3": {
+      "keys": [
+        "KEY_LEFTALT"
+      ],
+      "label": "Mode 3"
+    }
+  },
+  "lcd": {
+    "enabled": true,
+    "default_text": "EVE Online"
+  },
+  "backlight": {
+    "color": "#1A5276",
+    "brightness": 80
+  },
+  "joystick": {
+    "mode": "directional",
+    "up": {
+      "keys": [
+        "KEY_UP"
+      ],
+      "label": "Toggle alts"
+    },
+    "down": {
+      "keys": [
+        "KEY_DOWN"
+      ],
+      "label": "EVE-O Preview"
+    },
+    "left": {
+      "keys": [
+        "KEY_LEFTALT",
+        "KEY_LEFT"
+      ],
+      "label": "Prev target"
+    },
+    "right": {
+      "keys": [
+        "KEY_LEFTALT",
+        "KEY_RIGHT"
+      ],
+      "label": "Next target"
+    },
+    "click": {
+      "keys": [
+        "KEY_LEFTCTRL"
+      ],
+      "label": "Ctrl modifier"
+    }
+  }
+}

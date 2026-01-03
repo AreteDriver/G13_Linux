@@ -1,0 +1,14 @@
+# Udev rules for Logitech G13 Gaming Keyboard
+# 
+# This file allows non-root users to access the G13 device
+# 
+# Installation:
+#   sudo cp 99-logitech-g13.rules /etc/udev/rules.d/
+#   sudo udevadm control --reload-rules
+#   sudo udevadm trigger
+#
+# Then unplug and replug your G13
+#
+# Logitech G13 (Vendor: 046d, Product: c21c)
+SUBSYSTEM=="usb", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="c21c", MODE="0666", GROUP="plugdev"
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="c21c", MODE="0666", GROUP="plugdev"

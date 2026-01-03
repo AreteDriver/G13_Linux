@@ -5,10 +5,6 @@ on:
     tags:
       - "v*"
 
-defaults:
-  run:
-    working-directory: G13LogitechOPS
-
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -74,12 +70,12 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            G13LogitechOPS/dist/*.whl
-            G13LogitechOPS/dist/*.tar.gz
+            dist/*.whl
+            dist/*.tar.gz
           body: |
-            ## G13 Logitech OPS v${{ steps.get_version.outputs.VERSION }}
+            ## g13-linux v${{ steps.get_version.outputs.VERSION }}
 
-            Python userspace driver for the Logitech G13 Gaming Keyboard on Linux.
+            Linux userspace driver for the Logitech G13 Gaming Keyboard.
 
             ### Installation
 

@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=G13 Linux
+GenericName=Gaming Keypad Manager
+Comment=Configure Logitech G13 keypad - button mapping, macros, LCD, and RGB
+Exec=g13-linux-gui
+Icon=g13-linux
+Terminal=false
+Type=Application
+Categories=Settings;HardwareSettings;Game;
+Keywords=logitech;g13;gaming;keypad;macro;lcd;rgb;
+StartupNotify=true
+StartupWMClass=g13-linux-gui

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <!-- Background circle -->
+  <circle cx="64" cy="64" r="60" fill="#1a1a1a"/>
+
+  <!-- Logitech blue glow effect -->
+  <circle cx="64" cy="64" r="50" fill="none" stroke="#00d4ff" stroke-width="2" opacity="0.3"/>
+  <circle cx="64" cy="64" r="45" fill="none" stroke="#00d4ff" stroke-width="1" opacity="0.2"/>
+
+  <!-- G13 keypad body - curved left side like real G13 -->
+  <path d="M25 35 L90 30 Q100 30 100 40 L100 95 Q100 105 90 105 L35 100 Q20 98 20 85 L20 45 Q20 35 25 35 Z"
+        fill="#2a2a2a" stroke="#00d4ff" stroke-width="2"/>
+
+  <!-- Palm rest area -->
+  <ellipse cx="55" cy="95" rx="30" ry="8" fill="#333" opacity="0.5"/>
+
+  <!-- G-keys grid (3 rows x 7 cols simplified) -->
+  <!-- Row 1 -->
+  <rect x="30" y="38" width="8" height="8" rx="1" fill="#00d4ff" opacity="0.8"/>
+  <rect x="40" y="38" width="8" height="8" rx="1" fill="#00d4ff" opacity="0.6"/>
+  <rect x="50" y="38" width="8" height="8" rx="1" fill="#00d4ff" opacity="0.6"/>
+  <rect x="60" y="38" width="8" height="8" rx="1" fill="#00d4ff" opacity="0.6"/>
+  <rect x="70" y="38" width="8" height="8" rx="1" fill="#00d4ff" opacity="0.6"/>
+  <rect x="80" y="38" width="8" height="8" rx="1" fill="#00d4ff" opacity="0.6"/>
+
+  <!-- Row 2 -->
+  <rect x="32" y="50" width="8" height="8" rx="1" fill="#00d4ff" opacity="0.6"/>
+  <rect x="42" y="50" width="8" height="8" rx="1" fill="#00d4ff" opacity="0.6"/>
+  <rect x="52" y="50" width="8" height="8" rx="1" fill="#00d4ff" opacity="0.8"/>
+  <rect x="62" y="50" width="8" height="8" rx="1" fill="#00d4ff" opacity="0.6"/>
+  <rect x="72" y="50" width="8" height="8" rx="1" fill="#00d4ff" opacity="0.6"/>
+  <rect x="82" y="50" width="8" height="8" rx="1" fill="#00d4ff" opacity="0.6"/>
+
+  <!-- Row 3 -->
+  <rect x="34" y="62" width="8" height="8" rx="1" fill="#00d4ff" opacity="0.6"/>
+  <rect x="44" y="62" width="8" height="8" rx="1" fill="#00d4ff" opacity="0.6"/>
+  <rect x="54" y="62" width="8" height="8" rx="1" fill="#00d4ff" opacity="0.6"/>
+  <rect x="64" y="62" width="8" height="8" rx="1" fill="#00d4ff" opacity="0.6"/>
+  <rect x="74" y="62" width="8" height="8" rx="1" fill="#00d4ff" opacity="0.8"/>
+
+  <!-- Thumbstick -->
+  <circle cx="45" cy="82" r="10" fill="#333" stroke="#00d4ff" stroke-width="1.5"/>
+  <circle cx="45" cy="82" r="6" fill="#444"/>
+  <circle cx="45" cy="82" r="3" fill="#00d4ff" opacity="0.5"/>
+
+  <!-- LCD display -->
+  <rect x="58" y="75" width="30" height="12" rx="2" fill="#001a20" stroke="#00d4ff" stroke-width="1"/>
+  <text x="73" y="84" font-family="monospace" font-size="6" fill="#00d4ff" text-anchor="middle">G13</text>
+</svg>

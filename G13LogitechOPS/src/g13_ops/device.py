@@ -117,25 +117,31 @@ def read_event(handle):
 
 class LibUSBDevice:
     """
-    Direct libusb access for G13 input reading.
+    Direct libusb access for G13 input reading and LCD control.
 
     Required because hid-generic kernel driver consumes input reports
     and doesn't pass them to hidraw. This requires root/sudo to detach
     the kernel driver.
 
+    G13 USB Structure:
+    - Interface 0: Keyboard/keys/joystick (endpoint 1 IN)
+    - Interface 1: LCD display (endpoint 2 OUT)
+
     Note: Linux kernel 6.19+ will have proper hid-lg-g15 support for G13.
     """
 
     ENDPOINT_IN = 0x81  # EP 1 IN for button/joystick data
-    ENDPOINT_OUT = 0x02  # EP 2 OUT for LCD data
+    ENDPOINT_LCD = 0x02  # EP 2 OUT for LCD data
     REPORT_SIZE = 8  # 7 bytes data + 1 byte report ID
 
     def __init__(self):
         self._dev = None
-        self._reattach = False
+        self._reattach_interfaces = []
+        self._ep_in = None
+        self._ep_lcd = None
 
     def open(self):
-        """Open G13 via libusb, detaching kernel driver."""
+        """Open G13 via libusb, detaching kernel drivers from all interfaces."""
         try:
             import usb.core
             import usb.util
@@ -146,13 +152,14 @@ class LibUSBDevice:
         if self._dev is None:
             raise RuntimeError("G13 not found")
 
-        # Detach kernel driver if attached
-        try:
-            if self._dev.is_kernel_driver_active(0):
-                self._dev.detach_kernel_driver(0)
-                self._reattach = True
-        except Exception:
-            pass
+        # Detach kernel driver from all interfaces (G13 has 2)
+        for intf_num in range(2):
+            try:
+                if self._dev.is_kernel_driver_active(intf_num):
+                    self._dev.detach_kernel_driver(intf_num)
+                    self._reattach_interfaces.append(intf_num)
+            except Exception:
+                pass
 
         # Set configuration
         try:
@@ -160,22 +167,41 @@ class LibUSBDevice:
         except Exception:
             pass
 
-        # Get endpoints
+        # Claim both interfaces
         import usb.util
 
-        cfg = self._dev.get_active_configuration()
-        intf = cfg[(0, 0)]
+        for intf_num in range(2):
+            try:
+                usb.util.claim_interface(self._dev, intf_num)
+            except Exception:
+                pass
 
+        # Find endpoints
+        cfg = self._dev.get_active_configuration()
+
+        # Interface 0: Keys/joystick input
+        intf0 = cfg[(0, 0)]
         self._ep_in = usb.util.find_descriptor(
-            intf,
+            intf0,
             custom_match=lambda e: usb.util.endpoint_direction(e.bEndpointAddress)
             == usb.util.ENDPOINT_IN,
         )
-        self._ep_out = usb.util.find_descriptor(
-            intf,
-            custom_match=lambda e: usb.util.endpoint_direction(e.bEndpointAddress)
-            == usb.util.ENDPOINT_OUT,
-        )
+
+        # Interface 1: LCD output (or interface 0 if only one interface)
+        try:
+            intf1 = cfg[(1, 0)]
+            self._ep_lcd = usb.util.find_descriptor(
+                intf1,
+                custom_match=lambda e: usb.util.endpoint_direction(e.bEndpointAddress)
+                == usb.util.ENDPOINT_OUT,
+            )
+        except (KeyError, IndexError):
+            # Fall back to interface 0 OUT endpoint
+            self._ep_lcd = usb.util.find_descriptor(
+                intf0,
+                custom_match=lambda e: usb.util.endpoint_direction(e.bEndpointAddress)
+                == usb.util.ENDPOINT_OUT,
+            )
 
     def read(self, timeout_ms=100):
         """
@@ -191,10 +217,26 @@ class LibUSBDevice:
             return None
 
     def write(self, data):
-        """Write output report (for LCD)."""
-        if self._ep_out:
-            return self._ep_out.write(bytes(data))
+        """
+        Write to LCD endpoint.
+
+        Args:
+            data: Bytes to write (992 bytes for full LCD frame)
+
+        Returns:
+            Number of bytes written
+        """
+        if self._ep_lcd:
+            return self._ep_lcd.write(bytes(data))
         return 0
+
+    def write_lcd(self, data):
+        """
+        Write LCD framebuffer data.
+
+        Alias for write() - sends 992-byte LCD packet to endpoint 2.
+        """
+        return self.write(data)
 
     def send_feature_report(self, data):
         """Send feature report via control transfer."""
@@ -209,17 +251,29 @@ class LibUSBDevice:
         )
 
     def close(self):
-        """Close device and reattach kernel driver."""
+        """Close device and reattach kernel drivers."""
         if self._dev:
             try:
                 import usb.util
 
-                usb.util.release_interface(self._dev, 0)
-                if self._reattach:
-                    self._dev.attach_kernel_driver(0)
+                # Release all claimed interfaces
+                for intf_num in range(2):
+                    try:
+                        usb.util.release_interface(self._dev, intf_num)
+                    except Exception:
+                        pass
+
+                # Reattach kernel drivers
+                for intf_num in self._reattach_interfaces:
+                    try:
+                        self._dev.attach_kernel_driver(intf_num)
+                    except Exception:
+                        pass
             except Exception:
                 pass
             self._dev = None
+            self._ep_in = None
+            self._ep_lcd = None
 
 
 def open_g13_libusb():

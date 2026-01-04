@@ -263,9 +263,14 @@ class ApplicationController(QObject):
 
     @pyqtSlot(str)
     def _update_lcd(self, text: str):
-        """Send text to LCD"""
+        """Send text to LCD and update preview"""
         try:
             self.hardware.set_lcd_text(text)
+            # Update LCD preview in button mapper
+            if self.hardware.lcd:
+                self.main_window.button_mapper.update_lcd(
+                    self.hardware.lcd._framebuffer
+                )
             self.main_window.set_status("LCD updated")
         except Exception as e:
             self._on_error(f"LCD error: {e}")

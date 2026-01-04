@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import QWidget
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QPainter, QColor, QPen, QFont, QPixmap
 from ..widgets.g13_button import G13Button
+from ..widgets.lcd_preview import LCDPreviewEmbedded
 from ..resources.g13_layout import (
     G13_BUTTON_POSITIONS,
     LCD_AREA,
@@ -29,9 +30,29 @@ class ButtonMapperWidget(QWidget):
         self.buttons = {}
         self.background_image = self._load_background_image()
         self._init_buttons()
+        self._init_lcd_preview()
         # Joystick position (0-255 for X and Y, 128 = center)
         self._joystick_x = 128
         self._joystick_y = 128
+
+    def _init_lcd_preview(self):
+        """Create LCD preview widget positioned over LCD area."""
+        self.lcd_preview = LCDPreviewEmbedded(self)
+        self.lcd_preview.setGeometry(
+            LCD_AREA["x"],
+            LCD_AREA["y"],
+            LCD_AREA["width"],
+            LCD_AREA["height"],
+        )
+        self.lcd_preview.show()
+
+    def update_lcd(self, framebuffer: bytes | bytearray):
+        """Update LCD preview with new framebuffer data."""
+        self.lcd_preview.set_framebuffer(framebuffer)
+
+    def clear_lcd(self):
+        """Clear the LCD preview."""
+        self.lcd_preview.clear()
 
     def _load_background_image(self):
         """Load G13 device background image if available"""

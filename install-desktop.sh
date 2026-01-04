@@ -3,8 +3,9 @@
 
 set -e
 
-DESKTOP_FILE="data/g13-linux.desktop"
-ICON_FILE="data/g13-linux.svg"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DESKTOP_FILE="$SCRIPT_DIR/packaging/g13-linux.desktop"
+ICON_FILE="$SCRIPT_DIR/g13-linux.svg"
 
 # Determine install locations
 if [ "$EUID" -eq 0 ]; then

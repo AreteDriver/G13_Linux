@@ -34,9 +34,12 @@ class ButtonMapperWidget(QWidget):
         self._joystick_y = 128
 
     def _load_background_image(self):
-        """Load G13 layout background image if available"""
+        """Load G13 device background image if available"""
         # Try to find the image in the resources directory
         possible_paths = [
+            os.path.join(
+                os.path.dirname(__file__), "..", "resources", "images", "g13_device.png"
+            ),
             os.path.join(
                 os.path.dirname(__file__), "..", "resources", "images", "g13_layout.png"
             ),

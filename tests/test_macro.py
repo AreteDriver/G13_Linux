@@ -256,7 +256,12 @@ class TestMacroRecorder:
 
     @pytest.fixture
     def recorder(self):
-        return MacroRecorder()
+        """Create MacroRecorder with system listener mocked to avoid X11 dependency."""
+        recorder = MacroRecorder()
+        # Patch system listener methods to be no-ops (avoids pynput/Xlib requirement)
+        recorder._start_system_listener = lambda: None
+        recorder._stop_system_listener = lambda: None
+        return recorder
 
     def test_initial_state(self, recorder):
         assert recorder.state == RecorderState.IDLE

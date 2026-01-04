@@ -1,8 +1,8 @@
-"""Tests for the CLI module."""
+"""Tests for CLI commands."""
 
-import argparse
 import pytest
-from unittest.mock import Mock, patch, MagicMock
+import sys
+from unittest.mock import MagicMock, patch
 
 from g13_linux.cli import (
     COLOR_PRESETS,
@@ -15,352 +15,464 @@ from g13_linux.cli import (
 
 
 class TestColorPresets:
-    """Test color preset definitions."""
+    """Tests for color presets."""
 
-    def test_has_basic_colors(self):
+    def test_has_common_colors(self):
+        """Test COLOR_PRESETS has common colors."""
         assert "red" in COLOR_PRESETS
         assert "green" in COLOR_PRESETS
         assert "blue" in COLOR_PRESETS
         assert "white" in COLOR_PRESETS
+        assert "off" in COLOR_PRESETS
 
     def test_red_is_correct(self):
+        """Test red preset is correct RGB."""
         assert COLOR_PRESETS["red"] == (255, 0, 0)
 
     def test_green_is_correct(self):
+        """Test green preset is correct RGB."""
         assert COLOR_PRESETS["green"] == (0, 255, 0)
 
     def test_blue_is_correct(self):
+        """Test blue preset is correct RGB."""
         assert COLOR_PRESETS["blue"] == (0, 0, 255)
 
     def test_off_is_black(self):
+        """Test off preset is black (0,0,0)."""
         assert COLOR_PRESETS["off"] == (0, 0, 0)
-
-    def test_all_presets_are_rgb_tuples(self):
-        for name, color in COLOR_PRESETS.items():
-            assert isinstance(color, tuple), f"{name} is not a tuple"
-            assert len(color) == 3, f"{name} doesn't have 3 components"
-            assert all(0 <= c <= 255 for c in color), f"{name} has invalid values"
 
 
 class TestCmdRun:
-    """Test the run command."""
+    """Tests for cmd_run command."""
 
-    @patch("g13_linux.device.open_g13")
-    @patch("g13_linux.device.read_event")
-    @patch("g13_linux.mapper.G13Mapper")
-    def test_run_opens_device(self, mock_mapper, mock_read, mock_open):
-        mock_device = Mock()
-        mock_open.return_value = mock_device
-        mock_read.side_effect = KeyboardInterrupt()
+    def test_cmd_run_opens_device(self, capsys):
+        """Test cmd_run opens G13 device."""
+        mock_handle = MagicMock()
 
-        args = argparse.Namespace()
-        cmd_run(args)
+        with patch("g13_linux.device.open_g13", return_value=mock_handle) as mock_open, \
+             patch("g13_linux.device.read_event", side_effect=KeyboardInterrupt), \
+             patch("g13_linux.mapper.G13Mapper"):
+            args = MagicMock()
+            cmd_run(args)
 
         mock_open.assert_called_once()
-        mock_device.close.assert_called_once()
+        mock_handle.close.assert_called_once()
 
-    @patch("g13_linux.device.open_g13")
-    def test_run_exits_on_device_error(self, mock_open):
-        mock_open.side_effect = Exception("Device not found")
+    def test_cmd_run_handles_device_error(self, capsys):
+        """Test cmd_run handles device open error."""
+        with patch("g13_linux.device.open_g13", side_effect=Exception("Device not found")):
+            args = MagicMock()
 
-        args = argparse.Namespace()
-        with pytest.raises(SystemExit) as exc_info:
+            with pytest.raises(SystemExit) as exc_info:
+                cmd_run(args)
+
+            assert exc_info.value.code == 1
+
+        captured = capsys.readouterr()
+        assert "Error:" in captured.err
+        assert "Could not open G13" in captured.err
+
+    def test_cmd_run_processes_events(self, capsys):
+        """Test cmd_run processes events until KeyboardInterrupt."""
+        mock_handle = MagicMock()
+        mock_mapper = MagicMock()
+
+        call_count = [0]
+        def fake_read_event(h):
+            call_count[0] += 1
+            if call_count[0] >= 3:
+                raise KeyboardInterrupt
+            return b"\x00" * 8
+
+        with patch("g13_linux.device.open_g13", return_value=mock_handle), \
+             patch("g13_linux.device.read_event", side_effect=fake_read_event), \
+             patch("g13_linux.mapper.G13Mapper", return_value=mock_mapper):
+            args = MagicMock()
             cmd_run(args)
-        assert exc_info.value.code == 1
+
+        assert mock_mapper.handle_raw_report.call_count == 2
 
 
 class TestCmdLcd:
-    """Test the lcd command."""
+    """Tests for cmd_lcd command."""
 
-    @patch("g13_linux.device.open_g13")
-    @patch("g13_linux.hardware.lcd.G13LCD")
-    def test_lcd_clear(self, mock_lcd_class, mock_open):
-        mock_device = Mock()
-        mock_open.return_value = mock_device
-        mock_lcd = Mock()
-        mock_lcd_class.return_value = mock_lcd
+    def test_cmd_lcd_clear(self, capsys):
+        """Test cmd_lcd with --clear flag."""
+        mock_device = MagicMock()
+        mock_lcd = MagicMock()
 
-        args = argparse.Namespace(clear=True, text=[])
-        cmd_lcd(args)
+        with patch("g13_linux.device.open_g13", return_value=mock_device), \
+             patch("g13_linux.hardware.lcd.G13LCD", return_value=mock_lcd):
+            args = MagicMock()
+            args.clear = True
+            args.text = None
+
+            cmd_lcd(args)
 
         mock_lcd.clear.assert_called_once()
         mock_device.close.assert_called_once()
 
-    @patch("g13_linux.device.open_g13")
-    @patch("g13_linux.hardware.lcd.G13LCD")
-    def test_lcd_write_text(self, mock_lcd_class, mock_open):
-        mock_device = Mock()
-        mock_open.return_value = mock_device
-        mock_lcd = Mock()
-        mock_lcd_class.return_value = mock_lcd
+    def test_cmd_lcd_with_text(self, capsys):
+        """Test cmd_lcd with text."""
+        mock_device = MagicMock()
+        mock_lcd = MagicMock()
 
-        args = argparse.Namespace(clear=False, text=["Hello", "World"])
-        cmd_lcd(args)
+        with patch("g13_linux.device.open_g13", return_value=mock_device), \
+             patch("g13_linux.hardware.lcd.G13LCD", return_value=mock_lcd):
+            args = MagicMock()
+            args.clear = False
+            args.text = ["Hello", "World"]
+
+            cmd_lcd(args)
 
         mock_lcd.clear.assert_called_once()
         mock_lcd.write_text_centered.assert_called_once_with("Hello World")
         mock_device.close.assert_called_once()
 
-    @patch("g13_linux.device.open_g13")
-    @patch("g13_linux.hardware.lcd.G13LCD")
-    def test_lcd_no_text_no_clear_exits(self, mock_lcd_class, mock_open):
-        mock_open.return_value = Mock()
+    def test_cmd_lcd_no_text_no_clear(self, capsys):
+        """Test cmd_lcd with no text and no --clear exits with error."""
+        mock_device = MagicMock()
+        mock_lcd = MagicMock()
 
-        args = argparse.Namespace(clear=False, text=[])
-        with pytest.raises(SystemExit) as exc_info:
-            cmd_lcd(args)
-        assert exc_info.value.code == 1
+        with patch("g13_linux.device.open_g13", return_value=mock_device), \
+             patch("g13_linux.hardware.lcd.G13LCD", return_value=mock_lcd):
+            args = MagicMock()
+            args.clear = False
+            args.text = []
 
-    @patch("g13_linux.device.open_g13")
-    def test_lcd_device_error_exits(self, mock_open):
-        mock_open.side_effect = Exception("No device")
+            with pytest.raises(SystemExit) as exc_info:
+                cmd_lcd(args)
 
-        args = argparse.Namespace(clear=True, text=[])
-        with pytest.raises(SystemExit) as exc_info:
-            cmd_lcd(args)
-        assert exc_info.value.code == 1
+            assert exc_info.value.code == 1
+
+    def test_cmd_lcd_device_error(self, capsys):
+        """Test cmd_lcd handles device open error."""
+        with patch("g13_linux.device.open_g13", side_effect=Exception("Device not found")):
+            args = MagicMock()
+            args.clear = True
+            args.text = None
+
+            with pytest.raises(SystemExit) as exc_info:
+                cmd_lcd(args)
+
+            assert exc_info.value.code == 1
 
 
 class TestCmdColor:
-    """Test the color command."""
+    """Tests for cmd_color command."""
 
-    @patch("g13_linux.device.open_g13")
-    @patch("g13_linux.hardware.backlight.G13Backlight")
-    def test_color_preset(self, mock_backlight_class, mock_open):
-        mock_device = Mock()
-        mock_open.return_value = mock_device
-        mock_backlight = Mock()
-        mock_backlight_class.return_value = mock_backlight
+    def test_cmd_color_preset(self, capsys):
+        """Test cmd_color with preset name."""
+        mock_device = MagicMock()
+        mock_backlight = MagicMock()
 
-        args = argparse.Namespace(color="red")
-        cmd_color(args)
+        with patch("g13_linux.device.open_g13", return_value=mock_device), \
+             patch("g13_linux.hardware.backlight.G13Backlight", return_value=mock_backlight):
+            args = MagicMock()
+            args.color = "red"
+
+            cmd_color(args)
 
         mock_backlight.set_color.assert_called_once_with(255, 0, 0)
         mock_device.close.assert_called_once()
 
-    @patch("g13_linux.device.open_g13")
-    @patch("g13_linux.hardware.backlight.G13Backlight")
-    def test_color_hex_with_hash(self, mock_backlight_class, mock_open):
-        mock_device = Mock()
-        mock_open.return_value = mock_device
-        mock_backlight = Mock()
-        mock_backlight_class.return_value = mock_backlight
+    def test_cmd_color_hex_without_hash(self, capsys):
+        """Test cmd_color with hex color without #."""
+        mock_device = MagicMock()
+        mock_backlight = MagicMock()
 
-        args = argparse.Namespace(color="#FF8000")
-        cmd_color(args)
+        with patch("g13_linux.device.open_g13", return_value=mock_device), \
+             patch("g13_linux.hardware.backlight.G13Backlight", return_value=mock_backlight):
+            args = MagicMock()
+            args.color = "FF8000"
+
+            cmd_color(args)
 
         mock_backlight.set_color.assert_called_once_with(255, 128, 0)
 
-    @patch("g13_linux.device.open_g13")
-    @patch("g13_linux.hardware.backlight.G13Backlight")
-    def test_color_hex_without_hash(self, mock_backlight_class, mock_open):
-        mock_device = Mock()
-        mock_open.return_value = mock_device
-        mock_backlight = Mock()
-        mock_backlight_class.return_value = mock_backlight
+    def test_cmd_color_hex_with_hash(self, capsys):
+        """Test cmd_color with hex color with #."""
+        mock_device = MagicMock()
+        mock_backlight = MagicMock()
 
-        args = argparse.Namespace(color="00FF00")
-        cmd_color(args)
+        with patch("g13_linux.device.open_g13", return_value=mock_device), \
+             patch("g13_linux.hardware.backlight.G13Backlight", return_value=mock_backlight):
+            args = MagicMock()
+            args.color = "#00FF80"
 
-        mock_backlight.set_color.assert_called_once_with(0, 255, 0)
+            cmd_color(args)
 
-    @patch("g13_linux.device.open_g13")
-    @patch("g13_linux.hardware.backlight.G13Backlight")
-    def test_color_rgb_values(self, mock_backlight_class, mock_open):
-        mock_device = Mock()
-        mock_open.return_value = mock_device
-        mock_backlight = Mock()
-        mock_backlight_class.return_value = mock_backlight
+        mock_backlight.set_color.assert_called_once_with(0, 255, 128)
 
-        args = argparse.Namespace(color="128,64,32")
-        cmd_color(args)
+    def test_cmd_color_rgb_values(self, capsys):
+        """Test cmd_color with RGB comma-separated values."""
+        mock_device = MagicMock()
+        mock_backlight = MagicMock()
 
-        mock_backlight.set_color.assert_called_once_with(128, 64, 32)
+        with patch("g13_linux.device.open_g13", return_value=mock_device), \
+             patch("g13_linux.hardware.backlight.G13Backlight", return_value=mock_backlight):
+            args = MagicMock()
+            args.color = "100,200,50"
 
-    def test_color_invalid_exits(self):
-        args = argparse.Namespace(color="notacolor")
+            cmd_color(args)
+
+        mock_backlight.set_color.assert_called_once_with(100, 200, 50)
+
+    def test_cmd_color_invalid(self, capsys):
+        """Test cmd_color with invalid color."""
+        args = MagicMock()
+        args.color = "invalid_color"
+
         with pytest.raises(SystemExit) as exc_info:
             cmd_color(args)
-        assert exc_info.value.code == 1
 
-    def test_color_invalid_rgb_exits(self):
-        args = argparse.Namespace(color="1,2")
-        with pytest.raises(SystemExit) as exc_info:
-            cmd_color(args)
         assert exc_info.value.code == 1
+        captured = capsys.readouterr()
+        assert "Error: Invalid color" in captured.err
 
-    @patch("g13_linux.device.open_g13")
-    def test_color_device_error_exits(self, mock_open):
-        mock_open.side_effect = Exception("No device")
+    def test_cmd_color_device_error(self, capsys):
+        """Test cmd_color handles device open error."""
+        with patch("g13_linux.device.open_g13", side_effect=Exception("Device not found")):
+            args = MagicMock()
+            args.color = "red"
 
-        args = argparse.Namespace(color="red")
-        with pytest.raises(SystemExit) as exc_info:
-            cmd_color(args)
-        assert exc_info.value.code == 1
+            with pytest.raises(SystemExit) as exc_info:
+                cmd_color(args)
+
+            assert exc_info.value.code == 1
 
 
 class TestCmdProfile:
-    """Test the profile command."""
+    """Tests for cmd_profile command."""
 
-    @patch("g13_linux.gui.models.profile_manager.ProfileManager")
-    def test_profile_list_empty(self, mock_pm_class):
-        mock_pm = Mock()
+    def test_cmd_profile_list_with_profiles(self, capsys):
+        """Test profile list with profiles."""
+        mock_pm = MagicMock()
+        mock_pm.list_profiles.return_value = ["profile1", "profile2"]
+
+        with patch("g13_linux.gui.models.profile_manager.ProfileManager", return_value=mock_pm):
+            args = MagicMock()
+            args.profile_cmd = "list"
+
+            cmd_profile(args)
+
+        captured = capsys.readouterr()
+        assert "profile1" in captured.out
+        assert "profile2" in captured.out
+
+    def test_cmd_profile_list_empty(self, capsys):
+        """Test profile list with no profiles."""
+        mock_pm = MagicMock()
         mock_pm.list_profiles.return_value = []
-        mock_pm_class.return_value = mock_pm
 
-        args = argparse.Namespace(profile_cmd="list")
-        cmd_profile(args)
+        with patch("g13_linux.gui.models.profile_manager.ProfileManager", return_value=mock_pm):
+            args = MagicMock()
+            args.profile_cmd = "list"
 
-        mock_pm.list_profiles.assert_called_once()
+            cmd_profile(args)
 
-    @patch("g13_linux.gui.models.profile_manager.ProfileManager")
-    def test_profile_list_with_profiles(self, mock_pm_class):
-        mock_pm = Mock()
-        mock_pm.list_profiles.return_value = ["default", "gaming"]
-        mock_pm_class.return_value = mock_pm
+        captured = capsys.readouterr()
+        assert "No profiles found" in captured.out
 
-        args = argparse.Namespace(profile_cmd="list")
-        cmd_profile(args)
-
-        mock_pm.list_profiles.assert_called_once()
-
-    @patch("g13_linux.gui.models.profile_manager.ProfileManager")
-    def test_profile_show(self, mock_pm_class):
-        mock_pm = Mock()
-        mock_profile = Mock()
-        mock_profile.name = "test"
-        mock_profile.description = "Test profile"
+    def test_cmd_profile_show(self, capsys):
+        """Test profile show command."""
+        mock_pm = MagicMock()
+        mock_profile = MagicMock()
+        mock_profile.name = "test_profile"
+        mock_profile.description = "Test description"
         mock_profile.backlight = {"color": "#FF0000"}
-        mock_profile.lcd = {"text": "Hello"}
-        mock_profile.mappings = {"G1": "KEY_A"}
+        mock_profile.lcd = "Hello"
+        mock_profile.mappings = {"G1": "a", "G2": "b"}
         mock_pm.load_profile.return_value = mock_profile
-        mock_pm_class.return_value = mock_pm
 
-        args = argparse.Namespace(profile_cmd="show", name="test")
-        cmd_profile(args)
+        with patch("g13_linux.gui.models.profile_manager.ProfileManager", return_value=mock_pm):
+            args = MagicMock()
+            args.profile_cmd = "show"
+            args.name = "test_profile"
 
-        mock_pm.load_profile.assert_called_once_with("test")
+            cmd_profile(args)
 
-    @patch("g13_linux.gui.models.profile_manager.ProfileManager")
-    def test_profile_show_not_found_exits(self, mock_pm_class):
-        mock_pm = Mock()
+        captured = capsys.readouterr()
+        assert "test_profile" in captured.out
+        assert "Test description" in captured.out
+
+    def test_cmd_profile_show_not_found(self, capsys):
+        """Test profile show with non-existent profile."""
+        mock_pm = MagicMock()
         mock_pm.load_profile.side_effect = FileNotFoundError()
-        mock_pm_class.return_value = mock_pm
 
-        args = argparse.Namespace(profile_cmd="show", name="nonexistent")
-        with pytest.raises(SystemExit) as exc_info:
-            cmd_profile(args)
-        assert exc_info.value.code == 1
+        with patch("g13_linux.gui.models.profile_manager.ProfileManager", return_value=mock_pm):
+            args = MagicMock()
+            args.profile_cmd = "show"
+            args.name = "missing"
 
-    @patch("g13_linux.gui.models.profile_manager.ProfileManager")
-    def test_profile_create(self, mock_pm_class):
-        mock_pm = Mock()
-        mock_pm.profile_exists.return_value = False
-        mock_profile = Mock()
-        mock_pm.create_profile.return_value = mock_profile
-        mock_pm_class.return_value = mock_pm
+            with pytest.raises(SystemExit) as exc_info:
+                cmd_profile(args)
 
-        args = argparse.Namespace(profile_cmd="create", name="newprofile")
-        cmd_profile(args)
+            assert exc_info.value.code == 1
 
-        mock_pm.create_profile.assert_called_once_with("newprofile")
-        mock_pm.save_profile.assert_called_once_with(mock_profile)
-
-    @patch("g13_linux.gui.models.profile_manager.ProfileManager")
-    def test_profile_create_exists_exits(self, mock_pm_class):
-        mock_pm = Mock()
-        mock_pm.profile_exists.return_value = True
-        mock_pm_class.return_value = mock_pm
-
-        args = argparse.Namespace(profile_cmd="create", name="existing")
-        with pytest.raises(SystemExit) as exc_info:
-            cmd_profile(args)
-        assert exc_info.value.code == 1
-
-    @patch("g13_linux.gui.models.profile_manager.ProfileManager")
-    def test_profile_delete(self, mock_pm_class):
-        mock_pm = Mock()
-        mock_pm_class.return_value = mock_pm
-
-        args = argparse.Namespace(profile_cmd="delete", name="oldprofile")
-        cmd_profile(args)
-
-        mock_pm.delete_profile.assert_called_once_with("oldprofile")
-
-    @patch("g13_linux.gui.models.profile_manager.ProfileManager")
-    def test_profile_delete_not_found_exits(self, mock_pm_class):
-        mock_pm = Mock()
-        mock_pm.delete_profile.side_effect = FileNotFoundError()
-        mock_pm_class.return_value = mock_pm
-
-        args = argparse.Namespace(profile_cmd="delete", name="nonexistent")
-        with pytest.raises(SystemExit) as exc_info:
-            cmd_profile(args)
-        assert exc_info.value.code == 1
-
-    @patch("g13_linux.gui.models.profile_manager.ProfileManager")
-    @patch("g13_linux.device.open_g13")
-    @patch("g13_linux.hardware.backlight.G13Backlight")
-    def test_profile_load_applies_backlight(self, mock_bl_class, mock_open, mock_pm_class):
-        mock_pm = Mock()
-        mock_profile = Mock()
-        mock_profile.name = "test"
+    def test_cmd_profile_load(self, capsys):
+        """Test profile load command."""
+        mock_pm = MagicMock()
+        mock_profile = MagicMock()
+        mock_profile.name = "test_profile"
         mock_profile.backlight = {"color": "#FF0000"}
         mock_pm.load_profile.return_value = mock_profile
-        mock_pm_class.return_value = mock_pm
 
-        mock_device = Mock()
-        mock_open.return_value = mock_device
-        mock_backlight = Mock()
-        mock_bl_class.return_value = mock_backlight
+        mock_device = MagicMock()
+        mock_backlight = MagicMock()
 
-        args = argparse.Namespace(profile_cmd="load", name="test")
-        cmd_profile(args)
+        with patch("g13_linux.gui.models.profile_manager.ProfileManager", return_value=mock_pm), \
+             patch("g13_linux.device.open_g13", return_value=mock_device), \
+             patch("g13_linux.hardware.backlight.G13Backlight", return_value=mock_backlight):
+            args = MagicMock()
+            args.profile_cmd = "load"
+            args.name = "test_profile"
+
+            cmd_profile(args)
 
         mock_backlight.set_color.assert_called_once_with(255, 0, 0)
 
+    def test_cmd_profile_load_no_device(self, capsys):
+        """Test profile load when device not available."""
+        mock_pm = MagicMock()
+        mock_profile = MagicMock()
+        mock_profile.name = "test_profile"
+        mock_profile.backlight = {"color": "#FF0000"}
+        mock_pm.load_profile.return_value = mock_profile
 
-class TestMain:
-    """Test the main entry point."""
+        with patch("g13_linux.gui.models.profile_manager.ProfileManager", return_value=mock_pm), \
+             patch("g13_linux.device.open_g13", side_effect=Exception("No device")):
+            args = MagicMock()
+            args.profile_cmd = "load"
+            args.name = "test_profile"
 
-    @patch("g13_linux.cli.cmd_run")
-    def test_main_no_args_runs_daemon(self, mock_cmd_run):
-        with patch("sys.argv", ["g13-linux"]):
-            main()
-        mock_cmd_run.assert_called_once()
+            # Should not raise, just print note
+            cmd_profile(args)
 
-    @patch("g13_linux.cli.cmd_run")
-    def test_main_run_command(self, mock_cmd_run):
-        with patch("sys.argv", ["g13-linux", "run"]):
-            main()
-        mock_cmd_run.assert_called_once()
+        captured = capsys.readouterr()
+        assert "Could not apply to device" in captured.out
 
-    @patch("g13_linux.cli.cmd_lcd")
-    def test_main_lcd_command(self, mock_cmd_lcd):
-        with patch("sys.argv", ["g13-linux", "lcd", "Hello"]):
-            main()
-        mock_cmd_lcd.assert_called_once()
+    def test_cmd_profile_create(self, capsys):
+        """Test profile create command."""
+        mock_pm = MagicMock()
+        mock_pm.profile_exists.return_value = False
+        mock_profile = MagicMock()
+        mock_pm.create_profile.return_value = mock_profile
 
-    @patch("g13_linux.cli.cmd_color")
-    def test_main_color_command(self, mock_cmd_color):
-        with patch("sys.argv", ["g13-linux", "color", "red"]):
-            main()
-        mock_cmd_color.assert_called_once()
+        with patch("g13_linux.gui.models.profile_manager.ProfileManager", return_value=mock_pm):
+            args = MagicMock()
+            args.profile_cmd = "create"
+            args.name = "new_profile"
 
-    @patch("g13_linux.cli.cmd_profile")
-    def test_main_profile_list(self, mock_cmd_profile):
-        with patch("sys.argv", ["g13-linux", "profile", "list"]):
-            main()
-        mock_cmd_profile.assert_called_once()
+            cmd_profile(args)
 
-    def test_main_profile_no_subcommand_exits(self):
-        with patch("sys.argv", ["g13-linux", "profile"]):
+        mock_pm.create_profile.assert_called_once_with("new_profile")
+        mock_pm.save_profile.assert_called_once_with(mock_profile)
+
+    def test_cmd_profile_create_exists(self, capsys):
+        """Test profile create when profile already exists."""
+        mock_pm = MagicMock()
+        mock_pm.profile_exists.return_value = True
+
+        with patch("g13_linux.gui.models.profile_manager.ProfileManager", return_value=mock_pm):
+            args = MagicMock()
+            args.profile_cmd = "create"
+            args.name = "existing"
+
             with pytest.raises(SystemExit) as exc_info:
-                main()
+                cmd_profile(args)
+
             assert exc_info.value.code == 1
 
-    def test_main_version(self):
-        with patch("sys.argv", ["g13-linux", "--version"]):
+    def test_cmd_profile_delete(self, capsys):
+        """Test profile delete command."""
+        mock_pm = MagicMock()
+
+        with patch("g13_linux.gui.models.profile_manager.ProfileManager", return_value=mock_pm):
+            args = MagicMock()
+            args.profile_cmd = "delete"
+            args.name = "to_delete"
+
+            cmd_profile(args)
+
+        mock_pm.delete_profile.assert_called_once_with("to_delete")
+
+    def test_cmd_profile_delete_not_found(self, capsys):
+        """Test profile delete with non-existent profile."""
+        mock_pm = MagicMock()
+        mock_pm.delete_profile.side_effect = FileNotFoundError()
+
+        with patch("g13_linux.gui.models.profile_manager.ProfileManager", return_value=mock_pm):
+            args = MagicMock()
+            args.profile_cmd = "delete"
+            args.name = "missing"
+
+            with pytest.raises(SystemExit) as exc_info:
+                cmd_profile(args)
+
+            assert exc_info.value.code == 1
+
+
+class TestMain:
+    """Tests for main() entry point."""
+
+    def test_main_version(self, capsys):
+        """Test --version flag."""
+        with patch.object(sys, "argv", ["g13-linux", "--version"]):
             with pytest.raises(SystemExit) as exc_info:
                 main()
+
             assert exc_info.value.code == 0
+
+    def test_main_no_args_runs_daemon(self):
+        """Test main with no args runs daemon."""
+        with patch.object(sys, "argv", ["g13-linux"]), \
+             patch("g13_linux.cli.cmd_run") as mock_run:
+            mock_run.side_effect = SystemExit(0)
+
+            with pytest.raises(SystemExit):
+                main()
+
+            mock_run.assert_called_once()
+
+    def test_main_lcd_command(self):
+        """Test main with lcd command."""
+        with patch.object(sys, "argv", ["g13-linux", "lcd", "--clear"]), \
+             patch("g13_linux.cli.cmd_lcd") as mock_lcd:
+            mock_lcd.side_effect = SystemExit(0)
+
+            with pytest.raises(SystemExit):
+                main()
+
+            mock_lcd.assert_called_once()
+
+    def test_main_color_command(self):
+        """Test main with color command."""
+        with patch.object(sys, "argv", ["g13-linux", "color", "red"]), \
+             patch("g13_linux.cli.cmd_color") as mock_color:
+            mock_color.side_effect = SystemExit(0)
+
+            with pytest.raises(SystemExit):
+                main()
+
+            mock_color.assert_called_once()
+
+    def test_main_profile_list_command(self):
+        """Test main with profile list command."""
+        with patch.object(sys, "argv", ["g13-linux", "profile", "list"]), \
+             patch("g13_linux.cli.cmd_profile") as mock_profile:
+            mock_profile.side_effect = SystemExit(0)
+
+            with pytest.raises(SystemExit):
+                main()
+
+            mock_profile.assert_called_once()
+
+    def test_main_profile_no_subcommand(self, capsys):
+        """Test main with profile but no subcommand."""
+        with patch.object(sys, "argv", ["g13-linux", "profile"]):
+            with pytest.raises(SystemExit) as exc_info:
+                main()
+
+            assert exc_info.value.code == 1

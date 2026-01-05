@@ -357,3 +357,55 @@ class TestMapperEdgeCases:
             mapper.load_profile({"mappings": {}})
 
             assert mapper.button_map == {}
+
+
+class TestG13MapperMissingCoverage:
+    """Tests for edge cases to achieve 100% coverage."""
+
+    def test_load_profile_with_invalid_mapping_skipped(self):
+        """Test load_profile skips buttons with invalid mappings (line 37->35).
+
+        When _parse_mapping returns empty list for a mapping,
+        that button is not added to button_map.
+        """
+        with patch("g13_linux.mapper.UInput"):
+            from g13_linux.mapper import G13Mapper
+
+            mapper = G13Mapper()
+            # Mix of valid and invalid mappings
+            mapper.load_profile({
+                "mappings": {
+                    "G1": "KEY_1",  # Valid
+                    "G2": "KEY_INVALID_FAKE",  # Invalid - returns empty
+                    "G3": "KEY_2",  # Valid
+                }
+            })
+
+            # G1 and G3 should be in map, G2 should be skipped
+            assert "G1" in mapper.button_map
+            assert "G2" not in mapper.button_map
+            assert "G3" in mapper.button_map
+
+    def test_parse_combo_with_invalid_keys_skipped(self):
+        """Test combo with some invalid keys skips those keys (line 53->52).
+
+        When a key in a combo doesn't exist in evdev, it's skipped
+        but valid keys are still processed.
+        """
+        with patch("g13_linux.mapper.UInput"):
+            from g13_linux.mapper import G13Mapper
+
+            mapper = G13Mapper()
+            keycodes = mapper._parse_mapping({
+                "keys": [
+                    "KEY_LEFTCTRL",  # Valid
+                    "KEY_FAKE_INVALID",  # Invalid - skipped
+                    "KEY_A",  # Valid
+                ],
+                "label": "Test combo"
+            })
+
+            # Should have 2 keycodes (CTRL and A), not 3
+            assert len(keycodes) == 2
+            assert e.KEY_LEFTCTRL in keycodes
+            assert e.KEY_A in keycodes

@@ -871,3 +871,27 @@ class TestMacroEditorInsertDelayWithValue:
             widget._insert_delay()
 
             assert widget.save_btn.isEnabled() is True
+
+
+class TestMacroEditorMissingCoverage:
+    """Tests for edge cases to achieve 100% coverage."""
+
+    def test_on_macro_selected_non_macro_list_item(self, qapp, mock_dependencies):
+        """Test _on_macro_selected with non-MacroListItem (line 259->exit).
+
+        When current is a QListWidgetItem but not a MacroListItem,
+        the isinstance check fails and the branch is skipped.
+        """
+        from g13_linux.gui.views.macro_editor import MacroEditorWidget
+        from PyQt6.QtWidgets import QListWidgetItem
+
+        widget = MacroEditorWidget()
+
+        # Create a plain QListWidgetItem (not MacroListItem)
+        plain_item = QListWidgetItem("Not a macro")
+
+        # Call with non-MacroListItem - should not raise, just skip
+        widget._on_macro_selected(plain_item, None)
+
+        # Editor should not be enabled (no macro loaded)
+        assert widget._current_macro is None

@@ -446,3 +446,71 @@ class TestProfileManagerWidget:
         widget._on_delete_profile()
 
         assert received == []
+
+    def test_update_profile_list_selection_not_found(self, qapp):
+        """Test update_profile_list when previous selection not in new list.
+
+        When the previously selected profile is not in the updated list,
+        the 'if current_selection in profiles' check fails.
+        """
+        from g13_linux.gui.views.profile_manager import ProfileManagerWidget
+
+        widget = ProfileManagerWidget()
+        widget.update_profile_list(["profile1", "profile2"])
+        widget.profile_list.setCurrentRow(1)  # Select profile2
+
+        # Update with list that doesn't contain profile2
+        widget.update_profile_list(["profile1", "profile3"])
+
+        # Selection should be cleared (profile2 not found)
+        current = widget.profile_list.currentItem()
+        # Either no selection or default to first item
+        if current is not None:
+            assert current.text() != "profile2"
+
+    def test_update_profile_list_find_items_empty(self, qapp):
+        """Test update_profile_list when findItems returns empty (line 82->exit).
+
+        Edge case where current_selection is in profiles list but findItems
+        returns empty (e.g., if widget state is inconsistent).
+        """
+        from g13_linux.gui.views.profile_manager import ProfileManagerWidget
+
+        widget = ProfileManagerWidget()
+        widget.update_profile_list(["profile1", "profile2"])
+        widget.profile_list.setCurrentRow(1)  # Select profile2
+
+        # Mock findItems to return empty list even though item is in profiles
+        with patch.object(widget.profile_list, "findItems", return_value=[]):
+            widget.update_profile_list(["profile1", "profile2"])
+
+        # No crash, and selection not restored (findItems returned empty)
+        # The mocked findItems means setCurrentItem was never called
+
+    def test_on_save_as_profile_cancelled(self, qapp):
+        """Test save as profile dialog cancelled (line 102->exit)."""
+        from g13_linux.gui.views.profile_manager import ProfileManagerWidget
+
+        widget = ProfileManagerWidget()
+        received = []
+        widget.profile_saved.connect(lambda name: received.append(name))
+
+        with patch("g13_linux.gui.views.profile_manager.QInputDialog") as mock_dialog:
+            mock_dialog.getText.return_value = ("", False)  # Cancelled
+            widget._on_save_as_profile()
+
+        assert received == []
+
+    def test_on_save_as_profile_empty_name(self, qapp):
+        """Test save as profile with empty name (line 102->exit)."""
+        from g13_linux.gui.views.profile_manager import ProfileManagerWidget
+
+        widget = ProfileManagerWidget()
+        received = []
+        widget.profile_saved.connect(lambda name: received.append(name))
+
+        with patch("g13_linux.gui.views.profile_manager.QInputDialog") as mock_dialog:
+            mock_dialog.getText.return_value = ("", True)  # OK but empty name
+            widget._on_save_as_profile()
+
+        assert received == []

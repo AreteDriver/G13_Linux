@@ -976,3 +976,51 @@ class TestMacroPlayerStopRunning:
         mock_thread.request_stop.assert_called_once()
         mock_thread.wait.assert_called_once_with(1000)
         assert player.state == PlaybackState.IDLE
+
+
+class TestMacroPlayerMissingCoverage:
+    """Tests for edge cases to achieve 100% coverage."""
+
+    def test_toggle_pause_when_idle(self, qtbot):
+        """Test toggle_pause does nothing when state is IDLE (line 273->exit).
+
+        toggle_pause only acts on PLAYING or PAUSED states.
+        When IDLE, neither branch is taken.
+        """
+        player = MacroPlayer()
+        player._state = PlaybackState.IDLE
+
+        # Should not raise, just do nothing
+        player.toggle_pause()
+
+        # State remains IDLE
+        assert player._state == PlaybackState.IDLE
+
+    def test_toggle_pause_when_stopping(self, qtbot):
+        """Test toggle_pause does nothing when state is STOPPING (line 273->exit)."""
+        player = MacroPlayer()
+        player._state = PlaybackState.STOPPING
+
+        player.toggle_pause()
+
+        assert player._state == PlaybackState.STOPPING
+
+    def test_execute_step_unknown_type(self):
+        """Test _execute_step with unknown step type falls through (line 140->exit).
+
+        When step_type is not KEY_PRESS, KEY_RELEASE, G13_BUTTON, or DELAY,
+        the if-elif chain exits without doing anything.
+        """
+        macro = Macro()
+        thread = MacroPlayerThread(macro)
+        thread._uinput = MagicMock()
+        thread._ecodes = MagicMock()
+
+        # Create a step with a mocked unknown type
+        step = MacroStep(step_type=MacroStepType.KEY_PRESS, value="KEY_A")
+        # Patch step_type to an unknown value
+        step.step_type = MagicMock()
+        step.step_type.__eq__ = lambda self, other: False  # Never matches any type
+
+        # Should not raise, just fall through
+        thread._execute_step(step)

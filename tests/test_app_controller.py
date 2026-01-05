@@ -700,3 +700,245 @@ class TestApplicationControllerRawEvent:
         controller._on_raw_event(b"\x00" * 8)
 
         mock_dependencies["recorder"].on_g13_button_event.assert_called_with("G3", True)
+
+
+class TestApplicationControllerMissingCoverage:
+    """Tests for edge cases to achieve 100% coverage."""
+
+    def test_start_without_device_handle(self, mock_main_window, mock_dependencies):
+        """Test start() when device.handle is None (line 97->101)."""
+        mock_dependencies["device"].connect.return_value = True
+        mock_dependencies["device"].handle = None  # No handle
+        mock_dependencies["profile_mgr"].list_profiles.return_value = []
+
+        controller = ApplicationController(mock_main_window)
+        controller.start()
+
+        # Should not initialize hardware when no handle
+        mock_dependencies["hardware"].initialize.assert_not_called()
+
+    def test_on_raw_event_mr_button_released(self, mock_main_window, mock_dependencies):
+        """Test raw event handles MR button release (line 135)."""
+        mock_state = MagicMock()
+        mock_state.joystick_x = 128
+        mock_state.joystick_y = 128
+        mock_dependencies["decoder"].decode_report.return_value = mock_state
+        mock_dependencies["decoder"].get_button_changes.return_value = (set(), {"MR"})
+
+        controller = ApplicationController(mock_main_window)
+        controller._mr_button_held = True
+        controller._on_raw_event(b"\x00" * 8)
+
+        # MR release should clear the flag
+        assert controller._mr_button_held is False
+
+    def test_on_raw_event_released_buttons_when_recording(
+        self, mock_main_window, mock_dependencies
+    ):
+        """Test raw event forwards button releases to recorder (line 142)."""
+        mock_state = MagicMock()
+        mock_state.joystick_x = 128
+        mock_state.joystick_y = 128
+        mock_dependencies["decoder"].decode_report.return_value = mock_state
+        mock_dependencies["decoder"].get_button_changes.return_value = (set(), {"G5"})
+        mock_dependencies["recorder"].is_recording = True
+
+        controller = ApplicationController(mock_main_window)
+        controller._on_raw_event(b"\x00" * 8)
+
+        mock_dependencies["recorder"].on_g13_button_event.assert_called_with("G5", False)
+
+    def test_on_raw_event_released_buttons_highlights(
+        self, mock_main_window, mock_dependencies
+    ):
+        """Test raw event un-highlights released buttons (lines 154-155)."""
+        mock_state = MagicMock()
+        mock_state.joystick_x = 128
+        mock_state.joystick_y = 128
+        mock_dependencies["decoder"].decode_report.return_value = mock_state
+        mock_dependencies["decoder"].get_button_changes.return_value = (set(), {"G7", "G8"})
+
+        controller = ApplicationController(mock_main_window)
+        controller._on_raw_event(b"\x00" * 8)
+
+        mock_main_window.button_mapper.highlight_button.assert_any_call("G7", False)
+        mock_main_window.button_mapper.highlight_button.assert_any_call("G8", False)
+        mock_main_window.monitor_widget.on_button_event.assert_any_call("G7", False)
+        mock_main_window.monitor_widget.on_button_event.assert_any_call("G8", False)
+
+    def test_save_profile_exception(self, mock_main_window, mock_dependencies):
+        """Test save profile handles exception (lines 230-232)."""
+        mock_dependencies["profile_mgr"].profile_exists.return_value = False
+        mock_dependencies["profile_mgr"].create_profile.side_effect = Exception("Save failed")
+
+        with patch("g13_linux.gui.controllers.app_controller.QMessageBox"):
+            controller = ApplicationController(mock_main_window)
+            controller._save_profile("bad_profile")
+
+        mock_main_window.set_status.assert_called()
+
+    def test_delete_profile_exception(self, mock_main_window, mock_dependencies):
+        """Test delete profile handles exception (lines 250-251)."""
+        mock_dependencies["profile_mgr"].delete_profile.side_effect = Exception("Delete failed")
+
+        controller = ApplicationController(mock_main_window)
+        controller._delete_profile("locked_profile")
+
+        mock_main_window.set_status.assert_called()
+
+    def test_assign_key_to_button_no_key_selected(self, mock_main_window, mock_dependencies):
+        """Test assign key when dialog returns None key (line 259->exit)."""
+        with patch(
+            "g13_linux.gui.controllers.app_controller.KeySelectorDialog"
+        ) as mock_dialog:
+            mock_dialog_instance = MagicMock()
+            mock_dialog_instance.exec.return_value = True
+            mock_dialog_instance.selected_key = None  # No key selected
+            mock_dialog.return_value = mock_dialog_instance
+
+            controller = ApplicationController(mock_main_window)
+            controller._assign_key_to_button("G10")
+
+            # Should not update mappings when no key selected
+            assert "G10" not in controller.current_mappings
+            mock_main_window.button_mapper.set_button_mapping.assert_not_called()
+
+    def test_update_lcd_with_lcd_preview(self, mock_main_window, mock_dependencies):
+        """Test LCD update also updates preview (lines 270-274)."""
+        mock_lcd = MagicMock()
+        mock_lcd._framebuffer = b"\x00" * 860
+        mock_dependencies["hardware"].lcd = mock_lcd
+
+        controller = ApplicationController(mock_main_window)
+        controller._update_lcd("Test")
+
+        mock_main_window.button_mapper.update_lcd.assert_called_with(b"\x00" * 860)
+
+    def test_update_backlight_color_exception(self, mock_main_window, mock_dependencies):
+        """Test backlight color handles exception (lines 284-285)."""
+        mock_dependencies["hardware"].set_backlight_color.side_effect = Exception("Color error")
+
+        controller = ApplicationController(mock_main_window)
+        controller._update_backlight_color("#FF0000")
+
+        mock_main_window.set_status.assert_called()
+
+    def test_update_backlight_brightness_exception(self, mock_main_window, mock_dependencies):
+        """Test backlight brightness handles exception (lines 293-294)."""
+        mock_dependencies["hardware"].set_backlight_brightness.side_effect = Exception(
+            "Brightness error"
+        )
+
+        controller = ApplicationController(mock_main_window)
+        controller._update_backlight_brightness(50)
+
+        mock_main_window.set_status.assert_called()
+
+    def test_on_macro_recorded_no_macro_widget(self, mock_main_window, mock_dependencies):
+        """Test macro recorded when main_window lacks macro_widget (line 335->exit)."""
+        mock_macro = MagicMock()
+        mock_macro.step_count = 3
+
+        controller = ApplicationController(mock_main_window)
+
+        # After controller is created, replace main_window with one that lacks macro_widget
+        window_without_widget = MagicMock(spec=["set_status"])
+        controller.main_window = window_without_widget
+
+        controller._on_macro_recorded(mock_macro)
+
+        mock_dependencies["macro_mgr"].save_macro.assert_called_with(mock_macro)
+        # Should not crash when macro_widget is missing
+
+    def test_register_macro_hotkeys_no_hotkey(self, mock_main_window, mock_dependencies):
+        """Test registering macros without global_hotkey (line 362->359)."""
+        mock_macro = MagicMock()
+        mock_macro.global_hotkey = None  # No hotkey set
+        mock_macro.id = "macro-no-hotkey"
+
+        mock_dependencies["macro_mgr"].list_macros.return_value = ["macro-no-hotkey"]
+        mock_dependencies["macro_mgr"].load_macro.return_value = mock_macro
+
+        controller = ApplicationController(mock_main_window)
+        controller._register_all_macro_hotkeys()
+
+        # Should not register when no hotkey
+        mock_dependencies["hotkey"].register_hotkey.assert_not_called()
+
+    def test_register_macro_hotkeys_file_not_found(self, mock_main_window, mock_dependencies):
+        """Test registering macros handles FileNotFoundError (lines 364-365)."""
+        mock_dependencies["macro_mgr"].list_macros.return_value = ["missing-macro"]
+        mock_dependencies["macro_mgr"].load_macro.side_effect = FileNotFoundError()
+
+        controller = ApplicationController(mock_main_window)
+        # Should not raise
+        controller._register_all_macro_hotkeys()
+
+        mock_dependencies["hotkey"].clear_all.assert_called()
+
+    def test_on_hotkey_triggered_macro_not_found(self, mock_main_window, mock_dependencies):
+        """Test hotkey trigger handles missing macro (lines 374-375)."""
+        mock_dependencies["macro_mgr"].load_macro.side_effect = FileNotFoundError()
+
+        controller = ApplicationController(mock_main_window)
+        controller._on_hotkey_triggered("missing-macro")
+
+        mock_main_window.set_status.assert_called()
+
+    def test_on_macro_saved_no_hotkey(self, mock_main_window, mock_dependencies):
+        """Test macro saved without hotkey (line 384->exit)."""
+        mock_macro = MagicMock()
+        mock_macro.id = "macro-1"
+        mock_macro.global_hotkey = None  # No hotkey
+
+        controller = ApplicationController(mock_main_window)
+        controller._on_macro_saved(mock_macro)
+
+        mock_dependencies["hotkey"].unregister_macro.assert_called_with("macro-1")
+        mock_dependencies["hotkey"].register_hotkey.assert_not_called()
+
+    def test_on_macro_saved_register_fails(self, mock_main_window, mock_dependencies):
+        """Test macro saved when hotkey registration fails (line 385->exit)."""
+        mock_macro = MagicMock()
+        mock_macro.id = "macro-1"
+        mock_macro.global_hotkey = "ctrl+x"
+        mock_macro.name = "Failed Macro"
+        mock_dependencies["hotkey"].register_hotkey.return_value = False  # Registration fails
+
+        controller = ApplicationController(mock_main_window)
+        controller._on_macro_saved(mock_macro)
+
+        mock_dependencies["hotkey"].register_hotkey.assert_called_with("ctrl+x", "macro-1")
+        # Should not set status when registration fails
+
+    def test_shutdown_device_not_connected(self, mock_main_window, mock_dependencies):
+        """Test shutdown when device is not connected (line 403->exit)."""
+        mock_dependencies["device"].is_connected = False
+
+        controller = ApplicationController(mock_main_window)
+        controller.shutdown()
+
+        mock_dependencies["device"].disconnect.assert_not_called()
+
+    def test_on_device_disconnected_no_event_thread(
+        self, mock_main_window, mock_dependencies
+    ):
+        """Test device disconnection when event_thread is None (line 181->exit)."""
+        controller = ApplicationController(mock_main_window)
+        controller.event_thread = None  # No event thread
+
+        controller._on_device_disconnected()
+
+        # Should not crash when event_thread is None
+        mock_main_window.set_status.assert_called_with("G13 device disconnected")
+
+    def test_update_lcd_no_lcd_hardware(self, mock_main_window, mock_dependencies):
+        """Test LCD update when hardware.lcd is None (line 270->274)."""
+        mock_dependencies["hardware"].lcd = None
+
+        controller = ApplicationController(mock_main_window)
+        controller._update_lcd("Test")
+
+        mock_dependencies["hardware"].set_lcd_text.assert_called_with("Test")
+        # Should not update LCD preview when hardware.lcd is None
+        mock_main_window.button_mapper.update_lcd.assert_not_called()

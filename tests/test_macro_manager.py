@@ -309,3 +309,83 @@ class TestMacroManagerTimestamps:
         manager.save_macro(sample_macro)
 
         assert sample_macro.created_at == "2024-01-01T00:00:00Z"
+
+
+class TestMacroManagerMissingCoverage:
+    """Tests for edge cases to achieve 100% coverage."""
+
+    def test_save_sets_created_at_when_empty(self, manager, sample_macro):
+        """Test save_macro sets created_at when it's empty (line 71)."""
+        # Force created_at to be empty
+        sample_macro.created_at = ""
+
+        manager.save_macro(sample_macro)
+
+        # created_at should now be set to modified_at
+        assert sample_macro.created_at != ""
+        assert sample_macro.created_at == sample_macro.modified_at
+
+    def test_save_sets_created_at_when_none(self, manager, sample_macro):
+        """Test save_macro sets created_at when it's None (line 71)."""
+        # Force created_at to be None
+        sample_macro.created_at = None
+
+        manager.save_macro(sample_macro)
+
+        # created_at should now be set to modified_at
+        assert sample_macro.created_at is not None
+        assert sample_macro.created_at == sample_macro.modified_at
+
+    def test_get_macro_by_button_skips_corrupt(self, manager, temp_macros_dir, sample_macro):
+        """Test get_macro_by_button skips corrupt files (lines 149-150)."""
+        # Save a valid macro
+        sample_macro.assigned_button = "G5"
+        manager.save_macro(sample_macro)
+
+        # Create a corrupt macro file
+        corrupt_file = temp_macros_dir / "corrupt.json"
+        corrupt_file.write_text("not valid json {{{")
+
+        # Should find the valid macro, skipping the corrupt one
+        found = manager.get_macro_by_button("G5")
+
+        assert found is not None
+        assert found.id == sample_macro.id
+
+    def test_get_macro_by_button_continues_on_exception(self, manager, temp_macros_dir):
+        """Test get_macro_by_button continues after exception (lines 149-150)."""
+        # Create a corrupt macro file
+        corrupt_file = temp_macros_dir / "corrupt.json"
+        corrupt_file.write_text("not valid json")
+
+        # Should return None without raising (corrupt file skipped)
+        found = manager.get_macro_by_button("G5")
+
+        assert found is None
+
+    def test_get_macro_by_hotkey_skips_corrupt(self, manager, temp_macros_dir, sample_macro):
+        """Test get_macro_by_hotkey skips corrupt files (lines 160-161)."""
+        # Save a valid macro
+        sample_macro.global_hotkey = "ctrl+f1"
+        manager.save_macro(sample_macro)
+
+        # Create a corrupt macro file
+        corrupt_file = temp_macros_dir / "corrupt.json"
+        corrupt_file.write_text("not valid json {{{")
+
+        # Should find the valid macro, skipping the corrupt one
+        found = manager.get_macro_by_hotkey("ctrl+f1")
+
+        assert found is not None
+        assert found.id == sample_macro.id
+
+    def test_get_macro_by_hotkey_continues_on_exception(self, manager, temp_macros_dir):
+        """Test get_macro_by_hotkey continues after exception (lines 160-161)."""
+        # Create a corrupt macro file
+        corrupt_file = temp_macros_dir / "corrupt.json"
+        corrupt_file.write_text("not valid json")
+
+        # Should return None without raising (corrupt file skipped)
+        found = manager.get_macro_by_hotkey("ctrl+f1")
+
+        assert found is None

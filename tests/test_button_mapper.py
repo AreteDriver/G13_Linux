@@ -223,3 +223,179 @@ class TestButtonMapperButtons:
             # Each button should have non-zero dimensions
             assert btn.width() > 0
             assert btn.height() > 0
+
+
+class TestButtonMapperPainting:
+    """Tests for painting methods."""
+
+    def test_paint_event_with_no_background(self, qapp):
+        """Test paintEvent draws background when no image."""
+        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
+        from PyQt6.QtGui import QPaintEvent
+        from PyQt6.QtCore import QRect
+
+        widget = ButtonMapperWidget()
+        widget.background_image = None  # Ensure no background
+
+        event = QPaintEvent(QRect(0, 0, 100, 100))
+        widget.paintEvent(event)
+
+    def test_paint_event_with_background_image(self, qapp):
+        """Test paintEvent with background image."""
+        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
+        from PyQt6.QtGui import QPaintEvent, QPixmap
+        from PyQt6.QtCore import QRect
+
+        widget = ButtonMapperWidget()
+        # Create a small test pixmap
+        pixmap = QPixmap(100, 100)
+        pixmap.fill(Qt.GlobalColor.white)
+        widget.background_image = pixmap
+
+        event = QPaintEvent(QRect(0, 0, 100, 100))
+        widget.paintEvent(event)
+
+    def test_draw_device_background(self, qapp):
+        """Test _draw_device_background draws without crash."""
+        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
+        from PyQt6.QtGui import QPainter, QPixmap
+
+        widget = ButtonMapperWidget()
+
+        # Create a pixmap to paint on
+        pixmap = QPixmap(800, 700)
+        painter = QPainter(pixmap)
+        painter.begin(pixmap)
+
+        # Should not crash
+        widget._draw_device_background(painter)
+
+        painter.end()
+
+    def test_draw_lcd_area(self, qapp):
+        """Test _draw_lcd_area draws without crash."""
+        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
+        from PyQt6.QtGui import QPainter, QPixmap
+
+        widget = ButtonMapperWidget()
+
+        pixmap = QPixmap(800, 700)
+        painter = QPainter(pixmap)
+        painter.begin(pixmap)
+
+        widget._draw_lcd_area(painter)
+
+        painter.end()
+
+    def test_draw_joystick_indicator_at_center(self, qapp):
+        """Test joystick drawing at center position."""
+        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
+        from PyQt6.QtGui import QPainter, QPixmap
+
+        widget = ButtonMapperWidget()
+        widget._joystick_x = 128
+        widget._joystick_y = 128
+
+        pixmap = QPixmap(800, 700)
+        painter = QPainter(pixmap)
+        painter.begin(pixmap)
+
+        widget._draw_joystick_indicator(painter)
+
+        painter.end()
+
+    def test_draw_joystick_indicator_deflected(self, qapp):
+        """Test joystick drawing when deflected shows glow."""
+        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
+        from PyQt6.QtGui import QPainter, QPixmap
+
+        widget = ButtonMapperWidget()
+        # Deflect joystick significantly
+        widget._joystick_x = 255
+        widget._joystick_y = 255
+
+        pixmap = QPixmap(800, 700)
+        painter = QPainter(pixmap)
+        painter.begin(pixmap)
+
+        widget._draw_joystick_indicator(painter)
+
+        painter.end()
+
+    def test_draw_joystick_indicator_partially_deflected(self, qapp):
+        """Test joystick drawing with slight deflection."""
+        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
+        from PyQt6.QtGui import QPainter, QPixmap
+
+        widget = ButtonMapperWidget()
+        # Slight deflection
+        widget._joystick_x = 160
+        widget._joystick_y = 160
+
+        pixmap = QPixmap(800, 700)
+        painter = QPainter(pixmap)
+        painter.begin(pixmap)
+
+        widget._draw_joystick_indicator(painter)
+
+        painter.end()
+
+
+class TestButtonMapperBackgroundImage:
+    """Tests for background image loading."""
+
+    def test_load_background_image_no_files(self, qapp):
+        """Test _load_background_image returns None when no files exist."""
+        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
+
+        with patch("os.path.exists", return_value=False):
+            widget = ButtonMapperWidget()
+            # The method is called during __init__ so we check result
+            assert widget.background_image is None
+
+    def test_load_background_image_with_valid_file(self, qapp):
+        """Test _load_background_image loads valid image."""
+        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
+        from PyQt6.QtGui import QPixmap
+        import tempfile
+        import os
+
+        # Create a temporary image file
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            temp_path = f.name
+            pixmap = QPixmap(100, 100)
+            pixmap.fill(Qt.GlobalColor.red)
+            pixmap.save(temp_path, "PNG")
+
+        try:
+            with patch("os.path.exists", return_value=True):
+                with patch("os.path.join", return_value=temp_path):
+                    widget = ButtonMapperWidget()
+                    # Should have loaded an image
+                    assert widget.background_image is not None
+        finally:
+            os.unlink(temp_path)
+
+    def test_load_background_image_with_invalid_file(self, qapp):
+        """Test _load_background_image handles invalid image gracefully."""
+        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
+        import tempfile
+        import os
+
+        # Create a temporary file with invalid image data
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            temp_path = f.name
+            f.write(b"not an image")
+
+        try:
+            def exists_side_effect(path):
+                if path == temp_path:
+                    return True
+                return False
+
+            with patch("os.path.exists", side_effect=exists_side_effect):
+                with patch("os.path.join", return_value=temp_path):
+                    widget = ButtonMapperWidget()
+                    # Should have None since image is invalid
+        finally:
+            os.unlink(temp_path)

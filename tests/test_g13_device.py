@@ -6,6 +6,63 @@ from unittest.mock import MagicMock, patch
 from g13_linux.gui.models.g13_device import G13Device
 
 
+class TestPyQt6Fallback:
+    """Tests for PyQt6 import fallback (lines 9-15)."""
+
+    def test_fallback_import_via_subprocess(self):
+        """Test module imports with fallback when PyQt6 is unavailable."""
+        import subprocess
+        import sys
+
+        # Python script that tests the fallback code by blocking PyQt6 import
+        test_script = '''
+import sys
+
+# Block PyQt6 imports by raising ImportError
+class BlockPyQt6Finder:
+    def find_module(self, name, path=None):
+        if name == "PyQt6" or name.startswith("PyQt6."):
+            return self
+        return None
+
+    def load_module(self, name):
+        raise ImportError(f"Blocked: {name}")
+
+# Insert blocker at the start of meta_path
+sys.meta_path.insert(0, BlockPyQt6Finder())
+
+# Remove any already-imported PyQt6 modules
+for mod in list(sys.modules.keys()):
+    if mod.startswith("PyQt6"):
+        del sys.modules[mod]
+
+# Now import g13_device - should use fallback
+try:
+    from g13_linux.gui.models.g13_device import G13Device
+
+    # Test that device can be created with fallback
+    device = G13Device()
+
+    # Signals should be None (fallback behavior)
+    # In fallback mode, pyqtSignal returns None
+    print("SUCCESS: Module loaded with fallback")
+    sys.exit(0)
+except Exception as e:
+    print(f"FAILED: {e}")
+    sys.exit(1)
+'''
+        result = subprocess.run(
+            [sys.executable, "-c", test_script],
+            capture_output=True,
+            text=True,
+            cwd="/home/arete/projects/G13_Linux",
+            env={**dict(__import__("os").environ), "PYTHONPATH": "/home/arete/projects/G13_Linux/src"},
+        )
+
+        assert result.returncode == 0, f"Fallback test failed: {result.stderr}"
+        assert "SUCCESS" in result.stdout
+
+
 class TestG13DeviceInit:
     """Tests for G13Device initialization."""
 

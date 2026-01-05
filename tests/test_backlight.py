@@ -1,7 +1,8 @@
 """Tests for the backlight module."""
 
+from unittest.mock import Mock
+
 import pytest
-from unittest.mock import Mock, patch
 
 from g13_linux.hardware.backlight import G13Backlight
 

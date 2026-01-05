@@ -1,6 +1,7 @@
 """Tests for G13 button mapper."""
 
 from unittest.mock import MagicMock, patch
+
 from evdev import ecodes as e
 
 

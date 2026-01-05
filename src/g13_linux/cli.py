@@ -9,7 +9,6 @@ import sys
 
 from . import __version__
 
-
 # Color presets
 COLOR_PRESETS = {
     "red": (255, 0, 0),
@@ -110,7 +109,7 @@ def cmd_color(args):
                 raise ValueError()
         except ValueError:
             print(f"Error: Invalid color '{args.color}'", file=sys.stderr)
-            print(f"Use: preset name, hex (#FF0000), or RGB (255,0,0)", file=sys.stderr)
+            print("Use: preset name, hex (#FF0000), or RGB (255,0,0)", file=sys.stderr)
             print(f"Presets: {', '.join(COLOR_PRESETS.keys())}", file=sys.stderr)
             sys.exit(1)
 
@@ -238,7 +237,7 @@ def main():
     profile_parser = subparsers.add_parser("profile", help="Manage profiles")
     profile_subparsers = profile_parser.add_subparsers(dest="profile_cmd", help="Profile commands")
 
-    profile_list = profile_subparsers.add_parser("list", help="List profiles")
+    profile_subparsers.add_parser("list", help="List profiles")
     profile_show = profile_subparsers.add_parser("show", help="Show profile details")
     profile_show.add_argument("name", help="Profile name")
     profile_load = profile_subparsers.add_parser("load", help="Load a profile")

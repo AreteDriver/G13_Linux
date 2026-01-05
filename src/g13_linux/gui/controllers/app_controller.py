@@ -6,16 +6,17 @@ Main orchestrator connecting models to views.
 
 from PyQt6.QtCore import QObject, pyqtSlot
 from PyQt6.QtWidgets import QMessageBox
-from ..models.g13_device import G13Device
-from ..models.profile_manager import ProfileManager
+
 from ..models.event_decoder import EventDecoder
-from ..models.hardware_controller import HardwareController
-from ..models.macro_recorder import MacroRecorder, RecorderState
-from ..models.macro_player import MacroPlayer
-from ..models.macro_manager import MacroManager
+from ..models.g13_device import G13Device
 from ..models.global_hotkeys import GlobalHotkeyManager
-from .device_event_controller import DeviceEventThread
+from ..models.hardware_controller import HardwareController
+from ..models.macro_manager import MacroManager
+from ..models.macro_player import MacroPlayer
+from ..models.macro_recorder import MacroRecorder, RecorderState
+from ..models.profile_manager import ProfileManager
 from ..widgets.key_selector import KeySelectorDialog
+from .device_event_controller import DeviceEventThread
 
 
 class ApplicationController(QObject):

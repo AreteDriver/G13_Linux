@@ -1,7 +1,8 @@
 """Tests for MacroEditorWidget."""
 
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 from PyQt6.QtWidgets import QApplication
 
 
@@ -129,8 +130,8 @@ class TestMacroEditorWidget:
 
     def test_create_new_macro(self, qapp, mock_dependencies):
         """Test creating a new macro."""
-        from g13_linux.gui.views.macro_editor import MacroEditorWidget
         from g13_linux.gui.models.macro_types import Macro
+        from g13_linux.gui.views.macro_editor import MacroEditorWidget
 
         # Set up mock to return a new macro
         new_macro = MagicMock(spec=Macro)
@@ -264,8 +265,8 @@ class TestMacroEditorMacroSelection:
 
     def test_on_macro_selected_loads_macro(self, qapp, mock_dependencies):
         """Test selecting macro loads it into editor."""
-        from g13_linux.gui.views.macro_editor import MacroEditorWidget, MacroListItem
         from g13_linux.gui.models.macro_types import Macro
+        from g13_linux.gui.views.macro_editor import MacroEditorWidget, MacroListItem
 
         mock_macro = MagicMock(spec=Macro)
         mock_macro.name = "Test Macro"
@@ -306,8 +307,8 @@ class TestMacroEditorRefresh:
 
     def test_refresh_steps_list(self, qapp, mock_dependencies):
         """Test refreshing steps list."""
+        from g13_linux.gui.models.macro_types import Macro, MacroStepType
         from g13_linux.gui.views.macro_editor import MacroEditorWidget
-        from g13_linux.gui.models.macro_types import Macro, MacroStep, MacroStepType
 
         widget = MacroEditorWidget()
 
@@ -351,8 +352,8 @@ class TestMacroEditorSetEnabled:
 
     def test_set_editor_enabled_true(self, qapp, mock_dependencies):
         """Test enabling editor controls."""
-        from g13_linux.gui.views.macro_editor import MacroEditorWidget
         from g13_linux.gui.models.macro_types import Macro, MacroStepType
+        from g13_linux.gui.views.macro_editor import MacroEditorWidget
 
         widget = MacroEditorWidget()
         widget._current_macro = Macro(name="Test")
@@ -381,8 +382,8 @@ class TestMacroEditorApplyChanges:
 
     def test_apply_changes_updates_macro(self, qapp, mock_dependencies):
         """Test apply changes updates macro properties."""
-        from g13_linux.gui.views.macro_editor import MacroEditorWidget
         from g13_linux.gui.models.macro_types import Macro
+        from g13_linux.gui.views.macro_editor import MacroEditorWidget
 
         widget = MacroEditorWidget()
         widget._current_macro = Macro(name="Original")
@@ -445,8 +446,8 @@ class TestMacroEditorDeleteStep:
 
     def test_delete_step_removes_step(self, qapp, mock_dependencies):
         """Test delete step removes from list."""
-        from g13_linux.gui.views.macro_editor import MacroEditorWidget
         from g13_linux.gui.models.macro_types import Macro, MacroStepType
+        from g13_linux.gui.views.macro_editor import MacroEditorWidget
 
         widget = MacroEditorWidget()
         widget._current_macro = Macro(name="Test")
@@ -461,8 +462,8 @@ class TestMacroEditorDeleteStep:
 
     def test_delete_step_no_selection(self, qapp, mock_dependencies):
         """Test delete step with no selection."""
-        from g13_linux.gui.views.macro_editor import MacroEditorWidget
         from g13_linux.gui.models.macro_types import Macro, MacroStepType
+        from g13_linux.gui.views.macro_editor import MacroEditorWidget
 
         widget = MacroEditorWidget()
         widget._current_macro = Macro(name="Test")
@@ -477,13 +478,13 @@ class TestMacroEditorDeleteStep:
         assert widget._current_macro.step_count == 1
 
 
-class TestMacroEditorPlayback:
-    """Tests for playback controls."""
+class TestMacroEditorPlaybackActions:
+    """Tests for playback control actions."""
 
     def test_play_macro(self, qapp, mock_dependencies):
         """Test play macro calls player."""
-        from g13_linux.gui.views.macro_editor import MacroEditorWidget
         from g13_linux.gui.models.macro_types import Macro
+        from g13_linux.gui.views.macro_editor import MacroEditorWidget
 
         widget = MacroEditorWidget()
         widget._current_macro = Macro(name="Test")
@@ -519,8 +520,8 @@ class TestMacroEditorSaveMacro:
 
     def test_save_macro(self, qapp, mock_dependencies):
         """Test save macro calls manager."""
-        from g13_linux.gui.views.macro_editor import MacroEditorWidget
         from g13_linux.gui.models.macro_types import Macro
+        from g13_linux.gui.views.macro_editor import MacroEditorWidget
 
         widget = MacroEditorWidget()
         widget._current_macro = Macro(name="Test")
@@ -531,8 +532,8 @@ class TestMacroEditorSaveMacro:
 
     def test_save_macro_emits_signal(self, qapp, mock_dependencies, qtbot):
         """Test save macro emits signal."""
-        from g13_linux.gui.views.macro_editor import MacroEditorWidget
         from g13_linux.gui.models.macro_types import Macro
+        from g13_linux.gui.views.macro_editor import MacroEditorWidget
 
         widget = MacroEditorWidget()
         widget._current_macro = Macro(name="Test")
@@ -557,8 +558,8 @@ class TestMacroEditorPlaybackState:
 
     def test_on_playback_state_playing(self, qapp, mock_dependencies):
         """Test UI updates for PLAYING state."""
-        from g13_linux.gui.views.macro_editor import MacroEditorWidget
         from g13_linux.gui.models.macro_player import PlaybackState
+        from g13_linux.gui.views.macro_editor import MacroEditorWidget
 
         widget = MacroEditorWidget()
 
@@ -569,8 +570,8 @@ class TestMacroEditorPlaybackState:
 
     def test_on_playback_state_idle(self, qapp, mock_dependencies):
         """Test UI updates for IDLE state."""
-        from g13_linux.gui.views.macro_editor import MacroEditorWidget
         from g13_linux.gui.models.macro_player import PlaybackState
+        from g13_linux.gui.views.macro_editor import MacroEditorWidget
 
         widget = MacroEditorWidget()
 
@@ -612,8 +613,8 @@ class TestMacroEditorLoadToEditor:
 
     def test_load_macro_to_editor(self, qapp, mock_dependencies):
         """Test loading macro populates fields."""
-        from g13_linux.gui.views.macro_editor import MacroEditorWidget
         from g13_linux.gui.models.macro_types import Macro, PlaybackMode
+        from g13_linux.gui.views.macro_editor import MacroEditorWidget
 
         widget = MacroEditorWidget()
         macro = Macro(
@@ -648,8 +649,8 @@ class TestMacroEditorOnMacroRecorded:
 
     def test_on_macro_recorded_saves(self, qapp, mock_dependencies):
         """Test recorded macro is saved."""
-        from g13_linux.gui.views.macro_editor import MacroEditorWidget
         from g13_linux.gui.models.macro_types import Macro
+        from g13_linux.gui.views.macro_editor import MacroEditorWidget
 
         widget = MacroEditorWidget()
         macro = Macro(name="Recorded")
@@ -664,8 +665,8 @@ class TestMacroEditorOnMacroRecorded:
 
     def test_on_macro_recorded_cancelled(self, qapp, mock_dependencies):
         """Test cancelled recording doesn't save."""
-        from g13_linux.gui.views.macro_editor import MacroEditorWidget
         from g13_linux.gui.models.macro_types import Macro
+        from g13_linux.gui.views.macro_editor import MacroEditorWidget
 
         widget = MacroEditorWidget()
         macro = Macro(name="Recorded")
@@ -703,8 +704,8 @@ class TestMacroEditorCreateNewMacroSelection:
 
     def test_create_new_macro_selects_new_item(self, qapp, mock_dependencies):
         """Test creating macro selects it in list."""
-        from g13_linux.gui.views.macro_editor import MacroEditorWidget, MacroListItem
         from g13_linux.gui.models.macro_types import Macro
+        from g13_linux.gui.views.macro_editor import MacroEditorWidget, MacroListItem
 
         new_macro = Macro(name="New Test")
         mock_dependencies["manager"].create_macro.return_value = new_macro
@@ -734,9 +735,10 @@ class TestMacroEditorDeleteMacroWithConfirmation:
 
     def test_delete_macro_confirmed(self, qapp, mock_dependencies):
         """Test delete macro when user confirms."""
-        from g13_linux.gui.views.macro_editor import MacroEditorWidget
-        from g13_linux.gui.models.macro_types import Macro
         from PyQt6.QtWidgets import QMessageBox
+
+        from g13_linux.gui.models.macro_types import Macro
+        from g13_linux.gui.views.macro_editor import MacroEditorWidget
 
         widget = MacroEditorWidget()
         macro = Macro(name="ToDelete")
@@ -754,9 +756,10 @@ class TestMacroEditorDeleteMacroWithConfirmation:
 
     def test_delete_macro_declined(self, qapp, mock_dependencies):
         """Test delete macro when user declines."""
-        from g13_linux.gui.views.macro_editor import MacroEditorWidget
-        from g13_linux.gui.models.macro_types import Macro
         from PyQt6.QtWidgets import QMessageBox
+
+        from g13_linux.gui.models.macro_types import Macro
+        from g13_linux.gui.views.macro_editor import MacroEditorWidget
 
         widget = MacroEditorWidget()
         macro = Macro(name="ToKeep")
@@ -773,9 +776,10 @@ class TestMacroEditorDeleteMacroWithConfirmation:
 
     def test_delete_macro_handles_file_not_found(self, qapp, mock_dependencies):
         """Test delete macro handles FileNotFoundError silently."""
-        from g13_linux.gui.views.macro_editor import MacroEditorWidget
-        from g13_linux.gui.models.macro_types import Macro
         from PyQt6.QtWidgets import QMessageBox
+
+        from g13_linux.gui.models.macro_types import Macro
+        from g13_linux.gui.views.macro_editor import MacroEditorWidget
 
         mock_dependencies["manager"].delete_macro.side_effect = FileNotFoundError()
 
@@ -796,8 +800,8 @@ class TestMacroEditorInsertDelayWithValue:
 
     def test_insert_delay_adds_step(self, qapp, mock_dependencies):
         """Test insert delay adds step to macro."""
-        from g13_linux.gui.views.macro_editor import MacroEditorWidget
         from g13_linux.gui.models.macro_types import Macro, MacroStepType
+        from g13_linux.gui.views.macro_editor import MacroEditorWidget
 
         widget = MacroEditorWidget()
         macro = Macro(name="Test")
@@ -817,8 +821,8 @@ class TestMacroEditorInsertDelayWithValue:
 
     def test_insert_delay_at_selection(self, qapp, mock_dependencies):
         """Test insert delay inserts at selected position."""
-        from g13_linux.gui.views.macro_editor import MacroEditorWidget
         from g13_linux.gui.models.macro_types import Macro, MacroStepType
+        from g13_linux.gui.views.macro_editor import MacroEditorWidget
 
         widget = MacroEditorWidget()
         macro = Macro(name="Test")
@@ -840,8 +844,8 @@ class TestMacroEditorInsertDelayWithValue:
 
     def test_insert_delay_cancelled(self, qapp, mock_dependencies):
         """Test insert delay cancelled doesn't add step."""
-        from g13_linux.gui.views.macro_editor import MacroEditorWidget
         from g13_linux.gui.models.macro_types import Macro, MacroStepType
+        from g13_linux.gui.views.macro_editor import MacroEditorWidget
 
         widget = MacroEditorWidget()
         macro = Macro(name="Test")
@@ -857,8 +861,8 @@ class TestMacroEditorInsertDelayWithValue:
 
     def test_insert_delay_enables_save(self, qapp, mock_dependencies):
         """Test insert delay enables save button."""
-        from g13_linux.gui.views.macro_editor import MacroEditorWidget
         from g13_linux.gui.models.macro_types import Macro
+        from g13_linux.gui.views.macro_editor import MacroEditorWidget
 
         widget = MacroEditorWidget()
         macro = Macro(name="Test")
@@ -882,8 +886,9 @@ class TestMacroEditorMissingCoverage:
         When current is a QListWidgetItem but not a MacroListItem,
         the isinstance check fails and the branch is skipped.
         """
-        from g13_linux.gui.views.macro_editor import MacroEditorWidget
         from PyQt6.QtWidgets import QListWidgetItem
+
+        from g13_linux.gui.views.macro_editor import MacroEditorWidget
 
         widget = MacroEditorWidget()
 

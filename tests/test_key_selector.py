@@ -58,7 +58,7 @@ class TestKeySelectorDialog:
 
     def test_common_keys_tab_has_keys(self, dialog):
         """Test common keys tab has expected keys."""
-        from PyQt6.QtWidgets import QTabWidget, QListWidget
+        from PyQt6.QtWidgets import QListWidget, QTabWidget
 
         tabs = dialog.findChild(QTabWidget)
         common_tab = tabs.widget(0)
@@ -72,7 +72,7 @@ class TestKeySelectorDialog:
 
     def test_function_keys_tab_has_f_keys(self, dialog):
         """Test function keys tab has F1-F24."""
-        from PyQt6.QtWidgets import QTabWidget, QListWidget
+        from PyQt6.QtWidgets import QListWidget, QTabWidget
 
         tabs = dialog.findChild(QTabWidget)
         fn_tab = tabs.widget(1)
@@ -86,7 +86,7 @@ class TestKeySelectorDialog:
 
     def test_all_keys_tab_has_many_keys(self, dialog):
         """Test all keys tab has many keys from evdev."""
-        from PyQt6.QtWidgets import QTabWidget, QListWidget
+        from PyQt6.QtWidgets import QListWidget, QTabWidget
 
         tabs = dialog.findChild(QTabWidget)
         all_tab = tabs.widget(2)
@@ -121,7 +121,7 @@ class TestKeySelectorDialog:
 
     def test_select_key_from_list(self, dialog, qtbot):
         """Test selecting a key from list."""
-        from PyQt6.QtWidgets import QTabWidget, QListWidget
+        from PyQt6.QtWidgets import QListWidget, QTabWidget
 
         tabs = dialog.findChild(QTabWidget)
         common_tab = tabs.widget(0)
@@ -153,7 +153,7 @@ class TestKeySelectorDialog:
 
     def test_search_filters_list(self, dialog, qtbot):
         """Test search box filters key list."""
-        from PyQt6.QtWidgets import QTabWidget, QListWidget, QLineEdit
+        from PyQt6.QtWidgets import QLineEdit, QListWidget, QTabWidget
 
         tabs = dialog.findChild(QTabWidget)
         common_tab = tabs.widget(0)

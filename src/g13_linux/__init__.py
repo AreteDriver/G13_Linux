@@ -23,7 +23,7 @@ __version__ = "1.3.0"
 __author__ = "AreteDriver"
 __license__ = "MIT"
 
-from .device import open_g13, read_event, G13_VENDOR_ID, G13_PRODUCT_ID
+from .device import G13_PRODUCT_ID, G13_VENDOR_ID, open_g13, read_event
 from .mapper import G13Mapper
 
 __all__ = [

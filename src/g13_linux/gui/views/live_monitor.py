@@ -4,16 +4,16 @@ Live Monitor Widget
 Real-time event monitoring and visualization.
 """
 
-from PyQt6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QTextEdit,
-    QLabel,
-    QCheckBox,
-    QPushButton,
-    QHBoxLayout,
-)
 from PyQt6.QtCore import pyqtSlot
+from PyQt6.QtWidgets import (
+    QCheckBox,
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
 
 
 class LiveMonitorWidget(QWidget):

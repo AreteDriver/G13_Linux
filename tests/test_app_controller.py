@@ -1,7 +1,8 @@
 """Tests for ApplicationController."""
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, patch, PropertyMock
 
 from g13_linux.gui.controllers.app_controller import ApplicationController
 from g13_linux.gui.models.macro_recorder import RecorderState
@@ -111,7 +112,7 @@ class TestApplicationControllerInit:
 
     def test_init_with_libusb(self, mock_main_window, mock_dependencies):
         """Test init with libusb flag."""
-        controller = ApplicationController(mock_main_window, use_libusb=True)
+        ApplicationController(mock_main_window, use_libusb=True)
 
         mock_dependencies["device_cls"].assert_called_once_with(use_libusb=True)
 

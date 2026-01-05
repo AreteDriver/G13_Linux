@@ -1,8 +1,10 @@
 """Tests for MacroPlayer and MacroPlayerThread."""
 
 import time
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
+
 from g13_linux.gui.models.macro_player import (
     MacroPlayer,
     MacroPlayerThread,

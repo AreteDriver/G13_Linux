@@ -1,7 +1,8 @@
 """Tests for MacroRecorder."""
 
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 from g13_linux.gui.models.macro_recorder import MacroRecorder, RecorderState
 from g13_linux.gui.models.macro_types import InputSource, MacroStepType
@@ -512,8 +513,6 @@ class TestMacroRecorderSystemListener:
                 wraps=recorder._start_system_listener,
             ):
                 # Force ImportError
-                original = recorder._start_system_listener
-
                 def mock_start():
                     try:
                         raise ImportError("No pynput")

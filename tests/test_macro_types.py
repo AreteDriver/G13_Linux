@@ -1,12 +1,11 @@
 """Tests for macro_types module."""
 
-import pytest
 from g13_linux.gui.models.macro_types import (
+    InputSource,
     Macro,
     MacroStep,
     MacroStepType,
     PlaybackMode,
-    InputSource,
 )
 
 

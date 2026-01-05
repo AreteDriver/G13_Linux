@@ -4,17 +4,18 @@ Hardware Control Widget
 LCD and backlight control UI.
 """
 
+from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
     QGroupBox,
+    QHBoxLayout,
     QLabel,
-    QTextEdit,
     QPushButton,
     QSlider,
-    QHBoxLayout,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
 )
-from PyQt6.QtCore import Qt, pyqtSignal
+
 from ..widgets.color_picker import ColorPickerWidget
 
 

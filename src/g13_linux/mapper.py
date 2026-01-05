@@ -1,5 +1,7 @@
-from evdev import UInput, ecodes as e
 from typing import Union
+
+from evdev import UInput
+from evdev import ecodes as e
 
 from g13_linux.gui.models.event_decoder import EventDecoder
 

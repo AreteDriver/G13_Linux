@@ -1,9 +1,10 @@
 """Tests for ButtonMapperWidget."""
 
-import pytest
 from unittest.mock import MagicMock, patch
-from PyQt6.QtWidgets import QApplication
+
+import pytest
 from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QApplication
 
 
 @pytest.fixture(scope="module")
@@ -175,9 +176,10 @@ class TestButtonMapperWidget:
 
     def test_paint_event_no_crash(self, qapp):
         """Test paintEvent doesn't crash."""
-        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
-        from PyQt6.QtGui import QPaintEvent
         from PyQt6.QtCore import QRect
+        from PyQt6.QtGui import QPaintEvent
+
+        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
 
         widget = ButtonMapperWidget()
 
@@ -204,8 +206,8 @@ class TestButtonMapperButtons:
 
     def test_buttons_have_correct_ids(self, qapp):
         """Test buttons are created with expected IDs."""
-        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
         from g13_linux.gui.resources.g13_layout import G13_BUTTON_POSITIONS
+        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
 
         widget = ButtonMapperWidget()
 
@@ -230,9 +232,10 @@ class TestButtonMapperPainting:
 
     def test_paint_event_with_no_background(self, qapp):
         """Test paintEvent draws background when no image."""
-        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
-        from PyQt6.QtGui import QPaintEvent
         from PyQt6.QtCore import QRect
+        from PyQt6.QtGui import QPaintEvent
+
+        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
 
         widget = ButtonMapperWidget()
         widget.background_image = None  # Ensure no background
@@ -242,9 +245,10 @@ class TestButtonMapperPainting:
 
     def test_paint_event_with_background_image(self, qapp):
         """Test paintEvent with background image."""
-        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
-        from PyQt6.QtGui import QPaintEvent, QPixmap
         from PyQt6.QtCore import QRect
+        from PyQt6.QtGui import QPaintEvent, QPixmap
+
+        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
 
         widget = ButtonMapperWidget()
         # Create a small test pixmap
@@ -257,8 +261,9 @@ class TestButtonMapperPainting:
 
     def test_draw_device_background(self, qapp):
         """Test _draw_device_background draws without crash."""
-        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
         from PyQt6.QtGui import QPainter, QPixmap
+
+        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
 
         widget = ButtonMapperWidget()
 
@@ -274,8 +279,9 @@ class TestButtonMapperPainting:
 
     def test_draw_lcd_area(self, qapp):
         """Test _draw_lcd_area draws without crash."""
-        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
         from PyQt6.QtGui import QPainter, QPixmap
+
+        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
 
         widget = ButtonMapperWidget()
 
@@ -289,8 +295,9 @@ class TestButtonMapperPainting:
 
     def test_draw_joystick_indicator_at_center(self, qapp):
         """Test joystick drawing at center position."""
-        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
         from PyQt6.QtGui import QPainter, QPixmap
+
+        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
 
         widget = ButtonMapperWidget()
         widget._joystick_x = 128
@@ -306,8 +313,9 @@ class TestButtonMapperPainting:
 
     def test_draw_joystick_indicator_deflected(self, qapp):
         """Test joystick drawing when deflected shows glow."""
-        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
         from PyQt6.QtGui import QPainter, QPixmap
+
+        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
 
         widget = ButtonMapperWidget()
         # Deflect joystick significantly
@@ -324,8 +332,9 @@ class TestButtonMapperPainting:
 
     def test_draw_joystick_indicator_partially_deflected(self, qapp):
         """Test joystick drawing with slight deflection."""
-        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
         from PyQt6.QtGui import QPainter, QPixmap
+
+        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
 
         widget = ButtonMapperWidget()
         # Slight deflection
@@ -355,10 +364,12 @@ class TestButtonMapperBackgroundImage:
 
     def test_load_background_image_with_valid_file(self, qapp):
         """Test _load_background_image loads valid image."""
-        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
-        from PyQt6.QtGui import QPixmap
-        import tempfile
         import os
+        import tempfile
+
+        from PyQt6.QtGui import QPixmap
+
+        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
 
         # Create a temporary image file
         with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
@@ -378,9 +389,10 @@ class TestButtonMapperBackgroundImage:
 
     def test_load_background_image_with_invalid_file(self, qapp):
         """Test _load_background_image handles invalid image gracefully."""
-        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
-        import tempfile
         import os
+        import tempfile
+
+        from g13_linux.gui.views.button_mapper import ButtonMapperWidget
 
         # Create a temporary file with invalid image data
         with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
@@ -395,7 +407,7 @@ class TestButtonMapperBackgroundImage:
 
             with patch("os.path.exists", side_effect=exists_side_effect):
                 with patch("os.path.join", return_value=temp_path):
-                    widget = ButtonMapperWidget()
+                    ButtonMapperWidget()
                     # Should have None since image is invalid
         finally:
             os.unlink(temp_path)

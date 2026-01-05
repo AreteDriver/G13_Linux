@@ -1,8 +1,8 @@
 """Tests for GUI view widgets."""
 
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import MagicMock, patch
-from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication
 
 
@@ -395,8 +395,9 @@ class TestProfileManagerWidget:
 
     def test_on_delete_profile(self, qapp):
         """Test delete profile emits signal on confirm."""
-        from g13_linux.gui.views.profile_manager import ProfileManagerWidget
         from PyQt6.QtWidgets import QMessageBox
+
+        from g13_linux.gui.views.profile_manager import ProfileManagerWidget
 
         widget = ProfileManagerWidget()
         widget.update_profile_list(["to_delete"])
@@ -415,8 +416,9 @@ class TestProfileManagerWidget:
 
     def test_on_delete_profile_cancelled(self, qapp):
         """Test delete profile cancelled."""
-        from g13_linux.gui.views.profile_manager import ProfileManagerWidget
         from PyQt6.QtWidgets import QMessageBox
+
+        from g13_linux.gui.views.profile_manager import ProfileManagerWidget
 
         widget = ProfileManagerWidget()
         widget.update_profile_list(["to_delete"])

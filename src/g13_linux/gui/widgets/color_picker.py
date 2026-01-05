@@ -4,9 +4,9 @@ Color Picker Widget
 RGB color picker for backlight control.
 """
 
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QPushButton, QLabel, QColorDialog
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtGui import QColor
+from PyQt6.QtWidgets import QColorDialog, QHBoxLayout, QLabel, QPushButton, QWidget
 
 
 class ColorPickerWidget(QWidget):

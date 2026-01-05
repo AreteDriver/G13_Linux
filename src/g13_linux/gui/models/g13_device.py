@@ -6,7 +6,7 @@ Thread-safe Qt wrapper around the G13 USB device for GUI integration.
 
 try:
     from PyQt6.QtCore import QObject, pyqtSignal
-except ImportError:
+except ImportError:  # pragma: no cover
     # Fallback for development/testing without PyQt6
     class QObject:
         pass

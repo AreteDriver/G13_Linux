@@ -1,15 +1,16 @@
 """Tests for CLI commands."""
 
-import pytest
 import sys
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from g13_linux.cli import (
     COLOR_PRESETS,
-    cmd_run,
-    cmd_lcd,
     cmd_color,
+    cmd_lcd,
     cmd_profile,
+    cmd_run,
     main,
 )
 

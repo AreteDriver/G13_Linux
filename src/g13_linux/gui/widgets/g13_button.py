@@ -5,8 +5,8 @@ Custom QPushButton representing a single G13 button.
 """
 
 try:
-    from PyQt6.QtWidgets import QPushButton
     from PyQt6.QtCore import Qt, pyqtSignal
+    from PyQt6.QtWidgets import QPushButton
 except ImportError:  # pragma: no cover
     # Stub for development without PyQt6
     class QPushButton:  # type: ignore[no-redef]

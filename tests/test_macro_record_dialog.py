@@ -1,8 +1,8 @@
 """Tests for MacroRecordDialog."""
 
-import pytest
 from unittest.mock import MagicMock, patch
-from PyQt6.QtCore import Qt
+
+import pytest
 
 
 class TestMacroRecordDialogInit:
@@ -422,7 +422,7 @@ class TestMacroRecordDialogComplete:
 
     def test_recording_complete_updates_stats(self, dialog):
         """Test recording complete updates stats."""
-        from g13_linux.gui.models.macro_types import Macro, MacroStep, MacroStepType
+        from g13_linux.gui.models.macro_types import Macro, MacroStepType
 
         macro = Macro(name="Test")
         macro.add_step(MacroStepType.KEY_PRESS, "KEY_A", True, 0)

@@ -1,17 +1,18 @@
 """Tests for the macro recording and playback system."""
 
 import tempfile
+
 import pytest
 
+from g13_linux.gui.models.global_hotkeys import GlobalHotkeyManager
+from g13_linux.gui.models.macro_manager import MacroManager
+from g13_linux.gui.models.macro_recorder import MacroRecorder, RecorderState
 from g13_linux.gui.models.macro_types import (
     Macro,
     MacroStep,
     MacroStepType,
     PlaybackMode,
 )
-from g13_linux.gui.models.macro_manager import MacroManager
-from g13_linux.gui.models.macro_recorder import MacroRecorder, RecorderState
-from g13_linux.gui.models.global_hotkeys import GlobalHotkeyManager
 
 
 class TestMacroStep:
@@ -468,8 +469,8 @@ class TestMacroRecorderSystemListener:
 
     def test_on_press_char_key(self):
         """Test on_press callback with character key."""
+
         from g13_linux.gui.models.macro_recorder import MacroRecorder
-        from unittest.mock import MagicMock
 
         recorder = MacroRecorder()
         recorder._start_system_listener = lambda: None
@@ -500,8 +501,9 @@ class TestMacroRecorderSystemListener:
 
     def test_pynput_import_error(self):
         """Test system listener handles pynput import error."""
-        from g13_linux.gui.models.macro_recorder import MacroRecorder
         from unittest.mock import patch
+
+        from g13_linux.gui.models.macro_recorder import MacroRecorder
 
         recorder = MacroRecorder()
         errors = []
@@ -531,8 +533,9 @@ class TestMacroRecorderStopListener:
 
     def test_stop_listener_with_active_listener(self):
         """Test stopping with active listener."""
-        from g13_linux.gui.models.macro_recorder import MacroRecorder
         from unittest.mock import MagicMock
+
+        from g13_linux.gui.models.macro_recorder import MacroRecorder
 
         recorder = MacroRecorder()
         mock_listener = MagicMock()

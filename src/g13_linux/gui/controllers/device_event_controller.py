@@ -5,7 +5,8 @@ Background thread for reading G13 USB events.
 """
 
 from PyQt6.QtCore import QThread, pyqtSignal
-from ...device import read_event, LibUSBDevice
+
+from ...device import LibUSBDevice, read_event
 
 
 class DeviceEventThread(QThread):

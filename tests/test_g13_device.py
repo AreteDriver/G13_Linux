@@ -1,6 +1,5 @@
 """Tests for G13Device wrapper."""
 
-import pytest
 from unittest.mock import MagicMock, patch
 
 from g13_linux.gui.models.g13_device import G13Device

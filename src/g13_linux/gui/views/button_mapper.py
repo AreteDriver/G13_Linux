@@ -4,19 +4,21 @@ Button Mapper Widget
 Visual G13 keyboard layout with clickable buttons.
 """
 
-from PyQt6.QtWidgets import QWidget
+import os
+
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QPainter, QColor, QPen, QFont, QPixmap
-from ..widgets.g13_button import G13Button
-from ..widgets.lcd_preview import LCDPreviewEmbedded
+from PyQt6.QtGui import QColor, QFont, QPainter, QPen, QPixmap
+from PyQt6.QtWidgets import QWidget
+
 from ..resources.g13_layout import (
     G13_BUTTON_POSITIONS,
-    LCD_AREA,
     JOYSTICK_AREA,
-    KEYBOARD_WIDTH,
     KEYBOARD_HEIGHT,
+    KEYBOARD_WIDTH,
+    LCD_AREA,
 )
-import os
+from ..widgets.g13_button import G13Button
+from ..widgets.lcd_preview import LCDPreviewEmbedded
 
 
 class ButtonMapperWidget(QWidget):

@@ -4,8 +4,8 @@ Hardware Controller
 Unified facade for controlling G13 hardware (LCD and backlight).
 """
 
-from ...hardware.lcd import G13LCD
 from ...hardware.backlight import G13Backlight
+from ...hardware.lcd import G13LCD
 
 
 class HardwareController:

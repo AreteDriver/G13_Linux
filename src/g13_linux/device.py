@@ -1,6 +1,6 @@
-import os
-import glob
 import fcntl
+import glob
+import os
 
 G13_VENDOR_ID = 0x046D
 G13_PRODUCT_ID = 0xC21C

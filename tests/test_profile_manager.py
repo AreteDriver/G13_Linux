@@ -1,9 +1,11 @@
 """Tests for G13 profile manager."""
 
-import pytest
 import tempfile
 from pathlib import Path
-from g13_linux.gui.models.profile_manager import ProfileManager, ProfileData
+
+import pytest
+
+from g13_linux.gui.models.profile_manager import ProfileData, ProfileManager
 
 
 class TestProfileData:

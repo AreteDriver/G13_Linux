@@ -1,6 +1,5 @@
 """Tests for g13_linux.device module."""
 
-import os
 from unittest.mock import MagicMock, patch
 
 import pytest

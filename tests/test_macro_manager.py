@@ -1,9 +1,10 @@
 """Tests for MacroManager."""
 
 import json
-import pytest
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
+
+import pytest
 
 from g13_linux.gui.models.macro_manager import MacroManager
 from g13_linux.gui.models.macro_types import Macro, MacroStep, MacroStepType
@@ -54,7 +55,7 @@ class TestMacroManagerInit:
         macros_dir = tmp_path / "new_macros"
         assert not macros_dir.exists()
 
-        manager = MacroManager(macros_dir=str(macros_dir))
+        MacroManager(macros_dir=str(macros_dir))
 
         assert macros_dir.exists()
 
@@ -282,8 +283,6 @@ class TestMacroManagerTimestamps:
     def test_save_sets_modified_at(self, manager, sample_macro):
         """Test save sets modified_at."""
         # Macro __post_init__ sets created_at, but modified_at starts empty
-        original_modified = sample_macro.modified_at
-
         manager.save_macro(sample_macro)
 
         # modified_at should now be set to a timestamp
@@ -293,7 +292,6 @@ class TestMacroManagerTimestamps:
     def test_save_updates_modified_at(self, manager, sample_macro):
         """Test save updates modified_at on each save."""
         manager.save_macro(sample_macro)
-        first_modified = sample_macro.modified_at
 
         # Modify and save again
         sample_macro.name = "Updated Name"

@@ -4,18 +4,18 @@ Key Selector Dialog
 Dialog for selecting keyboard key mappings.
 """
 
+from evdev import ecodes
 from PyQt6.QtWidgets import (
     QDialog,
-    QVBoxLayout,
     QHBoxLayout,
-    QListWidget,
-    QLineEdit,
-    QPushButton,
     QLabel,
+    QLineEdit,
+    QListWidget,
+    QPushButton,
     QTabWidget,
+    QVBoxLayout,
     QWidget,
 )
-from evdev import ecodes
 
 
 class KeySelectorDialog(QDialog):

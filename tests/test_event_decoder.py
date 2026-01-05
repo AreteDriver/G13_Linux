@@ -1,6 +1,7 @@
 """Tests for the EventDecoder module."""
 
 import pytest
+
 from g13_linux.gui.models.event_decoder import (
     EventDecoder,
     G13ButtonState,

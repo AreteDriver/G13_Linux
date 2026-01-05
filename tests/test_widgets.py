@@ -2,7 +2,6 @@
 
 import pytest
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QColor
 
 
 class TestColorPickerWidget:
@@ -55,10 +54,10 @@ class TestColorPickerWidget:
         from PyQt6.QtWidgets import QPushButton
         buttons = widget.findChildren(QPushButton)
         red_btn = next(b for b in buttons if b.text() == "Red")
-        
+
         with qtbot.waitSignal(widget.color_changed):
             qtbot.mouseClick(red_btn, Qt.MouseButton.LeftButton)
-        
+
         assert widget.current_color.name() == "#ff0000"
 
     def test_preset_cyan_button(self, widget, qtbot):
@@ -74,7 +73,7 @@ class TestColorPickerWidget:
 
     def test_color_dialog_valid(self, widget, qtbot):
         """Test color dialog with valid color selection."""
-        from unittest.mock import patch, MagicMock
+        from unittest.mock import MagicMock, patch
 
         mock_color = MagicMock()
         mock_color.isValid.return_value = True
@@ -88,7 +87,7 @@ class TestColorPickerWidget:
 
     def test_color_dialog_cancelled(self, widget, qtbot):
         """Test color dialog when cancelled (invalid color)."""
-        from unittest.mock import patch, MagicMock
+        from unittest.mock import MagicMock, patch
 
         mock_color = MagicMock()
         mock_color.isValid.return_value = False
@@ -155,7 +154,6 @@ class TestG13Button:
 
     def test_clicked_signal(self, button, qtbot):
         """Test button emits clicked signal."""
-        from g13_linux.gui.widgets.g13_button import G13Button
 
         with qtbot.waitSignal(button.clicked, timeout=1000):
             qtbot.mouseClick(button, Qt.MouseButton.LeftButton)
@@ -240,7 +238,7 @@ class TestLCDPreviewWidget:
 
     def test_init_dimensions(self, widget):
         """Test widget initializes with correct dimensions."""
-        from g13_linux.gui.widgets.lcd_preview import LCD_WIDTH, LCD_HEIGHT
+        from g13_linux.gui.widgets.lcd_preview import LCD_HEIGHT, LCD_WIDTH
         assert LCD_WIDTH == 160
         assert LCD_HEIGHT == 43
 
@@ -325,8 +323,8 @@ class TestLCDPreviewWidget:
 
     def test_paint_event_no_crash(self, widget, qtbot):
         """Test paintEvent doesn't crash."""
-        from PyQt6.QtGui import QPaintEvent
         from PyQt6.QtCore import QRect
+        from PyQt6.QtGui import QPaintEvent
 
         widget.set_framebuffer(bytes([0xAA] * 960))
         event = QPaintEvent(QRect(0, 0, 100, 100))
@@ -336,8 +334,8 @@ class TestLCDPreviewWidget:
     def test_paint_event_with_scale_1(self, widget, qtbot):
         """Test paintEvent with scale=1."""
         widget.set_scale(1)
-        from PyQt6.QtGui import QPaintEvent
         from PyQt6.QtCore import QRect
+        from PyQt6.QtGui import QPaintEvent
 
         event = QPaintEvent(QRect(0, 0, 200, 100))
         widget.paintEvent(event)
@@ -365,8 +363,8 @@ class TestLCDPreviewEmbedded:
 
     def test_paint_event_no_crash(self, widget, qtbot):
         """Test embedded paintEvent doesn't crash."""
-        from PyQt6.QtGui import QPaintEvent
         from PyQt6.QtCore import QRect
+        from PyQt6.QtGui import QPaintEvent
 
         widget.resize(320, 86)
         widget.set_framebuffer(bytes([0x55] * 960))

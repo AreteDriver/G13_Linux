@@ -4,17 +4,17 @@ Profile Manager Widget
 UI for managing G13 button configuration profiles.
 """
 
+from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
     QHBoxLayout,
-    QListWidget,
-    QPushButton,
-    QLabel,
     QInputDialog,
+    QLabel,
+    QListWidget,
     QMessageBox,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
 )
-from PyQt6.QtCore import pyqtSignal, Qt
 
 
 class ProfileManagerWidget(QWidget):

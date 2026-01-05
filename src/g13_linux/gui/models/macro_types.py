@@ -1,10 +1,10 @@
 """Macro data types for G13LogitechOPS."""
 
+import time
+import uuid
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import List, Optional, Union
-import uuid
-import time
 
 
 class MacroStepType(Enum):

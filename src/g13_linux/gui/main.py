@@ -9,6 +9,7 @@ Usage:
 """
 
 import sys
+
 from PyQt6.QtWidgets import QApplication, QMessageBox
 
 
@@ -26,7 +27,7 @@ def main():
 
         mode = "libusb" if use_libusb else "hidraw"
         print(f"Starting G13LogitechOPS GUI (Qt {QT_VERSION_STR}, {mode} mode)")
-    except ImportError:
+    except ImportError:  # pragma: no cover
         print("ERROR: PyQt6 not installed. Install with: pip install PyQt6")
         return 1
 
@@ -38,8 +39,8 @@ def main():
 
     # Import after QApplication is created
     try:
-        from .views.main_window import MainWindow
         from .controllers.app_controller import ApplicationController
+        from .views.main_window import MainWindow
     except ImportError as e:
         QMessageBox.critical(
             None,

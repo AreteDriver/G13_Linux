@@ -4,9 +4,9 @@ LCD Preview Widget
 Renders the G13 LCD framebuffer as a visual preview in the GUI.
 """
 
-from PyQt6.QtWidgets import QWidget
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QPainter, QColor, QImage, QPen
+from PyQt6.QtGui import QColor, QPainter, QPen
+from PyQt6.QtWidgets import QWidget
 
 # LCD dimensions
 LCD_WIDTH = 160

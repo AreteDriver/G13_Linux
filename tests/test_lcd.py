@@ -1,8 +1,10 @@
 """Tests for G13 LCD module."""
 
-import pytest
 from unittest.mock import MagicMock, patch
-from g13_linux.hardware.lcd import G13LCD, FONT_5X7
+
+import pytest
+
+from g13_linux.hardware.lcd import FONT_5X7, G13LCD
 
 
 class TestFont5x7:

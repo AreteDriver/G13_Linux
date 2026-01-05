@@ -5,9 +5,9 @@ Manages CRUD operations for G13 button mapping profiles.
 """
 
 import json
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Optional, List
-from dataclasses import dataclass, asdict, field
+from typing import List, Optional
 
 
 @dataclass

@@ -1,6 +1,5 @@
 """Tests for HardwareController."""
 
-import pytest
 from unittest.mock import MagicMock, patch
 
 from g13_linux.gui.models.hardware_controller import HardwareController

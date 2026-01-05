@@ -4,20 +4,21 @@ Main Window
 Primary application window for G13LogitechOPS GUI.
 """
 
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QMainWindow,
-    QWidget,
     QSplitter,
-    QTabWidget,
     QStatusBar,
+    QTabWidget,
     QVBoxLayout,
+    QWidget,
 )
-from PyQt6.QtCore import Qt
+
 from .button_mapper import ButtonMapperWidget
-from .profile_manager import ProfileManagerWidget
-from .live_monitor import LiveMonitorWidget
 from .hardware_control import HardwareControlWidget
+from .live_monitor import LiveMonitorWidget
 from .macro_editor import MacroEditorWidget
+from .profile_manager import ProfileManagerWidget
 
 
 class MainWindow(QMainWindow):

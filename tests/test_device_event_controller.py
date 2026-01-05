@@ -1,8 +1,7 @@
 """Tests for DeviceEventThread controller."""
 
-import pytest
-from unittest.mock import MagicMock, patch
 import time
+from unittest.mock import MagicMock, patch
 
 
 class TestDeviceEventThreadInit:
@@ -22,8 +21,8 @@ class TestDeviceEventThreadInit:
 
     def test_init_with_libusb_device(self, qtbot):
         """Test init with LibUSBDevice."""
-        from g13_linux.gui.controllers.device_event_controller import DeviceEventThread
         from g13_linux.device import LibUSBDevice
+        from g13_linux.gui.controllers.device_event_controller import DeviceEventThread
 
         mock_handle = MagicMock(spec=LibUSBDevice)
 
@@ -38,8 +37,8 @@ class TestDeviceEventThreadRun:
 
     def test_run_with_libusb_device(self, qtbot):
         """Test run loop with LibUSB device."""
-        from g13_linux.gui.controllers.device_event_controller import DeviceEventThread
         from g13_linux.device import LibUSBDevice
+        from g13_linux.gui.controllers.device_event_controller import DeviceEventThread
 
         mock_handle = MagicMock(spec=LibUSBDevice)
         # Return data once, then stop
@@ -93,8 +92,8 @@ class TestDeviceEventThreadRun:
 
     def test_run_emits_error_on_exception(self, qtbot):
         """Test run emits error on exception."""
-        from g13_linux.gui.controllers.device_event_controller import DeviceEventThread
         from g13_linux.device import LibUSBDevice
+        from g13_linux.gui.controllers.device_event_controller import DeviceEventThread
 
         mock_handle = MagicMock(spec=LibUSBDevice)
         mock_handle.read.side_effect = Exception("USB read failed")
@@ -112,8 +111,8 @@ class TestDeviceEventThreadRun:
 
     def test_run_continues_on_empty_data(self, qtbot):
         """Test run loop continues when data is None/empty."""
-        from g13_linux.gui.controllers.device_event_controller import DeviceEventThread
         from g13_linux.device import LibUSBDevice
+        from g13_linux.gui.controllers.device_event_controller import DeviceEventThread
 
         mock_handle = MagicMock(spec=LibUSBDevice)
         call_count = [0]
@@ -200,8 +199,8 @@ class TestDeviceEventThreadIntegration:
 
     def test_thread_stops_cleanly(self, qtbot):
         """Test thread can be started and stopped cleanly."""
-        from g13_linux.gui.controllers.device_event_controller import DeviceEventThread
         from g13_linux.device import LibUSBDevice
+        from g13_linux.gui.controllers.device_event_controller import DeviceEventThread
 
         mock_handle = MagicMock(spec=LibUSBDevice)
 

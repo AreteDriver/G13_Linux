@@ -61,7 +61,8 @@ class MacroPlayerThread(QThread):
     def _init_uinput(self) -> None:
         """Initialize UInput for key injection."""
         try:
-            from evdev import UInput, ecodes as e
+            from evdev import UInput
+            from evdev import ecodes as e
 
             # Create UInput with common keys
             self._uinput = UInput()

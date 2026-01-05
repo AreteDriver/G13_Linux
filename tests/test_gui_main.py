@@ -136,8 +136,9 @@ class TestMainImportErrors:
 
     def test_main_gui_import_error(self, qapp):
         """Test main() handles GUI component import error."""
-        from g13_linux.gui.main import main
         import importlib
+
+        from g13_linux.gui.main import main
 
         with patch.object(sys, "argv", ["g13-linux-gui"]):
             with patch("g13_linux.gui.main.QApplication") as mock_app_cls:

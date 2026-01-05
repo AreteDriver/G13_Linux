@@ -350,3 +350,26 @@ class TestG13LCDInitLcd:
         lcd._init_lcd()
         captured = capsys.readouterr()
         assert "init_lcd failed" in captured.out
+
+
+class TestG13LCDMissingCoverage:
+    """Tests for edge cases to achieve 100% coverage."""
+
+    def test_write_text_clips_rows_at_bottom(self):
+        """Test write_text clips rows that exceed display height (line 193).
+
+        When text is rendered near the bottom of the display (y=37+),
+        some rows of the 7-row font would exceed HEIGHT=43 and must be skipped.
+        """
+        lcd = G13LCD()
+        with patch.object(lcd, "_send_framebuffer"):
+            # y=38 means rows 0-4 are at y=38-42 (visible)
+            # but rows 5-6 would be at y=43-44 (off-screen, HEIGHT=43)
+            lcd.write_text("A", 0, 38)
+
+        # Text should render - some pixels in the visible area should be set
+        # The character 'A' has data in multiple rows
+        # At y=38, we can render rows 0-4 (y=38,39,40,41,42)
+        # Rows 5-6 are skipped (y=43,44 >= HEIGHT)
+        has_pixels = any(b != 0 for b in lcd._framebuffer)
+        assert has_pixels, "Some pixels should be set for visible portion of text"

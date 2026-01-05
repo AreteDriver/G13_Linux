@@ -7,7 +7,15 @@ from g13_linux.gui.models.g13_device import G13Device
 
 
 class TestPyQt6Fallback:
-    """Tests for PyQt6 import fallback (lines 9-15)."""
+    """Tests for PyQt6 import fallback (lines 9-15).
+
+    Note: Lines 9-15 contain import-time fallback code that only executes
+    when PyQt6 is not available. This code path is tested via subprocess
+    to verify functionality, but cannot easily contribute to coverage.py
+    metrics since coverage only tracks the main test process.
+
+    The subprocess test below verifies the fallback works correctly.
+    """
 
     def test_fallback_import_via_subprocess(self):
         """Test module imports with fallback when PyQt6 is unavailable."""

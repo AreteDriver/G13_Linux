@@ -186,24 +186,6 @@ class TestReadEvent:
 class TestLibUSBDevice:
     """Tests for LibUSBDevice class."""
 
-    @pytest.fixture
-    def mock_usb(self):
-        mock_core = MagicMock()
-        mock_util = MagicMock()
-        mock_dev = MagicMock()
-        mock_core.find.return_value = mock_dev
-        mock_dev.is_kernel_driver_active.return_value = True
-        mock_intf = MagicMock()
-        mock_cfg = MagicMock()
-        mock_cfg.__getitem__ = MagicMock(return_value=mock_intf)
-        mock_dev.get_active_configuration.return_value = mock_cfg
-        mock_ep_in = MagicMock()
-        mock_ep_out = MagicMock()
-        mock_util.find_descriptor.side_effect = [mock_ep_in, mock_ep_out]
-        mock_util.ENDPOINT_IN = 0x80
-        mock_util.endpoint_direction.return_value = 0x80
-        return mock_core, mock_util, mock_dev, mock_ep_in, mock_ep_out
-
     def test_init(self):
         device = LibUSBDevice()
         assert device._dev is None
@@ -218,44 +200,132 @@ class TestLibUSBDevice:
 
     def test_open_device_not_found(self):
         """Test open raises when G13 not found via libusb."""
-        # The open() method does dynamic import, test the path where find returns None
-        device = LibUSBDevice()
-        device._dev = None  # Ensure clean state
-        # This path is already tested via the fixture approach - skip complex mocking
+        mock_core = MagicMock()
+        mock_util = MagicMock()
+        mock_core.find.return_value = None  # Device not found
 
-    def test_open_success(self, mock_usb):
-        """Test device can be opened (mocked at fixture level)."""
-        # The LibUSBDevice.open() does dynamic imports which are hard to mock
-        # Test the device attributes instead
         device = LibUSBDevice()
-        assert device._dev is None
-        assert device._reattach is False
+        with patch.dict("sys.modules", {"usb.core": mock_core, "usb.util": mock_util}):
+            with pytest.raises(RuntimeError, match="G13 not found"):
+                device.open()
 
-    def test_open_no_kernel_driver(self, mock_usb):
+    def test_open_success(self):
+        """Test successful device open with kernel driver."""
+        mock_core = MagicMock()
+        mock_util = MagicMock()
+        mock_dev = MagicMock()
+        mock_core.find.return_value = mock_dev
+        mock_dev.is_kernel_driver_active.return_value = True
+        mock_intf = MagicMock()
+        mock_cfg = MagicMock()
+        mock_cfg.__getitem__ = MagicMock(return_value=mock_intf)
+        mock_dev.get_active_configuration.return_value = mock_cfg
+        mock_ep_in = MagicMock()
+        mock_ep_out = MagicMock()
+        mock_util.find_descriptor.side_effect = [mock_ep_in, mock_ep_out]
+        mock_util.ENDPOINT_IN = 0x80
+        mock_util.endpoint_direction.return_value = 0x80
+
+        device = LibUSBDevice()
+        with patch.dict("sys.modules", {"usb.core": mock_core, "usb.util": mock_util}):
+            device.open()
+            assert device._dev is mock_dev
+            assert device._reattach is True
+            assert device._ep_in is mock_ep_in
+
+    def test_open_no_kernel_driver(self):
         """Test handling when no kernel driver is attached."""
-        # Kernel driver handling is tested via the _reattach flag behavior
-        device = LibUSBDevice()
-        device._reattach = False
-        assert device._reattach is False
+        mock_core = MagicMock()
+        mock_util = MagicMock()
+        mock_dev = MagicMock()
+        mock_core.find.return_value = mock_dev
+        mock_dev.is_kernel_driver_active.return_value = False  # No kernel driver
+        mock_intf = MagicMock()
+        mock_cfg = MagicMock()
+        mock_cfg.__getitem__ = MagicMock(return_value=mock_intf)
+        mock_dev.get_active_configuration.return_value = mock_cfg
+        mock_ep_in = MagicMock()
+        mock_ep_out = MagicMock()
+        mock_util.find_descriptor.side_effect = [mock_ep_in, mock_ep_out]
+        mock_util.ENDPOINT_IN = 0x80
+        mock_util.endpoint_direction.return_value = 0x80
 
-    def test_open_detach_exception(self, mock_usb):
+        device = LibUSBDevice()
+        with patch.dict("sys.modules", {"usb.core": mock_core, "usb.util": mock_util}):
+            device.open()
+            assert device._reattach is False
+
+    def test_open_detach_exception(self):
         """Test open handles detach exception gracefully."""
-        # Exception handling tested via close() behavior
-        device = LibUSBDevice()
-        device._dev = MagicMock()
-        device._reattach = True
+        mock_core = MagicMock()
+        mock_util = MagicMock()
+        mock_dev = MagicMock()
+        mock_core.find.return_value = mock_dev
+        mock_dev.is_kernel_driver_active.return_value = True
+        mock_dev.detach_kernel_driver.side_effect = Exception("Detach failed")
+        mock_intf = MagicMock()
+        mock_cfg = MagicMock()
+        mock_cfg.__getitem__ = MagicMock(return_value=mock_intf)
+        mock_dev.get_active_configuration.return_value = mock_cfg
+        mock_ep_in = MagicMock()
+        mock_ep_out = MagicMock()
+        mock_util.find_descriptor.side_effect = [mock_ep_in, mock_ep_out]
+        mock_util.ENDPOINT_IN = 0x80
+        mock_util.endpoint_direction.return_value = 0x80
 
-    def test_open_set_configuration_exception(self, mock_usb):
+        device = LibUSBDevice()
+        with patch.dict("sys.modules", {"usb.core": mock_core, "usb.util": mock_util}):
+            # Should not raise - exception is caught
+            device.open()
+            assert device._dev is mock_dev
+
+    def test_open_set_configuration_exception(self):
         """Test open handles set_configuration exception."""
-        # The code catches and ignores this exception
-        device = LibUSBDevice()
-        device._dev = MagicMock()
+        mock_core = MagicMock()
+        mock_util = MagicMock()
+        mock_dev = MagicMock()
+        mock_core.find.return_value = mock_dev
+        mock_dev.is_kernel_driver_active.return_value = False
+        mock_dev.set_configuration.side_effect = Exception("Config failed")
+        mock_intf = MagicMock()
+        mock_cfg = MagicMock()
+        mock_cfg.__getitem__ = MagicMock(return_value=mock_intf)
+        mock_dev.get_active_configuration.return_value = mock_cfg
+        mock_ep_in = MagicMock()
+        mock_ep_out = MagicMock()
+        mock_util.find_descriptor.side_effect = [mock_ep_in, mock_ep_out]
+        mock_util.ENDPOINT_IN = 0x80
+        mock_util.endpoint_direction.return_value = 0x80
 
-    def test_open_claim_interface_exception(self, mock_usb):
-        """Test open handles claim_interface exception."""
-        # The code catches and ignores this exception
         device = LibUSBDevice()
-        device._dev = MagicMock()
+        with patch.dict("sys.modules", {"usb.core": mock_core, "usb.util": mock_util}):
+            # Should not raise - exception is caught
+            device.open()
+            assert device._dev is mock_dev
+
+    def test_open_claim_interface_exception(self):
+        """Test open handles claim_interface exception."""
+        mock_core = MagicMock()
+        mock_util = MagicMock()
+        mock_dev = MagicMock()
+        mock_core.find.return_value = mock_dev
+        mock_dev.is_kernel_driver_active.return_value = False
+        mock_intf = MagicMock()
+        mock_cfg = MagicMock()
+        mock_cfg.__getitem__ = MagicMock(return_value=mock_intf)
+        mock_dev.get_active_configuration.return_value = mock_cfg
+        mock_util.claim_interface.side_effect = Exception("Claim failed")
+        mock_ep_in = MagicMock()
+        mock_ep_out = MagicMock()
+        mock_util.find_descriptor.side_effect = [mock_ep_in, mock_ep_out]
+        mock_util.ENDPOINT_IN = 0x80
+        mock_util.endpoint_direction.return_value = 0x80
+
+        device = LibUSBDevice()
+        with patch.dict("sys.modules", {"usb.core": mock_core, "usb.util": mock_util}):
+            # Should not raise - exception is caught
+            device.open()
+            assert device._dev is mock_dev
 
     def test_read_success(self):
         device = LibUSBDevice()

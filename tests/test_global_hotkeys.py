@@ -217,36 +217,83 @@ class TestGlobalHotkeyManagerListener:
     """Tests for listener internals."""
 
     def test_start_listener_success(self, manager):
-        """Test successful listener start with pynput available."""
+        """Test successful listener start with pynput mocked."""
+        import sys
         manager._hotkeys = {"ctrl+f1": "macro-123"}
 
-        # Since pynput is installed, this should succeed
-        result = manager._start_listener()
+        # Mock pynput module to avoid X11 requirement in CI
+        # Remove cached module so patch takes effect
+        cached_pynput = sys.modules.pop("pynput", None)
+        cached_keyboard = sys.modules.pop("pynput.keyboard", None)
 
-        assert result is True
-        assert manager._running is True
+        try:
+            mock_keyboard = MagicMock()
+            mock_listener = MagicMock()
+            mock_keyboard.GlobalHotKeys.return_value = mock_listener
+
+            with patch.dict("sys.modules", {"pynput": MagicMock(keyboard=mock_keyboard), "pynput.keyboard": mock_keyboard}):
+                result = manager._start_listener()
+
+                assert result is True
+                assert manager._running is True
+                mock_listener.start.assert_called_once()
+        finally:
+            # Restore cached modules
+            if cached_pynput:
+                sys.modules["pynput"] = cached_pynput
+            if cached_keyboard:
+                sys.modules["pynput.keyboard"] = cached_keyboard
 
         # Cleanup
         manager._stop_listener()
 
     def test_start_listener_no_handlers(self, manager):
         """Test listener start with invalid hotkeys still marks running."""
+        import sys
         manager._hotkeys = {"invalid+++key": "macro-123"}
 
-        result = manager._start_listener()
+        # Mock pynput to avoid X11 requirement
+        cached_pynput = sys.modules.pop("pynput", None)
+        cached_keyboard = sys.modules.pop("pynput.keyboard", None)
 
-        # Still returns True even if no valid handlers
-        assert result is True
-        assert manager._running is True
+        try:
+            mock_keyboard = MagicMock()
+            with patch.dict("sys.modules", {"pynput": MagicMock(keyboard=mock_keyboard), "pynput.keyboard": mock_keyboard}):
+                result = manager._start_listener()
+
+                # Still returns True even if no valid handlers (handlers dict empty)
+                assert result is True
+                assert manager._running is True
+        finally:
+            if cached_pynput:
+                sys.modules["pynput"] = cached_pynput
+            if cached_keyboard:
+                sys.modules["pynput.keyboard"] = cached_keyboard
 
     def test_start_listener_with_valid_hotkeys(self, manager):
         """Test listener start creates actual listener."""
+        import sys
         manager._hotkeys = {"ctrl+a": "macro-123"}
 
-        result = manager._start_listener()
+        # Mock pynput for CI
+        cached_pynput = sys.modules.pop("pynput", None)
+        cached_keyboard = sys.modules.pop("pynput.keyboard", None)
 
-        assert result is True
-        assert manager._listener is not None
+        try:
+            mock_keyboard = MagicMock()
+            mock_listener = MagicMock()
+            mock_keyboard.GlobalHotKeys.return_value = mock_listener
+
+            with patch.dict("sys.modules", {"pynput": MagicMock(keyboard=mock_keyboard), "pynput.keyboard": mock_keyboard}):
+                result = manager._start_listener()
+
+                assert result is True
+                assert manager._listener is not None
+        finally:
+            if cached_pynput:
+                sys.modules["pynput"] = cached_pynput
+            if cached_keyboard:
+                sys.modules["pynput.keyboard"] = cached_keyboard
 
         # Cleanup
         manager._stop_listener()

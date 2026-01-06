@@ -4,8 +4,12 @@ Hardware Control Widget
 LCD and backlight control UI.
 """
 
-from PyQt6.QtCore import Qt, pyqtSignal
+from datetime import datetime
+
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from PyQt6.QtWidgets import (
+    QCheckBox,
+    QComboBox,
     QGroupBox,
     QHBoxLayout,
     QLabel,
@@ -28,6 +32,9 @@ class HardwareControlWidget(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self._clock_enabled = False
+        self._clock_timer = QTimer(self)
+        self._clock_timer.timeout.connect(self._update_clock)
         self._init_ui()
 
     def _init_ui(self):
@@ -55,6 +62,32 @@ class HardwareControlWidget(QWidget):
         lcd_btn_layout.addWidget(clear_btn)
 
         lcd_layout.addLayout(lcd_btn_layout)
+
+        # Clock display option
+        clock_layout = QHBoxLayout()
+
+        self.clock_checkbox = QCheckBox("Show Clock")
+        self.clock_checkbox.toggled.connect(self._toggle_clock)
+        clock_layout.addWidget(self.clock_checkbox)
+
+        self.clock_format = QComboBox()
+        self.clock_format.addItem("24-hour", "24")
+        self.clock_format.addItem("12-hour", "12")
+        self.clock_format.currentIndexChanged.connect(self._on_format_changed)
+        clock_layout.addWidget(self.clock_format)
+
+        self.show_seconds = QCheckBox("Seconds")
+        self.show_seconds.setChecked(True)
+        self.show_seconds.toggled.connect(self._on_format_changed)
+        clock_layout.addWidget(self.show_seconds)
+
+        self.show_date = QCheckBox("Date")
+        self.show_date.toggled.connect(self._on_format_changed)
+        clock_layout.addWidget(self.show_date)
+
+        clock_layout.addStretch()
+        lcd_layout.addLayout(clock_layout)
+
         lcd_group.setLayout(lcd_layout)
         layout.addWidget(lcd_group)
 
@@ -93,3 +126,44 @@ class HardwareControlWidget(QWidget):
 
         layout.addStretch()
         self.setLayout(layout)
+
+    def _toggle_clock(self, enabled: bool):
+        """Toggle clock display on/off."""
+        self._clock_enabled = enabled
+        if enabled:
+            self._update_clock()  # Immediate update
+            self._clock_timer.start(1000)  # Update every second
+            self.lcd_text.setEnabled(False)
+        else:
+            self._clock_timer.stop()
+            self.lcd_text.setEnabled(True)
+
+    def _on_format_changed(self):
+        """Handle clock format change."""
+        if self._clock_enabled:
+            self._update_clock()
+
+    def _update_clock(self):
+        """Update LCD with current time."""
+        now = datetime.now()
+
+        # Time format
+        if self.clock_format.currentData() == "12":
+            if self.show_seconds.isChecked():
+                time_str = now.strftime("%I:%M:%S %p")
+            else:
+                time_str = now.strftime("%I:%M %p")
+        else:
+            if self.show_seconds.isChecked():
+                time_str = now.strftime("%H:%M:%S")
+            else:
+                time_str = now.strftime("%H:%M")
+
+        # Date format
+        if self.show_date.isChecked():
+            date_str = now.strftime("%Y-%m-%d")
+            display_text = f"{time_str}\n{date_str}"
+        else:
+            display_text = time_str
+
+        self.lcd_text_changed.emit(display_text)

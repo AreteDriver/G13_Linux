@@ -63,15 +63,15 @@ def draw_key_glow(draw, cx, cy, w, h, color, intensity=0.4):
             int(glow_color[2] * (1 - blend) + BODY_MID[2] * blend),
         )
         draw.rounded_rectangle(
-            (cx - w/2 - expand, cy - h/2 - expand,
-             cx + w/2 + expand, cy + h/2 + expand),
+            (cx - w / 2 - expand, cy - h / 2 - expand, cx + w / 2 + expand, cy + h / 2 + expand),
             radius=8 + i,
             fill=blended,
         )
 
 
-def draw_rounded_key(draw, cx, cy, w, h, angle=0, radius=5, label=None, font=None,
-                     backlight=None, intensity=0.5):
+def draw_rounded_key(
+    draw, cx, cy, w, h, angle=0, radius=5, label=None, font=None, backlight=None, intensity=0.5
+):
     """Draw a key centered at (cx, cy) with optional rotation, label, and backlight."""
     hw, hh = w / 2, h / 2
 
@@ -195,14 +195,12 @@ def draw_m_key(draw, cx, cy, w, h, label=None, font=None, backlight=None, intens
             int(b * intensity * 0.3 + 25),
         )
         draw.rounded_rectangle(
-            (cx - hw - 3, cy - hh - 3, cx + hw + 3, cy + hh + 3),
-            radius=5, fill=glow_color
+            (cx - hw - 3, cy - hh - 3, cx + hw + 3, cy + hh + 3), radius=5, fill=glow_color
         )
 
     # Shadow
     draw.rounded_rectangle(
-        (cx - hw + 1, cy - hh + 1, cx + hw + 1, cy + hh + 1),
-        radius=3, fill=(18, 20, 22)
+        (cx - hw + 1, cy - hh + 1, cx + hw + 1, cy + hh + 1), radius=3, fill=(18, 20, 22)
     )
 
     # Key base with backlight tint
@@ -223,8 +221,7 @@ def draw_m_key(draw, cx, cy, w, h, label=None, font=None, backlight=None, intens
         outline_color = (65, 68, 72)
 
     draw.rounded_rectangle(
-        (cx - hw, cy - hh, cx + hw, cy + hh),
-        radius=3, fill=key_color, outline=outline_color
+        (cx - hw, cy - hh, cx + hw, cy + hh), radius=3, fill=key_color, outline=outline_color
     )
 
     # Label with backlight tint
@@ -242,7 +239,7 @@ def draw_m_key(draw, cx, cy, w, h, label=None, font=None, backlight=None, intens
 
 
 def main():
-    img = Image.new('RGB', (WIDTH, HEIGHT), BLACK)
+    img = Image.new("RGB", (WIDTH, HEIGHT), BLACK)
     draw = ImageDraw.Draw(img)
 
     # Load fonts for key labels
@@ -261,18 +258,32 @@ def main():
     # Outer body shape (organic curve)
     body_points = [
         # Top edge (narrow, for LCD)
-        (120, 25), (400, 25),
+        (120, 25),
+        (400, 25),
         # Right side curves out
-        (440, 50), (470, 120), (485, 200),
-        (495, 300), (500, 400),
+        (440, 50),
+        (470, 120),
+        (485, 200),
+        (495, 300),
+        (500, 400),
         # Right side curves into palm rest
-        (495, 480), (480, 540), (450, 590),
+        (495, 480),
+        (480, 540),
+        (450, 590),
         # Bottom palm rest curve
-        (400, 630), (320, 655), (200, 655), (120, 630),
+        (400, 630),
+        (320, 655),
+        (200, 655),
+        (120, 630),
         # Left side curves up
-        (70, 590), (40, 540), (25, 480),
-        (20, 400), (25, 300),
-        (35, 200), (50, 120), (80, 50),
+        (70, 590),
+        (40, 540),
+        (25, 480),
+        (20, 400),
+        (25, 300),
+        (35, 200),
+        (50, 120),
+        (80, 50),
     ]
 
     # Shadow
@@ -284,23 +295,42 @@ def main():
 
     # Inner surface (slightly raised look)
     inner_points = [
-        (130, 40), (390, 40),
-        (425, 60), (455, 130), (468, 210),
-        (478, 310), (482, 400),
-        (478, 470), (465, 525), (438, 575),
-        (390, 615), (315, 638), (205, 638), (130, 615),
-        (82, 575), (55, 525), (42, 470),
-        (38, 400), (42, 310),
-        (52, 210), (65, 130), (95, 60),
+        (130, 40),
+        (390, 40),
+        (425, 60),
+        (455, 130),
+        (468, 210),
+        (478, 310),
+        (482, 400),
+        (478, 470),
+        (465, 525),
+        (438, 575),
+        (390, 615),
+        (315, 638),
+        (205, 638),
+        (130, 615),
+        (82, 575),
+        (55, 525),
+        (42, 470),
+        (38, 400),
+        (42, 310),
+        (52, 210),
+        (65, 130),
+        (95, 60),
     ]
     draw.polygon(inner_points, fill=BODY_MID)
 
     # === SILVER SIDE ACCENTS ===
     # Left accent (curved strip)
     left_silver = [
-        (25, 200), (45, 200),
-        (52, 310), (50, 420), (45, 500),
-        (30, 480), (22, 400), (25, 300),
+        (25, 200),
+        (45, 200),
+        (52, 310),
+        (50, 420),
+        (45, 500),
+        (30, 480),
+        (22, 400),
+        (25, 300),
     ]
     draw.polygon(left_silver, fill=SILVER)
     # Highlight
@@ -308,9 +338,14 @@ def main():
 
     # Right accent
     right_silver = [
-        (495, 200), (475, 200),
-        (468, 310), (470, 420), (475, 500),
-        (490, 480), (498, 400), (495, 300),
+        (495, 200),
+        (475, 200),
+        (468, 310),
+        (470, 420),
+        (475, 500),
+        (490, 480),
+        (498, 400),
+        (495, 300),
     ]
     draw.polygon(right_silver, fill=SILVER)
     draw.line([(493, 220), (493, 380)], fill=SILVER_LIGHT, width=2)
@@ -321,23 +356,29 @@ def main():
 
     # Bezel
     draw.rounded_rectangle(
-        (lcd_cx - lcd_w//2 - 10, lcd_cy - lcd_h//2 - 8,
-         lcd_cx + lcd_w//2 + 10, lcd_cy + lcd_h//2 + 8),
-        radius=6, fill=(28, 30, 34), outline=(45, 48, 52), width=2
+        (
+            lcd_cx - lcd_w // 2 - 10,
+            lcd_cy - lcd_h // 2 - 8,
+            lcd_cx + lcd_w // 2 + 10,
+            lcd_cy + lcd_h // 2 + 8,
+        ),
+        radius=6,
+        fill=(28, 30, 34),
+        outline=(45, 48, 52),
+        width=2,
     )
 
     # Screen
     draw.rectangle(
-        (lcd_cx - lcd_w//2, lcd_cy - lcd_h//2,
-         lcd_cx + lcd_w//2, lcd_cy + lcd_h//2),
-        fill=LCD_DARK, outline=(25, 45, 25)
+        (lcd_cx - lcd_w // 2, lcd_cy - lcd_h // 2, lcd_cx + lcd_w // 2, lcd_cy + lcd_h // 2),
+        fill=LCD_DARK,
+        outline=(25, 45, 25),
     )
 
     # Scanlines
-    for y in range(lcd_cy - lcd_h//2 + 2, lcd_cy + lcd_h//2 - 2, 3):
+    for y in range(lcd_cy - lcd_h // 2 + 2, lcd_cy + lcd_h // 2 - 2, 3):
         draw.line(
-            (lcd_cx - lcd_w//2 + 3, y, lcd_cx + lcd_w//2 - 3, y),
-            fill=(8, 25, 8), width=1
+            (lcd_cx - lcd_w // 2 + 3, y, lcd_cx + lcd_w // 2 - 3, y), fill=(8, 25, 8), width=1
         )
 
     # === KEY AREAS ===
@@ -355,7 +396,9 @@ def main():
     # Palm rest surface (elliptical, darker)
     draw.ellipse(
         (palm_cx - 120, palm_cy - 90, palm_cx + 120, palm_cy + 90),
-        fill=(30, 32, 36), outline=(45, 48, 52), width=2
+        fill=(30, 32, 36),
+        outline=(45, 48, 52),
+        width=2,
     )
 
     # === THUMB BUTTONS (LEFT, DOWN) ===
@@ -367,38 +410,37 @@ def main():
     # Outer housing
     draw.ellipse(
         (stick_cx - 48, stick_cy - 48, stick_cx + 48, stick_cy + 48),
-        fill=(55, 58, 62), outline=(70, 73, 78), width=2
+        fill=(55, 58, 62),
+        outline=(70, 73, 78),
+        width=2,
     )
 
     # Inner well
     draw.ellipse(
         (stick_cx - 38, stick_cy - 38, stick_cx + 38, stick_cy + 38),
-        fill=(25, 27, 30), outline=(40, 42, 45)
+        fill=(25, 27, 30),
+        outline=(40, 42, 45),
     )
 
     # Stick shadow
     draw.ellipse(
         (stick_cx - 20 + 2, stick_cy - 20 + 2, stick_cx + 20 + 2, stick_cy + 20 + 2),
-        fill=(12, 14, 16)
+        fill=(12, 14, 16),
     )
 
     # Stick cap
     draw.ellipse(
         (stick_cx - 20, stick_cy - 20, stick_cx + 20, stick_cy + 20),
-        fill=(50, 53, 58), outline=(65, 68, 72), width=2
+        fill=(50, 53, 58),
+        outline=(65, 68, 72),
+        width=2,
     )
 
     # Stick top
-    draw.ellipse(
-        (stick_cx - 14, stick_cy - 14, stick_cx + 14, stick_cy + 14),
-        fill=(60, 63, 68)
-    )
+    draw.ellipse((stick_cx - 14, stick_cy - 14, stick_cx + 14, stick_cy + 14), fill=(60, 63, 68))
 
     # Dimple
-    draw.ellipse(
-        (stick_cx - 5, stick_cy - 5, stick_cx + 5, stick_cy + 5),
-        fill=(42, 45, 50)
-    )
+    draw.ellipse((stick_cx - 5, stick_cy - 5, stick_cx + 5, stick_cy + 5), fill=(42, 45, 50))
 
     # === BRANDING ===
     try:

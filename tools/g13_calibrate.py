@@ -8,6 +8,7 @@ Generates g13_layout.py code that can be copied to the resources folder.
 Usage:
     python3 tools/g13_calibrate.py
 """
+
 import sys
 from pathlib import Path
 
@@ -26,19 +27,42 @@ from PyQt6.QtWidgets import (
 
 # Button click order
 BUTTON_ORDER = [
-    "M1", "M2", "M3", "MR",
-    "G1", "G2", "G3", "G4", "G5", "G6", "G7",
-    "G8", "G9", "G10", "G11", "G12", "G13", "G14",
-    "G15", "G16", "G17", "G18", "G19",
-    "G20", "G21", "G22",
-    "LEFT", "DOWN", "STICK",
+    "M1",
+    "M2",
+    "M3",
+    "MR",
+    "G1",
+    "G2",
+    "G3",
+    "G4",
+    "G5",
+    "G6",
+    "G7",
+    "G8",
+    "G9",
+    "G10",
+    "G11",
+    "G12",
+    "G13",
+    "G14",
+    "G15",
+    "G16",
+    "G17",
+    "G18",
+    "G19",
+    "G20",
+    "G21",
+    "G22",
+    "LEFT",
+    "DOWN",
+    "STICK",
 ]
 
 # Default button sizes
 BUTTON_SIZES = {
-    "M": (28, 18),      # M-keys (small)
+    "M": (28, 18),  # M-keys (small)
     "G_SMALL": (38, 28),  # G1-G19 (standard)
-    "G_WIDE": (42, 28),   # G20-G22 (wider)
+    "G_WIDE": (42, 28),  # G20-G22 (wider)
     "LEFT": (28, 22),
     "DOWN": (28, 22),
     "STICK": (35, 35),
@@ -92,8 +116,7 @@ class G13Calibrator(QMainWindow):
 
         self.status_label = QLabel()
         self.status_label.setStyleSheet(
-            "font-size: 16px; font-weight: bold; padding: 10px; "
-            "background: #333; color: #0f0;"
+            "font-size: 16px; font-weight: bold; padding: 10px; background: #333; color: #0f0;"
         )
         left_layout.addWidget(self.status_label)
 
@@ -141,18 +164,15 @@ class G13Calibrator(QMainWindow):
         if self.current_idx < len(BUTTON_ORDER):
             btn = BUTTON_ORDER[self.current_idx]
             self.status_label.setText(
-                f"Click TOP-LEFT corner of: {btn}  "
-                f"({self.current_idx + 1}/{len(BUTTON_ORDER)})"
+                f"Click TOP-LEFT corner of: {btn}  ({self.current_idx + 1}/{len(BUTTON_ORDER)})"
             )
             self.status_label.setStyleSheet(
-                "font-size: 16px; font-weight: bold; padding: 10px; "
-                "background: #333; color: #0f0;"
+                "font-size: 16px; font-weight: bold; padding: 10px; background: #333; color: #0f0;"
             )
         else:
             self.status_label.setText("✓ All buttons mapped! Copy the code.")
             self.status_label.setStyleSheet(
-                "font-size: 16px; font-weight: bold; padding: 10px; "
-                "background: #060; color: #fff;"
+                "font-size: 16px; font-weight: bold; padding: 10px; background: #060; color: #fff;"
             )
 
     def _on_click(self, x: int, y: int):

@@ -19,7 +19,7 @@ Basic Usage:
 For more information, see: https://github.com/AreteDriver/G13_Linux
 """
 
-__version__ = "1.3.0"
+__version__ = "1.5.3"
 __author__ = "AreteDriver"
 __license__ = "MIT"
 

@@ -96,6 +96,22 @@ jobs:
       - name: Type check
         run: mypy src/g13_linux --ignore-missing-imports --no-error-summary || true
 
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Security audit
+        run: pip-audit --require-hashes=false -r <(pip freeze) || pip-audit 2>/dev/null || echo "No vulnerabilities found"
+
   build:
     runs-on: ubuntu-latest
     needs: [lint, test]

@@ -39,8 +39,8 @@ def rotate_point(x, y, cx, cy, angle_deg):
     return (cx + dx * cos_a - dy * sin_a, cy + dx * sin_a + dy * cos_a)
 
 
-def draw_rounded_key(draw, cx, cy, w, h, angle=0, radius=5):
-    """Draw a key centered at (cx, cy) with optional rotation."""
+def draw_rounded_key(draw, cx, cy, w, h, angle=0, radius=5, label=None, font=None):
+    """Draw a key centered at (cx, cy) with optional rotation and label."""
     # For rotated keys, we draw a polygon approximation
     hw, hh = w / 2, h / 2
 
@@ -85,8 +85,12 @@ def draw_rounded_key(draw, cx, cy, w, h, angle=0, radius=5):
 
     draw.polygon(inner_corners, fill=KEY_TOP)
 
+    # Draw label
+    if label and font:
+        draw.text((cx, cy - 1), label, fill=(140, 145, 150), font=font, anchor="mm")
 
-def draw_m_key(draw, cx, cy, w, h):
+
+def draw_m_key(draw, cx, cy, w, h, label=None, font=None):
     """Draw smaller M-key."""
     hw, hh = w / 2, h / 2
     # Shadow
@@ -99,11 +103,24 @@ def draw_m_key(draw, cx, cy, w, h):
         (cx - hw, cy - hh, cx + hw, cy + hh),
         radius=3, fill=(50, 53, 58), outline=(65, 68, 72)
     )
+    # Label
+    if label and font:
+        draw.text((cx, cy), label, fill=(130, 135, 140), font=font, anchor="mm")
 
 
 def main():
     img = Image.new('RGB', (WIDTH, HEIGHT), BLACK)
     draw = ImageDraw.Draw(img)
+
+    # Load fonts for key labels
+    try:
+        font_key = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 11)
+        font_m = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 9)
+        font_thumb = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 10)
+    except:
+        font_key = ImageFont.load_default()
+        font_m = font_key
+        font_thumb = font_key
 
     # === MAIN BODY - Ergonomic curved shape ===
     # The G13 body curves like a hand rest - narrow top, wide curved bottom
@@ -192,9 +209,9 @@ def main():
 
     # === M-KEYS (below LCD) ===
     m_y = 130
-    m_positions = [185, 230, 275, 320]  # M1, M2, M3, MR
-    for mx in m_positions:
-        draw_m_key(draw, mx, m_y, 38, 18)
+    m_keys = [(185, "M1"), (230, "M2"), (275, "M3"), (320, "MR")]
+    for mx, label in m_keys:
+        draw_m_key(draw, mx, m_y, 38, 18, label=label, font=font_m)
 
     # === G-KEYS - Arranged in ARCS ===
     # The real G13 keys follow curved arcs matching finger reach
@@ -203,60 +220,59 @@ def main():
     key_w, key_h = 46, 40
 
     # Row 1: G1-G7 (top arc)
-    # Keys curve: outer ones lower and angled
     row1_y_base = 185
-    row1_positions = [
-        # (cx, cy, angle) - angle tilts key
-        (95,  row1_y_base + 18, -12),   # G1 - leftmost, angled left
-        (148, row1_y_base + 8,  -6),    # G2
-        (201, row1_y_base + 2,  -2),    # G3
-        (254, row1_y_base,       0),    # G4 - center
-        (307, row1_y_base + 2,   2),    # G5
-        (360, row1_y_base + 8,   6),    # G6
-        (413, row1_y_base + 18,  12),   # G7 - rightmost, angled right
+    row1_keys = [
+        # (cx, cy, angle, label)
+        (95,  row1_y_base + 18, -12, "G1"),
+        (148, row1_y_base + 8,  -6,  "G2"),
+        (201, row1_y_base + 2,  -2,  "G3"),
+        (254, row1_y_base,       0,  "G4"),
+        (307, row1_y_base + 2,   2,  "G5"),
+        (360, row1_y_base + 8,   6,  "G6"),
+        (413, row1_y_base + 18,  12, "G7"),
     ]
 
-    for cx, cy, angle in row1_positions:
-        draw_rounded_key(draw, cx, cy, key_w, key_h, angle)
+    for cx, cy, angle, label in row1_keys:
+        draw_rounded_key(draw, cx, cy, key_w, key_h, angle, label=label, font=font_key)
 
     # Row 2: G8-G14
     row2_y_base = 240
-    row2_positions = [
-        (95,  row2_y_base + 18, -12),
-        (148, row2_y_base + 8,  -6),
-        (201, row2_y_base + 2,  -2),
-        (254, row2_y_base,       0),
-        (307, row2_y_base + 2,   2),
-        (360, row2_y_base + 8,   6),
-        (413, row2_y_base + 18,  12),
+    row2_keys = [
+        (95,  row2_y_base + 18, -12, "G8"),
+        (148, row2_y_base + 8,  -6,  "G9"),
+        (201, row2_y_base + 2,  -2,  "G10"),
+        (254, row2_y_base,       0,  "G11"),
+        (307, row2_y_base + 2,   2,  "G12"),
+        (360, row2_y_base + 8,   6,  "G13"),
+        (413, row2_y_base + 18,  12, "G14"),
     ]
 
-    for cx, cy, angle in row2_positions:
-        draw_rounded_key(draw, cx, cy, key_w, key_h, angle)
+    for cx, cy, angle, label in row2_keys:
+        draw_rounded_key(draw, cx, cy, key_w, key_h, angle, label=label, font=font_key)
 
     # Row 3: G15-G19 (5 keys, more centered)
     row3_y_base = 295
-    row3_positions = [
-        (135, row3_y_base + 12, -8),    # G15
-        (190, row3_y_base + 4,  -3),    # G16
-        (245, row3_y_base,       0),    # G17 - center
-        (300, row3_y_base + 4,   3),    # G18
-        (355, row3_y_base + 12,  8),    # G19
+    row3_keys = [
+        (135, row3_y_base + 12, -8, "G15"),
+        (190, row3_y_base + 4,  -3, "G16"),
+        (245, row3_y_base,       0, "G17"),
+        (300, row3_y_base + 4,   3, "G18"),
+        (355, row3_y_base + 12,  8, "G19"),
     ]
 
-    for cx, cy, angle in row3_positions:
-        draw_rounded_key(draw, cx, cy, key_w, key_h, angle)
+    for cx, cy, angle, label in row3_keys:
+        draw_rounded_key(draw, cx, cy, key_w, key_h, angle, label=label, font=font_key)
 
     # Row 4: G20-G22 (3 wider keys - thumb/space row)
     row4_y_base = 355
-    row4_positions = [
-        (175, row4_y_base + 6, -4),     # G20
-        (245, row4_y_base,      0),     # G21 - center
-        (315, row4_y_base + 6,  4),     # G22
+    row4_keys = [
+        (175, row4_y_base + 6, -4, "G20"),
+        (245, row4_y_base,      0, "G21"),
+        (315, row4_y_base + 6,  4, "G22"),
     ]
 
-    for cx, cy, angle in row4_positions:
-        draw_rounded_key(draw, cx, cy, key_w + 14, key_h + 6, angle)
+    for cx, cy, angle, label in row4_keys:
+        draw_rounded_key(draw, cx, cy, key_w + 14, key_h + 6, angle, label=label, font=font_key)
 
     # === PALM REST with THUMBSTICK ===
     # Large curved area at bottom
@@ -271,8 +287,8 @@ def main():
     # === THUMB BUTTONS (LEFT, DOWN) ===
     # To the left of thumbstick
     thumb_x = 265
-    draw_rounded_key(draw, thumb_x, 480, 48, 36, 0)  # LEFT
-    draw_rounded_key(draw, thumb_x, 530, 48, 36, 0)  # DOWN
+    draw_rounded_key(draw, thumb_x, 480, 48, 36, 0, label="LEFT", font=font_thumb)
+    draw_rounded_key(draw, thumb_x, 530, 48, 36, 0, label="DOWN", font=font_thumb)
 
     # === THUMBSTICK ===
     stick_cx, stick_cy = 385, 520

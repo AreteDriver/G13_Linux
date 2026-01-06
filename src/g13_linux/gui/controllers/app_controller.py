@@ -11,6 +11,7 @@ from ..models.event_decoder import EventDecoder
 from ..models.g13_device import G13Device
 from ..models.global_hotkeys import GlobalHotkeyManager
 from ..models.hardware_controller import HardwareController
+from ..models.joystick_handler import JoystickConfig, JoystickHandler
 from ..models.macro_manager import MacroManager
 from ..models.macro_player import MacroPlayer
 from ..models.macro_recorder import MacroRecorder, RecorderState
@@ -32,6 +33,9 @@ class ApplicationController(QObject):
         self.event_decoder = EventDecoder()
         self.hardware = HardwareController()
 
+        # Joystick handler
+        self.joystick_handler = JoystickHandler()
+
         # Macro system
         self.macro_recorder = MacroRecorder()
         self.macro_player = MacroPlayer()
@@ -40,6 +44,7 @@ class ApplicationController(QObject):
 
         # State
         self.current_mappings = {}
+        self.current_joystick_config: dict = {}
         self.event_thread = None
         self._mr_button_held = False
 
@@ -85,6 +90,12 @@ class ApplicationController(QObject):
 
         # Macro editor signals - refresh hotkeys when macros are saved
         self.main_window.macro_widget.macro_saved.connect(self._on_macro_saved)
+
+        # Joystick settings
+        self.main_window.joystick_widget.config_changed.connect(self._on_joystick_config_changed)
+
+        # Wire joystick direction callback to update UI
+        self.joystick_handler.on_direction_change = self._on_joystick_direction_change
 
     def start(self):
         """Initialize application"""
@@ -156,6 +167,15 @@ class ApplicationController(QObject):
             # Update joystick visual indicator (always update for smooth movement)
             self.main_window.button_mapper.update_joystick(state.joystick_x, state.joystick_y)
 
+            # Forward joystick to handler (analog or digital mode)
+            self.joystick_handler.update(state.joystick_x, state.joystick_y)
+
+            # Handle joystick click (STICK button)
+            if "STICK" in pressed:
+                self.joystick_handler.handle_stick_click(True)
+            if "STICK" in released:
+                self.joystick_handler.handle_stick_click(False)
+
             # Forward joystick movement to monitor (only if significantly moved)
             if abs(state.joystick_x - 128) > 20 or abs(state.joystick_y - 128) > 20:
                 self.main_window.monitor_widget.on_joystick_event(
@@ -194,6 +214,17 @@ class ApplicationController(QObject):
             # Update button mapper
             for button_id, key_name in profile.mappings.items():
                 self.main_window.button_mapper.set_button_mapping(button_id, key_name)
+
+            # Load joystick configuration
+            self.current_joystick_config = profile.joystick.copy() if profile.joystick else {}
+            if self.current_joystick_config:
+                config = JoystickConfig.from_dict(self.current_joystick_config)
+                self.joystick_handler.set_config(config)
+                # Start joystick handler if not disabled
+                if config.mode.value != "disabled":
+                    self.joystick_handler.start()
+                # Update joystick settings UI
+                self.main_window.joystick_widget.set_config(self.current_joystick_config)
 
             self.main_window.set_status(f"Loaded profile: {profile_name}")
 
@@ -380,6 +411,27 @@ class ApplicationController(QObject):
                     f"Hotkey registered: {macro.global_hotkey} → {macro.name}"
                 )
 
+    # Joystick methods
+
+    @pyqtSlot(dict)
+    def _on_joystick_config_changed(self, config_dict: dict) -> None:
+        """Handle joystick settings change from UI."""
+        self.current_joystick_config = config_dict
+        config = JoystickConfig.from_dict(config_dict)
+        self.joystick_handler.set_config(config)
+
+        # Restart handler with new config
+        self.joystick_handler.stop()
+        if config.mode.value != "disabled":
+            self.joystick_handler.start()
+
+        mode_name = config.mode.value.capitalize()
+        self.main_window.set_status(f"Joystick mode: {mode_name}")
+
+    def _on_joystick_direction_change(self, direction: str) -> None:
+        """Handle joystick direction change - update UI indicator."""
+        self.main_window.joystick_widget.update_direction(direction)
+
     def shutdown(self):
         """Cleanup on application exit"""
         # Stop any active recording/playback
@@ -387,6 +439,9 @@ class ApplicationController(QObject):
             self.macro_recorder.cancel()
         if self.macro_player.is_playing:
             self.macro_player.stop()
+
+        # Stop joystick handler
+        self.joystick_handler.stop()
 
         # Stop hotkey listener
         self.hotkey_manager.stop()

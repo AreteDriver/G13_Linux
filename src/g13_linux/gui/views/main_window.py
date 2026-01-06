@@ -16,6 +16,7 @@ from PyQt6.QtWidgets import (
 
 from .button_mapper import ButtonMapperWidget
 from .hardware_control import HardwareControlWidget
+from .joystick_settings import JoystickSettingsWidget
 from .live_monitor import LiveMonitorWidget
 from .macro_editor import MacroEditorWidget
 from .profile_manager import ProfileManagerWidget
@@ -35,6 +36,7 @@ class MainWindow(QMainWindow):
         self.monitor_widget = LiveMonitorWidget()
         self.hardware_widget = HardwareControlWidget()
         self.macro_widget = MacroEditorWidget()
+        self.joystick_widget = JoystickSettingsWidget()
 
         self._init_ui()
 
@@ -54,6 +56,7 @@ class MainWindow(QMainWindow):
         # Right side: Tabs
         tabs = QTabWidget()
         tabs.addTab(self.profile_widget, "Profiles")
+        tabs.addTab(self.joystick_widget, "Joystick")
         tabs.addTab(self.macro_widget, "Macros")
         tabs.addTab(self.hardware_widget, "Hardware")
         tabs.addTab(self.monitor_widget, "Monitor")

@@ -18,6 +18,13 @@ class ProfileData:
     Supports two mapping formats:
     - Simple: {'G1': 'KEY_1', ...}
     - Combo:  {'G1': {'keys': ['KEY_LEFTCTRL', 'KEY_B'], 'label': '...'}, ...}
+
+    Button IDs:
+    - G1-G22: Main G-keys
+    - M1-M3: Mode buttons
+    - MR: Macro record button
+    - LEFT, DOWN: Thumb buttons adjacent to joystick
+    - STICK: Joystick click (press down on stick)
     """
 
     name: str
@@ -26,7 +33,16 @@ class ProfileData:
     mappings: dict = field(default_factory=dict)  # str | dict values
     lcd: dict = field(default_factory=lambda: {"enabled": True, "default_text": ""})
     backlight: dict = field(default_factory=lambda: {"color": "#FFFFFF", "brightness": 100})
-    joystick: dict = field(default_factory=dict)  # Optional joystick config
+    joystick: dict = field(default_factory=lambda: {
+        "mode": "analog",  # "analog", "digital", or "disabled"
+        "deadzone": 20,
+        "sensitivity": 1.0,
+        "key_up": "KEY_UP",
+        "key_down": "KEY_DOWN",
+        "key_left": "KEY_LEFT",
+        "key_right": "KEY_RIGHT",
+        "allow_diagonals": True,
+    })
 
 
 class ProfileManager:
@@ -112,6 +128,13 @@ class ProfileManager:
         # M keys (M1-M3)
         for i in range(1, 4):
             default_mappings[f"M{i}"] = "KEY_RESERVED"
+
+        # Thumb buttons (adjacent to joystick)
+        default_mappings["LEFT"] = "KEY_RESERVED"
+        default_mappings["DOWN"] = "KEY_RESERVED"
+
+        # Joystick click (press down on stick)
+        default_mappings["STICK"] = "KEY_RESERVED"
 
         profile = ProfileData(
             name=name,

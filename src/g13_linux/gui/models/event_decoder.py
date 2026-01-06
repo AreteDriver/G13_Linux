@@ -79,11 +79,11 @@ class EventDecoder:
         "M1": (6, 5),  # 0x20 ✓ - Mode 1
         "M2": (6, 6),  # 0x40 ✓ - Mode 2
         "M3": (6, 7),  # 0x80 ✓ - Mode 3
-        # Byte 7: MR and joystick buttons
+        # Byte 7: MR and thumb/joystick buttons
         "MR": (7, 0),  # 0x01 ✓ - Macro Record
-        "LEFT": (7, 1),  # 0x02 - Joystick left?
-        "DOWN": (7, 2),  # 0x04 - Joystick down?
-        "TOP": (7, 3),  # 0x08 - Joystick click/top?
+        "LEFT": (7, 1),  # 0x02 - Left thumb button (adjacent to joystick)
+        "DOWN": (7, 2),  # 0x04 - Down thumb button (adjacent to joystick)
+        "STICK": (7, 3),  # 0x08 - Joystick click (press down on stick)
     }
 
     # Joystick byte positions - CONFIRMED via hardware testing
@@ -180,7 +180,7 @@ class EventDecoder:
         return result
 
     # Buttons to check directly from raw data (not G1-G22 or M1-M3)
-    OTHER_BUTTONS = ["BD", "L1", "L2", "L3", "L4", "MR", "LEFT", "DOWN", "TOP"]
+    OTHER_BUTTONS = ["BD", "L1", "L2", "L3", "L4", "MR", "LEFT", "DOWN", "STICK"]
 
     def get_pressed_buttons(self, state: G13ButtonState | None = None) -> List[str]:
         """

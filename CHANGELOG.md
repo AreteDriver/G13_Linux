@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.1] - 2026-01-06
+
+### Fixed
+- Skip pynput tests in headless CI environments (GitHub Actions)
+
+## [1.5.0] - 2026-01-05
+
+### Added
+- **Per-Application Profiles** - automatically switch G13 profiles based on active window
+  - Window monitor using xdotool (X11 only)
+  - App profile rules with regex pattern matching
+  - Match against window name, WM_CLASS, or both
+  - Default profile fallback when no rules match
+- **App Profiles Tab** in GUI for managing auto-switch rules
+  - Add/Edit/Delete rules with visual editor
+  - Test button shows current window info
+  - Enable/disable toggle for auto-switching
+
+### Changed
+- 1110 tests with 99% coverage
+
+## [1.4.0] - 2026-01-04
+
+### Added
+- Joystick settings tab in GUI
+- Analog/Digital/Disabled joystick modes
+- Deadzone and sensitivity controls
+- Directional key mapping for digital mode
+
+## [1.3.0] - 2026-01-03
+
+### Added
+- Additional test coverage improvements
+- Window monitoring infrastructure
+
 ## [1.2.2] - 2026-01-03
 
 ### Added

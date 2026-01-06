@@ -15,6 +15,7 @@ Python userspace driver for the Logitech G13 Gaming Keyboard on Linux.
 - **160x43 LCD Display** with custom text and graphics
 - **Thumbstick Support** with configurable zones
 - **Profile Management** for different applications
+- **Per-Application Profiles** - automatically switch profiles based on active window
 - **PyQt6 GUI** for visual configuration
 
 ## Installation
@@ -94,6 +95,61 @@ while True:
     if data:
         mapper.handle_raw_report(data)
 ```
+
+## Per-Application Profiles
+
+Automatically switch G13 profiles when you switch applications. For example, load your EVE Online profile when EVE is focused, and switch to your browser profile when Firefox is active.
+
+### Setup (GUI)
+
+1. Launch the GUI: `g13-linux-gui`
+2. Go to the **App Profiles** tab
+3. Click **Add Rule** to create a new rule:
+   - **Rule Name**: A friendly name (e.g., "EVE Online")
+   - **Pattern**: Regex pattern to match (e.g., `EVE -` or `firefox`)
+   - **Match Type**: Match against window name, WM_CLASS, or both
+   - **Profile**: Select which profile to activate
+4. Enable auto-switching with the toggle at the top
+5. Click **Test** to see the current window's info
+
+### Configuration File
+
+Rules are stored in `~/.config/g13-linux/app_profiles.json`:
+
+```json
+{
+  "rules": [
+    {
+      "name": "EVE Online",
+      "pattern": "EVE -",
+      "match_type": "window_name",
+      "profile_name": "eve_online",
+      "enabled": true
+    },
+    {
+      "name": "Firefox",
+      "pattern": "firefox",
+      "match_type": "wm_class",
+      "profile_name": "browser",
+      "enabled": true
+    }
+  ],
+  "default_profile": "default",
+  "enabled": true
+}
+```
+
+### Requirements
+
+- **X11 only**: Requires `xdotool` for window detection (not available on Wayland)
+- Install: `sudo apt install xdotool`
+
+### How It Works
+
+1. A background thread polls the active window every 500ms using `xdotool`
+2. When the active window changes, rules are matched against window name and WM_CLASS
+3. First matching rule triggers a profile switch
+4. If no rules match, the default profile is loaded (if configured)
 
 ## Hardware
 

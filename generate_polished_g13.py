@@ -10,8 +10,9 @@ Key characteristics from reference photos:
 - LCD at top center
 """
 
-from PIL import Image, ImageDraw, ImageFont, ImageFilter
 import math
+
+from PIL import Image, ImageDraw, ImageFont
 
 # Canvas - portrait, sized to fit the curved shape
 WIDTH = 520

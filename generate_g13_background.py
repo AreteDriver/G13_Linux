@@ -3,17 +3,18 @@
 Generate a realistic G13 background image matching the actual device appearance.
 """
 
-from PIL import Image, ImageDraw, ImageFont, ImageFilter
-import os
 import math
+import os
+
+from PIL import Image, ImageDraw, ImageFont
 
 # Import layout from the project
 from src.g13_linux.gui.resources.g13_layout import (
     G13_BUTTON_POSITIONS,
     JOYSTICK_AREA,
-    LCD_AREA,
-    KEYBOARD_WIDTH,
     KEYBOARD_HEIGHT,
+    KEYBOARD_WIDTH,
+    LCD_AREA,
 )
 
 

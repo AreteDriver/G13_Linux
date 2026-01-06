@@ -49,15 +49,19 @@ sudo ./find_g13_device.sh
 
 | Feature | Code Complete | Hardware Tested | Notes |
 |---------|---------------|-----------------|-------|
-| Device connection | Yes | ✅ Yes | Via hidraw |
+| Device connection | Yes | ✅ Yes | Via hidraw or libusb |
 | LCD output | Yes | ✅ Yes | 5x7 font, 160x43 display |
 | Backlight RGB | Yes | ✅ Yes | Full color control |
-| Key detection | Yes | ⚠️ Needs sudo | Kernel driver blocks hidraw |
-| Thumbstick | Yes | ⚠️ Needs sudo | Same as key detection |
-| Profile switching | Yes | Partial | Depends on key detection |
+| Key detection | Yes | ✅ Yes | G1-G22, M1-M3, MR keys |
+| Thumbstick | Yes | ✅ Yes | Analog position + click |
+| Thumb buttons | Yes | ✅ Yes | LEFT, DOWN buttons |
+| Profile switching | Yes | ✅ Yes | M1/M2/M3 mode switching |
+| Joystick modes | Yes | ✅ Yes | Analog, Digital, Disabled |
+| Macro recording | Yes | ⚠️ Partial | Recording works, playback untested |
+| LCD clock | Yes | ⚠️ Untested | 12/24h, seconds, date options |
 
-**Note**: Button/thumbstick input requires `sudo` to detach kernel driver via libusb.
-Linux kernel 6.19+ will have native `hid-lg-g15` support for G13.
+**Note**: Button/thumbstick input requires `sudo` or libusb mode to detach kernel driver.
+Use `g13-linux-gui.sh` launcher for automatic privilege escalation via pkexec.
 
 ---
 

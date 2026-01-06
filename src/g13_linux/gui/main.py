@@ -8,9 +8,49 @@ Usage:
     sudo g13-linux-gui --libusb  # With button input (requires root)
 """
 
+import atexit
+import fcntl
+import os
 import sys
+from pathlib import Path
 
 from PyQt6.QtWidgets import QApplication, QMessageBox
+
+# Lock file path - use /tmp for root, ~/.cache for user
+LOCK_FILE = Path("/tmp/g13-linux-gui.lock")
+_lock_file_handle = None
+
+
+def acquire_instance_lock() -> bool:
+    """Try to acquire single-instance lock. Returns True if acquired."""
+    global _lock_file_handle
+    try:
+        _lock_file_handle = open(LOCK_FILE, "w")
+        fcntl.flock(_lock_file_handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        _lock_file_handle.write(str(os.getpid()))
+        _lock_file_handle.flush()
+        return True
+    except (IOError, OSError):
+        if _lock_file_handle:
+            _lock_file_handle.close()
+            _lock_file_handle = None
+        return False
+
+
+def release_instance_lock():
+    """Release the single-instance lock."""
+    global _lock_file_handle
+    if _lock_file_handle:
+        try:
+            fcntl.flock(_lock_file_handle.fileno(), fcntl.LOCK_UN)
+            _lock_file_handle.close()
+        except (IOError, OSError):
+            pass
+        _lock_file_handle = None
+    try:
+        LOCK_FILE.unlink(missing_ok=True)
+    except (IOError, OSError):
+        pass
 
 
 def main():
@@ -30,6 +70,22 @@ def main():
     except ImportError:  # pragma: no cover
         print("ERROR: PyQt6 not installed. Install with: pip install PyQt6")
         return 1
+
+    # Try to acquire single-instance lock
+    if not acquire_instance_lock():
+        print("ERROR: Another instance of G13LogitechOPS GUI is already running.")
+        # Show GUI message if possible
+        app = QApplication(sys.argv)
+        QMessageBox.warning(
+            None,
+            "Already Running",
+            "Another instance of G13LogitechOPS GUI is already running.\n\n"
+            "Only one instance can run at a time to avoid device conflicts.",
+        )
+        return 1
+
+    # Register cleanup
+    atexit.register(release_instance_lock)
 
     # Create application
     app = QApplication(sys.argv)

@@ -247,6 +247,168 @@ class TestHardwareControlWidget:
 
         assert 75 in received
 
+    def test_clock_checkbox_exists(self, qapp):
+        """Test clock checkbox exists."""
+        from g13_linux.gui.views.hardware_control import HardwareControlWidget
+
+        widget = HardwareControlWidget()
+
+        assert widget.clock_checkbox is not None
+        assert widget.clock_format is not None
+        assert widget.show_seconds is not None
+        assert widget.show_date is not None
+
+    def test_toggle_clock_enables_timer(self, qapp):
+        """Test enabling clock starts timer."""
+        from g13_linux.gui.views.hardware_control import HardwareControlWidget
+
+        widget = HardwareControlWidget()
+        assert widget._clock_enabled is False
+        assert widget._clock_timer.isActive() is False
+
+        widget._toggle_clock(True)
+
+        assert widget._clock_enabled is True
+        assert widget._clock_timer.isActive() is True
+        assert widget.lcd_text.isEnabled() is False
+
+        # Cleanup
+        widget._toggle_clock(False)
+
+    def test_toggle_clock_disables_timer(self, qapp):
+        """Test disabling clock stops timer."""
+        from g13_linux.gui.views.hardware_control import HardwareControlWidget
+
+        widget = HardwareControlWidget()
+        widget._toggle_clock(True)
+        assert widget._clock_timer.isActive() is True
+
+        widget._toggle_clock(False)
+
+        assert widget._clock_enabled is False
+        assert widget._clock_timer.isActive() is False
+        assert widget.lcd_text.isEnabled() is True
+
+    def test_update_clock_24h_with_seconds(self, qapp):
+        """Test clock update in 24h format with seconds."""
+        from g13_linux.gui.views.hardware_control import HardwareControlWidget
+
+        widget = HardwareControlWidget()
+        received = []
+        widget.lcd_text_changed.connect(lambda t: received.append(t))
+
+        widget.clock_format.setCurrentIndex(0)  # 24-hour
+        widget.show_seconds.setChecked(True)
+        widget.show_date.setChecked(False)
+
+        widget._update_clock()
+
+        assert len(received) == 1
+        # Format: HH:MM:SS
+        assert ":" in received[0]
+        assert len(received[0].split(":")) == 3
+
+    def test_update_clock_24h_without_seconds(self, qapp):
+        """Test clock update in 24h format without seconds."""
+        from g13_linux.gui.views.hardware_control import HardwareControlWidget
+
+        widget = HardwareControlWidget()
+        received = []
+        widget.lcd_text_changed.connect(lambda t: received.append(t))
+
+        widget.clock_format.setCurrentIndex(0)  # 24-hour
+        widget.show_seconds.setChecked(False)
+        widget.show_date.setChecked(False)
+
+        widget._update_clock()
+
+        assert len(received) == 1
+        # Format: HH:MM
+        assert ":" in received[0]
+        assert len(received[0].split(":")) == 2
+
+    def test_update_clock_12h_with_seconds(self, qapp):
+        """Test clock update in 12h format with seconds."""
+        from g13_linux.gui.views.hardware_control import HardwareControlWidget
+
+        widget = HardwareControlWidget()
+        received = []
+        widget.lcd_text_changed.connect(lambda t: received.append(t))
+
+        widget.clock_format.setCurrentIndex(1)  # 12-hour
+        widget.show_seconds.setChecked(True)
+        widget.show_date.setChecked(False)
+
+        widget._update_clock()
+
+        assert len(received) == 1
+        # Format: HH:MM:SS AM/PM
+        assert "AM" in received[0] or "PM" in received[0]
+
+    def test_update_clock_12h_without_seconds(self, qapp):
+        """Test clock update in 12h format without seconds."""
+        from g13_linux.gui.views.hardware_control import HardwareControlWidget
+
+        widget = HardwareControlWidget()
+        received = []
+        widget.lcd_text_changed.connect(lambda t: received.append(t))
+
+        widget.clock_format.setCurrentIndex(1)  # 12-hour
+        widget.show_seconds.setChecked(False)
+        widget.show_date.setChecked(False)
+
+        widget._update_clock()
+
+        assert len(received) == 1
+        assert "AM" in received[0] or "PM" in received[0]
+
+    def test_update_clock_with_date(self, qapp):
+        """Test clock update with date enabled."""
+        from g13_linux.gui.views.hardware_control import HardwareControlWidget
+
+        widget = HardwareControlWidget()
+        received = []
+        widget.lcd_text_changed.connect(lambda t: received.append(t))
+
+        widget.show_date.setChecked(True)
+
+        widget._update_clock()
+
+        assert len(received) == 1
+        # Should have newline for date
+        assert "\n" in received[0]
+        # Date format: YYYY-MM-DD
+        assert "-" in received[0]
+
+    def test_on_format_changed_updates_clock_when_enabled(self, qapp):
+        """Test format change updates clock when enabled."""
+        from g13_linux.gui.views.hardware_control import HardwareControlWidget
+
+        widget = HardwareControlWidget()
+        received = []
+        widget.lcd_text_changed.connect(lambda t: received.append(t))
+
+        widget._clock_enabled = True
+        widget._on_format_changed()
+
+        assert len(received) == 1
+
+        # Cleanup
+        widget._clock_enabled = False
+
+    def test_on_format_changed_does_nothing_when_disabled(self, qapp):
+        """Test format change does nothing when clock disabled."""
+        from g13_linux.gui.views.hardware_control import HardwareControlWidget
+
+        widget = HardwareControlWidget()
+        received = []
+        widget.lcd_text_changed.connect(lambda t: received.append(t))
+
+        widget._clock_enabled = False
+        widget._on_format_changed()
+
+        assert len(received) == 0
+
 
 class TestProfileManagerWidget:
     """Tests for ProfileManagerWidget."""

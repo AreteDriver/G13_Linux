@@ -2,84 +2,68 @@
 G13 Button Layout Geometry
 
 Defines the visual positions and sizes of all G13 buttons for the GUI.
-Coordinates match the device background image (520x700 pixels).
-
-Keys are arranged in curved arcs matching the real G13 ergonomic layout.
-Outer keys on each row are positioned lower and angled outward.
+Coordinates based on reference image scaled 2x (510x396 from 255x198).
 """
 
-# Overall dimensions
-KEYBOARD_WIDTH = 520
-KEYBOARD_HEIGHT = 700
+# Overall dimensions (2x scale of reference image)
+SCALE = 2
+KEYBOARD_WIDTH = 255 * SCALE  # 510
+KEYBOARD_HEIGHT = 198 * SCALE  # 396
 
-# Key sizing
-KEY_W = 46  # Standard G-key width
-KEY_H = 40  # Standard G-key height
-M_KEY_W = 38  # M-key width
-M_KEY_H = 18  # M-key height
+# Key sizing (scaled)
+KEY_W = 15 * SCALE  # 30
+KEY_H = 12 * SCALE  # 24
+M_KEY_W = 11 * SCALE  # 22
+M_KEY_H = 6 * SCALE  # 12
+WIDE_KEY_W = 20 * SCALE  # 40
 
-# Convert center coords to top-left for Qt buttons
+
 def _c(cx, cy, w, h):
-    """Convert center (cx, cy) to top-left dict."""
-    return {"x": int(cx - w/2), "y": int(cy - h/2), "width": w, "height": h}
+    """Convert center (cx, cy) to top-left dict, applying scale."""
+    return {"x": int(cx * SCALE - w / 2), "y": int(cy * SCALE - h / 2), "width": w, "height": h}
 
-# Row base Y positions
-ROW1_Y = 185
-ROW2_Y = 240
-ROW3_Y = 295
-ROW4_Y = 355
-
-# Curved row offsets (outer keys lower)
-CURVE_7 = [18, 8, 2, 0, 2, 8, 18]  # For 7-key rows
-CURVE_5 = [12, 4, 0, 4, 12]        # For 5-key row
 
 G13_BUTTON_POSITIONS = {
-    # M-keys row (below LCD)
-    "M1": _c(185, 130, M_KEY_W, M_KEY_H),
-    "M2": _c(230, 130, M_KEY_W, M_KEY_H),
-    "M3": _c(275, 130, M_KEY_W, M_KEY_H),
-    "MR": _c(320, 130, M_KEY_W, M_KEY_H),
-
-    # G-keys Row 1 (G1-G7) - curved arc
-    "G1": _c(95,  ROW1_Y + 18, KEY_W, KEY_H),
-    "G2": _c(148, ROW1_Y + 8,  KEY_W, KEY_H),
-    "G3": _c(201, ROW1_Y + 2,  KEY_W, KEY_H),
-    "G4": _c(254, ROW1_Y,      KEY_W, KEY_H),
-    "G5": _c(307, ROW1_Y + 2,  KEY_W, KEY_H),
-    "G6": _c(360, ROW1_Y + 8,  KEY_W, KEY_H),
-    "G7": _c(413, ROW1_Y + 18, KEY_W, KEY_H),
-
-    # G-keys Row 2 (G8-G14)
-    "G8":  _c(95,  ROW2_Y + 18, KEY_W, KEY_H),
-    "G9":  _c(148, ROW2_Y + 8,  KEY_W, KEY_H),
-    "G10": _c(201, ROW2_Y + 2,  KEY_W, KEY_H),
-    "G11": _c(254, ROW2_Y,      KEY_W, KEY_H),
-    "G12": _c(307, ROW2_Y + 2,  KEY_W, KEY_H),
-    "G13": _c(360, ROW2_Y + 8,  KEY_W, KEY_H),
-    "G14": _c(413, ROW2_Y + 18, KEY_W, KEY_H),
-
-    # G-keys Row 3 (G15-G19) - 5 keys
-    "G15": _c(135, ROW3_Y + 12, KEY_W, KEY_H),
-    "G16": _c(190, ROW3_Y + 4,  KEY_W, KEY_H),
-    "G17": _c(245, ROW3_Y,      KEY_W, KEY_H),
-    "G18": _c(300, ROW3_Y + 4,  KEY_W, KEY_H),
-    "G19": _c(355, ROW3_Y + 12, KEY_W, KEY_H),
-
-    # G-keys Row 4 (G20-G22) - 3 wider keys
-    "G20": _c(175, ROW4_Y + 6, 60, 46),
-    "G21": _c(245, ROW4_Y,     60, 46),
-    "G22": _c(315, ROW4_Y + 6, 60, 46),
-
-    # Thumb buttons
-    "LEFT": _c(265, 480, 48, 36),
-    "DOWN": _c(265, 530, 48, 36),
-
+    # M-keys row (below LCD) - y≈48
+    "M1": _c(78, 48, M_KEY_W, M_KEY_H),
+    "M2": _c(91, 48, M_KEY_W, M_KEY_H),
+    "M3": _c(104, 48, M_KEY_W, M_KEY_H),
+    "MR": _c(117, 48, M_KEY_W, M_KEY_H),
+    # G-keys Row 1 (G1-G7) - y≈63, spacing ~17
+    "G1": _c(50, 63, KEY_W, KEY_H),
+    "G2": _c(67, 63, KEY_W, KEY_H),
+    "G3": _c(84, 63, KEY_W, KEY_H),
+    "G4": _c(101, 63, KEY_W, KEY_H),
+    "G5": _c(118, 63, KEY_W, KEY_H),
+    "G6": _c(135, 63, KEY_W, KEY_H),
+    "G7": _c(152, 63, KEY_W, KEY_H),
+    # G-keys Row 2 (G8-G14) - y≈78
+    "G8": _c(50, 78, KEY_W, KEY_H),
+    "G9": _c(67, 78, KEY_W, KEY_H),
+    "G10": _c(84, 78, KEY_W, KEY_H),
+    "G11": _c(101, 78, KEY_W, KEY_H),
+    "G12": _c(118, 78, KEY_W, KEY_H),
+    "G13": _c(135, 78, KEY_W, KEY_H),
+    "G14": _c(152, 78, KEY_W, KEY_H),
+    # G-keys Row 3 (G15-G19) - y≈93, offset right
+    "G15": _c(58, 93, KEY_W, KEY_H),
+    "G16": _c(75, 93, KEY_W, KEY_H),
+    "G17": _c(92, 93, KEY_W, KEY_H),
+    "G18": _c(109, 93, KEY_W, KEY_H),
+    "G19": _c(126, 93, KEY_W, KEY_H),
+    # G-keys Row 4 (G20-G22) - y≈108, wider keys
+    "G20": _c(67, 108, WIDE_KEY_W, KEY_H),
+    "G21": _c(92, 108, WIDE_KEY_W, KEY_H),
+    "G22": _c(117, 108, WIDE_KEY_W, KEY_H),
+    # Thumb buttons (left of thumbstick)
+    "LEFT": _c(68, 140, KEY_W, int(KEY_H * 0.85)),
+    "DOWN": _c(68, 156, KEY_W, int(KEY_H * 0.85)),
     # Joystick click
-    "STICK": _c(385, 520, 44, 44),
+    "STICK": _c(168, 150, 26 * SCALE, 26 * SCALE),
 }
 
 # Joystick area (for visual indicator)
-JOYSTICK_AREA = {"x": 337, "y": 472, "width": 96, "height": 96}
+JOYSTICK_AREA = {"x": 152 * SCALE, "y": 132 * SCALE, "width": 32 * SCALE, "height": 32 * SCALE}
 
 # LCD display area
-LCD_AREA = {"x": 150, "y": 40, "width": 220, "height": 70}
+LCD_AREA = {"x": 68 * SCALE, "y": 18 * SCALE, "width": 62 * SCALE, "height": 22 * SCALE}

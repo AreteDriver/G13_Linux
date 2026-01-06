@@ -46,7 +46,8 @@ class ButtonMapperWidget(QWidget):
             LCD_AREA["width"],
             LCD_AREA["height"],
         )
-        self.lcd_preview.show()
+        # Hide by default - the reference image already shows the LCD
+        self.lcd_preview.hide()
 
     def update_lcd(self, framebuffer: bytes | bytearray):
         """Update LCD preview with new framebuffer data."""
@@ -69,11 +70,11 @@ class ButtonMapperWidget(QWidget):
             if os.path.exists(path):
                 pixmap = QPixmap(path)
                 if not pixmap.isNull():
-                    # Scale to fit our widget dimensions while maintaining aspect ratio
+                    # Scale to exactly match widget dimensions
                     return pixmap.scaled(
                         KEYBOARD_WIDTH,
                         KEYBOARD_HEIGHT,
-                        Qt.AspectRatioMode.KeepAspectRatio,
+                        Qt.AspectRatioMode.IgnoreAspectRatio,
                         Qt.TransformationMode.SmoothTransformation,
                     )
         return None

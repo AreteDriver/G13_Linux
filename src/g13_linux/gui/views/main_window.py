@@ -14,6 +14,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from .app_profiles import AppProfilesWidget
 from .button_mapper import ButtonMapperWidget
 from .hardware_control import HardwareControlWidget
 from .joystick_settings import JoystickSettingsWidget
@@ -37,6 +38,8 @@ class MainWindow(QMainWindow):
         self.hardware_widget = HardwareControlWidget()
         self.macro_widget = MacroEditorWidget()
         self.joystick_widget = JoystickSettingsWidget()
+        self.app_profiles_widget: AppProfilesWidget | None = None  # Set by controller
+        self._tabs: QTabWidget | None = None
 
         self._init_ui()
 
@@ -54,14 +57,14 @@ class MainWindow(QMainWindow):
         splitter.addWidget(left_widget)
 
         # Right side: Tabs
-        tabs = QTabWidget()
-        tabs.addTab(self.profile_widget, "Profiles")
-        tabs.addTab(self.joystick_widget, "Joystick")
-        tabs.addTab(self.macro_widget, "Macros")
-        tabs.addTab(self.hardware_widget, "Hardware")
-        tabs.addTab(self.monitor_widget, "Monitor")
+        self._tabs = QTabWidget()
+        self._tabs.addTab(self.profile_widget, "Profiles")
+        self._tabs.addTab(self.joystick_widget, "Joystick")
+        self._tabs.addTab(self.macro_widget, "Macros")
+        self._tabs.addTab(self.hardware_widget, "Hardware")
+        self._tabs.addTab(self.monitor_widget, "Monitor")
 
-        splitter.addWidget(tabs)
+        splitter.addWidget(self._tabs)
         splitter.setSizes([800, 400])
 
         # Status bar
@@ -74,3 +77,15 @@ class MainWindow(QMainWindow):
     def set_status(self, message: str):
         """Update status bar message"""
         self.status_bar.showMessage(message)
+
+    def setup_app_profiles(self, rules_manager, profiles: list[str]):
+        """Set up the app profiles widget with the rules manager.
+
+        Called by ApplicationController after initialization.
+        """
+        from ..models.app_profile_rules import AppProfileRulesManager
+
+        self.app_profiles_widget = AppProfilesWidget(rules_manager, profiles)
+        if self._tabs:
+            # Insert after Profiles tab
+            self._tabs.insertTab(1, self.app_profiles_widget, "App Profiles")

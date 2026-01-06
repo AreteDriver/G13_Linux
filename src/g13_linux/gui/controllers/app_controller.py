@@ -7,6 +7,7 @@ Main orchestrator connecting models to views.
 from PyQt6.QtCore import QObject, pyqtSlot
 from PyQt6.QtWidgets import QMessageBox
 
+from ..models.app_profile_rules import AppProfileRulesManager
 from ..models.event_decoder import EventDecoder
 from ..models.g13_device import G13Device
 from ..models.global_hotkeys import GlobalHotkeyManager
@@ -16,6 +17,7 @@ from ..models.macro_manager import MacroManager
 from ..models.macro_player import MacroPlayer
 from ..models.macro_recorder import MacroRecorder, RecorderState
 from ..models.profile_manager import ProfileManager
+from ..models.window_monitor import WindowMonitorThread
 from ..widgets.key_selector import KeySelectorDialog
 from .device_event_controller import DeviceEventThread
 
@@ -41,6 +43,11 @@ class ApplicationController(QObject):
         self.macro_player = MacroPlayer()
         self.macro_manager = MacroManager()
         self.hotkey_manager = GlobalHotkeyManager()
+
+        # Per-application profile switching
+        self.window_monitor = WindowMonitorThread()
+        self.app_profile_rules = AppProfileRulesManager()
+        self.current_profile_name: str | None = None
 
         # State
         self.current_mappings = {}
@@ -97,6 +104,11 @@ class ApplicationController(QObject):
         # Wire joystick direction callback to update UI
         self.joystick_handler.on_direction_change = self._on_joystick_direction_change
 
+        # Per-application profile switching
+        self.window_monitor.window_changed.connect(self.app_profile_rules.on_window_changed)
+        self.window_monitor.monitor_error.connect(self._on_window_monitor_error)
+        self.app_profile_rules.profile_switch_requested.connect(self._on_app_profile_switch)
+
     def start(self):
         """Initialize application"""
         # Connect to device
@@ -119,6 +131,13 @@ class ApplicationController(QObject):
         profiles = self.profile_manager.list_profiles()
         self.main_window.profile_widget.update_profile_list(profiles)
 
+        # Set up app profiles widget
+        self.main_window.setup_app_profiles(self.app_profile_rules, profiles)
+        if self.main_window.app_profiles_widget:
+            self.main_window.app_profiles_widget.enabled_changed.connect(
+                self.set_app_profiles_enabled
+            )
+
         # Load example profile if exists
         if "example" in profiles:
             self._load_profile("example")
@@ -126,6 +145,10 @@ class ApplicationController(QObject):
         # Register global hotkeys from saved macros
         self._register_all_macro_hotkeys()
         self.hotkey_manager.start()
+
+        # Start window monitor for per-app profiles (if enabled and available)
+        if self.app_profile_rules.enabled and self.window_monitor.is_available:
+            self.window_monitor.start()
 
     @pyqtSlot(bytes)
     def _on_raw_event(self, data: bytes):
@@ -209,6 +232,7 @@ class ApplicationController(QObject):
         """Load a profile and update UI"""
         try:
             profile = self.profile_manager.load_profile(profile_name)
+            self.current_profile_name = profile_name
             self.current_mappings = profile.mappings.copy()
 
             # Update button mapper
@@ -432,6 +456,37 @@ class ApplicationController(QObject):
         """Handle joystick direction change - update UI indicator."""
         self.main_window.joystick_widget.update_direction(direction)
 
+    # Per-application profile methods
+
+    @pyqtSlot(str)
+    def _on_window_monitor_error(self, message: str) -> None:
+        """Handle window monitor error."""
+        print(f"Window monitor: {message}")
+        # Don't show message box - just disable the feature silently
+
+    @pyqtSlot(str)
+    def _on_app_profile_switch(self, profile_name: str) -> None:
+        """Handle automatic profile switch from window monitor."""
+        if profile_name == self.current_profile_name:
+            return  # Already on this profile
+
+        if not self.profile_manager.profile_exists(profile_name):
+            print(f"App profile switch: Profile '{profile_name}' not found")
+            return
+
+        self._load_profile(profile_name)
+        self.main_window.set_status(f"Auto-switched to profile: {profile_name}")
+
+    def set_app_profiles_enabled(self, enabled: bool) -> None:
+        """Enable or disable per-application profile switching."""
+        self.app_profile_rules.enabled = enabled
+        if enabled and self.window_monitor.is_available:
+            if not self.window_monitor.isRunning():
+                self.window_monitor.start()
+        else:
+            if self.window_monitor.isRunning():
+                self.window_monitor.stop()
+
     def shutdown(self):
         """Cleanup on application exit"""
         # Stop any active recording/playback
@@ -445,6 +500,10 @@ class ApplicationController(QObject):
 
         # Stop hotkey listener
         self.hotkey_manager.stop()
+
+        # Stop window monitor
+        if self.window_monitor.isRunning():
+            self.window_monitor.stop()
 
         if self.event_thread:
             self.event_thread.stop()

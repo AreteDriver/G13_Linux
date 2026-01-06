@@ -1,0 +1,34 @@
+{
+  "rules": [
+    {
+      "name": "EVE Online",
+      "pattern": "EVE -",
+      "match_type": "window_name",
+      "profile_name": "eve_online",
+      "enabled": false
+    },
+    {
+      "name": "Firefox",
+      "pattern": "firefox",
+      "match_type": "wm_class",
+      "profile_name": "browser",
+      "enabled": false
+    },
+    {
+      "name": "Chrome",
+      "pattern": "google-chrome|chromium",
+      "match_type": "wm_class",
+      "profile_name": "browser",
+      "enabled": false
+    },
+    {
+      "name": "VS Code",
+      "pattern": "code|Code",
+      "match_type": "wm_class",
+      "profile_name": "coding",
+      "enabled": false
+    }
+  ],
+  "default_profile": null,
+  "enabled": false
+}

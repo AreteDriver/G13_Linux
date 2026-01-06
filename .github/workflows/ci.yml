@@ -44,7 +44,8 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libhidapi-dev libhidapi-hidraw0 libusb-1.0-0-dev
+          sudo apt-get install -y libhidapi-dev libhidapi-hidraw0 libusb-1.0-0-dev \
+            libegl1 libopengl0 libxcb-cursor0 libxkbcommon0 xvfb
 
       - name: Install package
         run: |
@@ -53,11 +54,15 @@ jobs:
           pip install ruff
 
       - name: Run tests
-        run: pytest -v --tb=short
+        run: xvfb-run pytest -v --tb=short
+        env:
+          QT_QPA_PLATFORM: offscreen
 
       - name: Run tests with coverage
         if: matrix.python-version == '3.11'
-        run: pytest --cov=g13_linux --cov-report=xml --cov-report=term
+        run: xvfb-run pytest --cov=g13_linux --cov-report=xml --cov-report=term
+        env:
+          QT_QPA_PLATFORM: offscreen
 
       - name: Upload coverage
         if: matrix.python-version == '3.11'

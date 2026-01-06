@@ -178,7 +178,8 @@ class TestG13Button:
         """Test setting combo key mapping without label."""
         combo = {"keys": ["KEY_LEFTCTRL", "KEY_V"]}
         button.set_mapping(combo)
-        assert "LEFTCTRL+V" in button.text()
+        # Full combo is in tooltip, button text is truncated
+        assert "LEFTCTRL+V" in button.toolTip()
 
     def test_set_mapping_combo_empty_keys(self, button):
         """Test setting combo with empty keys list."""
@@ -216,22 +217,8 @@ class TestG13Button:
         button.mapped_key = {"keys": []}
         assert button._has_mapping() is False
 
-    def test_lighten_color(self, button):
-        """Test _lighten_color lightens correctly."""
-        result = button._lighten_color("#808080")
-        # 0x80 * 1.2 = 153 = 0x99
-        assert result == "#999999"
-
-    def test_lighten_color_caps_at_255(self, button):
-        """Test _lighten_color caps at 255."""
-        result = button._lighten_color("#ffffff")
-        assert result == "#ffffff"
-
-    def test_darken_color(self, button):
-        """Test _darken_color darkens correctly."""
-        result = button._darken_color("#c8c8c8")
-        # 0xc8 (200) * 0.8 = 160 = 0xa0
-        assert result == "#a0a0a0"
+    # Note: _lighten_color and _darken_color methods were removed in v1.5.5
+    # The button now uses stylesheet-based styling instead of programmatic color manipulation
 
 
 class TestLCDPreviewWidget:

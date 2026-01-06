@@ -25,7 +25,7 @@ class TestMainWindow:
 
         window = MainWindow()
 
-        assert window.windowTitle() == "G13LogitechOPS - Configuration Tool v0.2.0"
+        assert window.windowTitle() == "G13LogitechOPS - Configuration Tool"
         assert window.minimumWidth() >= 1200
         assert window.minimumHeight() >= 700
 

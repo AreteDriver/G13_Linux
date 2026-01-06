@@ -83,9 +83,51 @@ class ButtonMapperWidget(QWidget):
         """Create all G13 buttons based on layout"""
         for button_id, position in G13_BUTTON_POSITIONS.items():
             btn = G13Button(button_id, self)
-            btn.setGeometry(position["x"], position["y"], position["width"], position["height"])
             btn.clicked.connect(lambda checked=False, bid=button_id: self.button_clicked.emit(bid))
             self.buttons[button_id] = btn
+        # Position buttons after creation
+        self._update_button_positions()
+
+    def _update_button_positions(self):
+        """Update button positions based on current widget size"""
+        # Calculate scale factors
+        scale_x = self.width() / KEYBOARD_WIDTH
+        scale_y = self.height() / KEYBOARD_HEIGHT
+
+        for button_id, position in G13_BUTTON_POSITIONS.items():
+            if button_id in self.buttons:
+                btn = self.buttons[button_id]
+                x = int(position["x"] * scale_x)
+                y = int(position["y"] * scale_y)
+                w = int(position["width"] * scale_x)
+                h = int(position["height"] * scale_y)
+                btn.setGeometry(x, y, w, h)
+
+    def resizeEvent(self, event):
+        """Handle widget resize - scale buttons and LCD preview"""
+        super().resizeEvent(event)
+        self._update_button_positions()
+
+        # Update LCD preview position
+        scale_x = self.width() / KEYBOARD_WIDTH
+        scale_y = self.height() / KEYBOARD_HEIGHT
+        self.lcd_preview.setGeometry(
+            int(LCD_AREA["x"] * scale_x),
+            int(LCD_AREA["y"] * scale_y),
+            int(LCD_AREA["width"] * scale_x),
+            int(LCD_AREA["height"] * scale_y),
+        )
+
+        # Scale background image to current size
+        if self.background_image:
+            self.background_image = self._load_background_image()
+            if self.background_image:
+                self.background_image = self.background_image.scaled(
+                    self.width(),
+                    self.height(),
+                    Qt.AspectRatioMode.IgnoreAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation,
+                )
 
     def set_button_mapping(self, button_id: str, key_name: str):
         """Update button label with mapped key"""

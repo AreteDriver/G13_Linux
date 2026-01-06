@@ -340,81 +340,13 @@ def main():
             fill=(8, 25, 8), width=1
         )
 
-    # === M-KEYS (below LCD) ===
-    m_y = 130
-    m_keys = [(185, "M1"), (230, "M2"), (275, "M3"), (320, "MR")]
-    for mx, label in m_keys:
-        draw_m_key(draw, mx, m_y, 38, 18, label=label, font=font_m,
-                   backlight=BACKLIGHT_COLOR, intensity=BACKLIGHT_INTENSITY)
+    # === KEY AREAS ===
+    # Keys are NOT drawn here - Qt button widgets provide the key visuals
+    # This background just shows the device body with recessed key areas
 
-    # === G-KEYS - Arranged in ARCS ===
-    # The real G13 keys follow curved arcs matching finger reach
-    # Each row is an arc, outer keys angled outward
-
-    key_w, key_h = 46, 40
-
-    # Collect all key positions for glow pass
-    all_keys = []
-
-    # Row 1: G1-G7 (top arc)
-    row1_y_base = 185
-    row1_keys = [
-        # (cx, cy, angle, label)
-        (95,  row1_y_base + 18, -12, "G1"),
-        (148, row1_y_base + 8,  -6,  "G2"),
-        (201, row1_y_base + 2,  -2,  "G3"),
-        (254, row1_y_base,       0,  "G4"),
-        (307, row1_y_base + 2,   2,  "G5"),
-        (360, row1_y_base + 8,   6,  "G6"),
-        (413, row1_y_base + 18,  12, "G7"),
-    ]
-    all_keys.extend([(cx, cy, key_w, key_h) for cx, cy, _, _ in row1_keys])
-
-    for cx, cy, angle, label in row1_keys:
-        draw_rounded_key(draw, cx, cy, key_w, key_h, angle, label=label, font=font_key,
-                         backlight=BACKLIGHT_COLOR, intensity=BACKLIGHT_INTENSITY)
-
-    # Row 2: G8-G14
-    row2_y_base = 240
-    row2_keys = [
-        (95,  row2_y_base + 18, -12, "G8"),
-        (148, row2_y_base + 8,  -6,  "G9"),
-        (201, row2_y_base + 2,  -2,  "G10"),
-        (254, row2_y_base,       0,  "G11"),
-        (307, row2_y_base + 2,   2,  "G12"),
-        (360, row2_y_base + 8,   6,  "G13"),
-        (413, row2_y_base + 18,  12, "G14"),
-    ]
-
-    for cx, cy, angle, label in row2_keys:
-        draw_rounded_key(draw, cx, cy, key_w, key_h, angle, label=label, font=font_key,
-                         backlight=BACKLIGHT_COLOR, intensity=BACKLIGHT_INTENSITY)
-
-    # Row 3: G15-G19 (5 keys, more centered)
-    row3_y_base = 295
-    row3_keys = [
-        (135, row3_y_base + 12, -8, "G15"),
-        (190, row3_y_base + 4,  -3, "G16"),
-        (245, row3_y_base,       0, "G17"),
-        (300, row3_y_base + 4,   3, "G18"),
-        (355, row3_y_base + 12,  8, "G19"),
-    ]
-
-    for cx, cy, angle, label in row3_keys:
-        draw_rounded_key(draw, cx, cy, key_w, key_h, angle, label=label, font=font_key,
-                         backlight=BACKLIGHT_COLOR, intensity=BACKLIGHT_INTENSITY)
-
-    # Row 4: G20-G22 (3 wider keys - thumb/space row)
-    row4_y_base = 355
-    row4_keys = [
-        (175, row4_y_base + 6, -4, "G20"),
-        (245, row4_y_base,      0, "G21"),
-        (315, row4_y_base + 6,  4, "G22"),
-    ]
-
-    for cx, cy, angle, label in row4_keys:
-        draw_rounded_key(draw, cx, cy, key_w + 14, key_h + 6, angle, label=label, font=font_key,
-                         backlight=BACKLIGHT_COLOR, intensity=BACKLIGHT_INTENSITY)
+    # Key area background (slightly recessed look for where keys will go)
+    key_area_rect = (60, 160, 450, 420)
+    draw.rounded_rectangle(key_area_rect, radius=15, fill=(25, 27, 30), outline=(35, 38, 42))
 
     # === PALM REST with THUMBSTICK ===
     # Large curved area at bottom
@@ -427,12 +359,7 @@ def main():
     )
 
     # === THUMB BUTTONS (LEFT, DOWN) ===
-    # To the left of thumbstick
-    thumb_x = 265
-    draw_rounded_key(draw, thumb_x, 480, 48, 36, 0, label="LEFT", font=font_thumb,
-                     backlight=BACKLIGHT_COLOR, intensity=BACKLIGHT_INTENSITY)
-    draw_rounded_key(draw, thumb_x, 530, 48, 36, 0, label="DOWN", font=font_thumb,
-                     backlight=BACKLIGHT_COLOR, intensity=BACKLIGHT_INTENSITY)
+    # Not drawn here - Qt button widgets provide the visuals
 
     # === THUMBSTICK ===
     stick_cx, stick_cy = 385, 520

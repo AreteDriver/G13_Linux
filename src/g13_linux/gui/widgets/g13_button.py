@@ -5,6 +5,8 @@ Custom QPushButton representing a single G13 button with Logitech-style theming.
 Supports highlighting when physically pressed, bound state display, and tooltips.
 """
 
+from typing import Any, Dict, Optional, Union
+
 try:
     from PyQt6.QtCore import Qt, pyqtSignal
     from PyQt6.QtGui import QCursor, QFont
@@ -112,7 +114,7 @@ class G13Button(QPushButton):
     def __init__(self, button_id: str, parent=None):
         super().__init__(button_id, parent)
         self.button_id = button_id
-        self.mapped_key = None
+        self.mapped_key: Optional[Union[str, Dict[str, Any]]] = None
         self.is_highlighted = False
         self._is_hovered = False
 
@@ -163,18 +165,19 @@ class G13Button(QPushButton):
         if not self.mapped_key or self.mapped_key == "KEY_RESERVED":
             return ""
 
+        binding: str = ""
         if isinstance(self.mapped_key, dict):
             # Combo key format
             label = self.mapped_key.get("label", "")
             if label:
-                binding = label
+                binding = str(label)
             else:
                 keys = self.mapped_key.get("keys", [])
                 short_keys = [k.replace("KEY_", "") for k in keys]
                 binding = "+".join(short_keys)
         else:
             # Simple key format
-            binding = self.mapped_key.replace("KEY_", "")
+            binding = str(self.mapped_key).replace("KEY_", "")
 
         # Truncate long bindings
         if len(binding) > 6:

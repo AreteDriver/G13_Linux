@@ -14,7 +14,7 @@ class HardwareController:
     def __init__(self):
         self.lcd: G13LCD | None = None
         self.backlight: G13Backlight | None = None
-        self._initialized = False
+        self._initialized: bool = False
 
     def initialize(self, device_handle):
         """

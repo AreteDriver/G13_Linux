@@ -8,10 +8,10 @@ try:
     from PyQt6.QtCore import QObject, pyqtSignal
 except ImportError:  # pragma: no cover
     # Fallback for development/testing without PyQt6
-    class QObject:
+    class QObject:  # type: ignore[no-redef]
         pass
 
-    def pyqtSignal(*args, **kwargs):
+    def pyqtSignal(*args, **kwargs):  # type: ignore[no-redef]
         return None
 
 

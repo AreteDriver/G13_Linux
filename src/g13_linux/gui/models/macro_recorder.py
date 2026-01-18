@@ -289,7 +289,8 @@ class MacroRecorder(QObject):
                     pass
 
             self._system_listener = keyboard.Listener(on_press=on_press, on_release=on_release)
-            self._system_listener.start()
+            if self._system_listener:
+                self._system_listener.start()
 
         except ImportError:
             self.error_occurred.emit("pynput not installed - system keyboard capture disabled")

@@ -153,7 +153,8 @@ class GlobalHotkeyManager(QObject):
 
             if hotkey_handlers:
                 self._listener = keyboard.GlobalHotKeys(hotkey_handlers)
-                self._listener.start()
+                if self._listener:
+                    self._listener.start()
                 self._running = True
                 return True
             else:

@@ -23,8 +23,8 @@ class G13Backlight:
             device_handle: HidrawDevice instance from device.py
         """
         self.device = device_handle
-        self._current_color = (255, 255, 255)  # Default white
-        self._current_brightness = 100
+        self._current_color: tuple[int, int, int] = (255, 255, 255)  # Default white
+        self._current_brightness: int = 100
 
     def set_color(self, r: int, g: int, b: int):
         """

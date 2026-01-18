@@ -2,11 +2,14 @@
 
 import time
 from enum import Enum
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from PyQt6.QtCore import QObject, QThread, pyqtSignal
 
 from .macro_types import Macro, MacroStep, MacroStepType, PlaybackMode
+
+if TYPE_CHECKING:
+    from evdev import UInput  # type: ignore[import]
 
 
 class PlaybackState(Enum):
@@ -30,7 +33,7 @@ class MacroPlayerThread(QThread):
         self.macro = macro
         self._stop_requested = False
         self._pause_requested = False
-        self._uinput = None
+        self._uinput: Optional["UInput"] = None  # UInput from evdev
 
     def run(self) -> None:
         """Execute macro with timing."""
@@ -127,7 +130,8 @@ class MacroPlayerThread(QThread):
             return
 
         if step.step_type in (MacroStepType.KEY_PRESS, MacroStepType.KEY_RELEASE):
-            self._emit_key(step.value, step.is_press)
+            if isinstance(step.value, str):
+                self._emit_key(step.value, step.is_press)
 
         elif step.step_type == MacroStepType.G13_BUTTON:
             # G13 button events - these would need profile mapping
@@ -137,7 +141,8 @@ class MacroPlayerThread(QThread):
             pass
 
         elif step.step_type == MacroStepType.DELAY:
-            self._interruptible_sleep(step.value / 1000.0)
+            if isinstance(step.value, (int, float)):
+                self._interruptible_sleep(step.value / 1000.0)
 
     def _emit_key(self, key_code: str, is_press: bool) -> None:
         """Emit a key press/release via UInput."""

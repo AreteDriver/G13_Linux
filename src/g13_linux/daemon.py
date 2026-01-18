@@ -23,6 +23,7 @@ from .mapper import G13Mapper
 from .menu.manager import ScreenManager
 from .menu.screen import InputEvent
 from .menu.screens.idle import IdleScreen
+from .settings import SettingsManager
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +61,9 @@ class G13Daemon:
 
         # Profile manager
         self.profile_manager = ProfileManager()
+
+        # Settings manager
+        self.settings_manager = SettingsManager()
 
     @property
     def uptime(self) -> str:
@@ -104,12 +108,14 @@ class G13Daemon:
         self._screen_manager = ScreenManager(lcd=self._lcd)
         self._screen_manager.led_controller = self._led_controller
         self._screen_manager.profile_manager = self.profile_manager
+        self._screen_manager.settings_manager = self.settings_manager
         self._screen_manager.daemon = self
 
         # Create idle screen
         idle_screen = IdleScreen(
             self._screen_manager,
             profile_manager=self.profile_manager,
+            settings_manager=self.settings_manager,
         )
 
         # Initialize navigation controller

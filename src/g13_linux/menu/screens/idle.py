@@ -6,9 +6,9 @@ Default status screen showing profile and quick info.
 
 from datetime import datetime
 
-from ..screen import Screen, InputEvent
 from ...lcd.canvas import Canvas
-from ...lcd.fonts import FONT_5X7, FONT_4X6, FONT_8X8
+from ...lcd.fonts import FONT_4X6, FONT_5X7, FONT_8X8
+from ..screen import InputEvent, Screen
 
 
 class IdleScreen(Screen):
@@ -22,19 +22,19 @@ class IdleScreen(Screen):
     - Optional: first few keybinds
     """
 
-    def __init__(self, manager, profile_manager=None, config=None):
+    def __init__(self, manager, profile_manager=None, settings_manager=None):
         """
         Initialize idle screen.
 
         Args:
             manager: ScreenManager instance
             profile_manager: Profile manager for current profile
-            config: Configuration settings
+            settings_manager: Settings manager for display preferences
         """
         super().__init__(manager)
         self.profile_manager = profile_manager
-        self.config = config
-        self._last_minute = -1
+        self.settings_manager = settings_manager
+        self._last_second = -1
 
     def on_input(self, event: InputEvent) -> bool:
         """
@@ -51,11 +51,21 @@ class IdleScreen(Screen):
         return False
 
     def update(self, dt: float):
-        """Update time display if minute changed."""
+        """Update time display based on settings."""
         now = datetime.now()
-        if now.minute != self._last_minute:
-            self._last_minute = now.minute
-            self.mark_dirty()
+        # Update every second if showing seconds, else every minute
+        show_seconds = True
+        if self.settings_manager:
+            show_seconds = self.settings_manager.clock_show_seconds
+
+        if show_seconds:
+            if now.second != self._last_second:
+                self._last_second = now.second
+                self.mark_dirty()
+        else:
+            if now.minute != self._last_second:
+                self._last_second = now.minute
+                self.mark_dirty()
 
     def render(self, canvas: Canvas):
         """Render idle screen."""
@@ -75,8 +85,8 @@ class IdleScreen(Screen):
         # Header: Profile name and time
         canvas.draw_text(0, 0, profile_name[:18], FONT_5X7)
 
-        # Time on right side
-        time_str = datetime.now().strftime("%H:%M")
+        # Time on right side (respects clock settings)
+        time_str = self._format_time()
         time_width = len(time_str) * 6
         canvas.draw_text(canvas.WIDTH - time_width, 0, time_str, FONT_5X7)
 
@@ -105,6 +115,25 @@ class IdleScreen(Screen):
                 canvas.draw_text(x, y, f"M{i}", FONT_4X6, on=False)
             else:
                 canvas.draw_text(x, y, f"M{i}", FONT_4X6)
+
+    def _format_time(self) -> str:
+        """Format current time based on settings."""
+        now = datetime.now()
+
+        # Get settings
+        use_24h = True
+        show_seconds = True
+        if self.settings_manager:
+            use_24h = self.settings_manager.clock_format == "24h"
+            show_seconds = self.settings_manager.clock_show_seconds
+
+        # Build format string
+        if use_24h:
+            fmt = "%H:%M:%S" if show_seconds else "%H:%M"
+        else:
+            fmt = "%I:%M:%S %p" if show_seconds else "%I:%M %p"
+
+        return now.strftime(fmt)
 
 
 class ClockScreen(Screen):

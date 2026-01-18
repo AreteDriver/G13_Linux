@@ -47,7 +47,11 @@ class G13Daemon:
     RENDER_INTERVAL = 1.0 / RENDER_FPS
 
     def __init__(
-        self, enable_server: bool = True, server_host: str = "127.0.0.1", server_port: int = 8765
+        self,
+        enable_server: bool = True,
+        server_host: str = "127.0.0.1",
+        server_port: int = 8765,
+        static_dir: str | None = None,
     ):
         """
         Initialize daemon (does not connect to device yet).
@@ -56,6 +60,7 @@ class G13Daemon:
             enable_server: Whether to start WebSocket/HTTP server
             server_host: Host to bind server to
             server_port: Port for server
+            static_dir: Directory for web GUI static files (default: auto-detect)
         """
         self._device = None
         self._mapper: G13Mapper | None = None
@@ -76,6 +81,7 @@ class G13Daemon:
         self._enable_server = enable_server
         self._server_host = server_host
         self._server_port = server_port
+        self._static_dir = static_dir
         self._server: G13Server | None = None
         self._server_loop: asyncio.AbstractEventLoop | None = None
 
@@ -355,7 +361,9 @@ class G13Daemon:
 
     def _start_server(self):
         """Start the WebSocket/HTTP server in a background thread."""
-        self._server = G13Server(self, self._server_host, self._server_port)
+        self._server = G13Server(
+            self, self._server_host, self._server_port, static_dir=self._static_dir
+        )
         self._server_thread = threading.Thread(
             target=self._run_server_loop, daemon=True, name="Server"
         )

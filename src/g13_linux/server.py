@@ -8,6 +8,7 @@ Supports WebSocket for real-time updates and REST API for CRUD operations.
 import json
 import logging
 from dataclasses import asdict
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from aiohttp import web
@@ -16,6 +17,9 @@ if TYPE_CHECKING:
     from .daemon import G13Daemon
 
 logger = logging.getLogger(__name__)
+
+# Default path to web GUI build output
+DEFAULT_STATIC_DIR = Path(__file__).parent.parent.parent.parent / "gui-web" / "dist"
 
 
 class G13Server:
@@ -26,7 +30,13 @@ class G13Server:
     REST API: http://host:port/api/...
     """
 
-    def __init__(self, daemon: "G13Daemon", host: str = "127.0.0.1", port: int = 8765):
+    def __init__(
+        self,
+        daemon: "G13Daemon",
+        host: str = "127.0.0.1",
+        port: int = 8765,
+        static_dir: str | Path | None = None,
+    ):
         """
         Initialize server.
 
@@ -34,6 +44,7 @@ class G13Server:
             daemon: G13Daemon instance to control
             host: Host to bind to
             port: Port to listen on
+            static_dir: Directory containing static web files (default: gui-web/dist)
         """
         self.daemon = daemon
         self.host = host
@@ -42,6 +53,13 @@ class G13Server:
         self._runner: web.AppRunner | None = None
         self._site: web.TCPSite | None = None
         self._clients: set[web.WebSocketResponse] = set()
+
+        # Static file serving
+        if static_dir is None:
+            self._static_dir = DEFAULT_STATIC_DIR
+        else:
+            self._static_dir = Path(static_dir)
+        self._serve_static = self._static_dir.exists() and self._static_dir.is_dir()
 
     async def start(self):
         """Start the server."""
@@ -54,6 +72,8 @@ class G13Server:
         await self._site.start()
 
         logger.info(f"G13 server started at http://{self.host}:{self.port}")
+        if self._serve_static:
+            logger.info(f"Serving web GUI from {self._static_dir}")
 
     async def stop(self):
         """Stop the server."""
@@ -92,6 +112,16 @@ class G13Server:
         # CORS headers for development
         app.router.add_route("OPTIONS", "/{path:.*}", self._handle_options)
 
+        # Static file serving (web GUI)
+        if self._serve_static:
+            # Serve assets directory
+            app.router.add_static("/assets", self._static_dir / "assets", show_index=False)
+            # Serve root files (favicon, etc.)
+            app.router.add_get("/vite.svg", self._serve_static_file)
+            # SPA fallback - serve index.html for all other GET requests
+            app.router.add_get("/", self._serve_index)
+            app.router.add_get("/{path:.*}", self._serve_spa_fallback)
+
     def _add_cors_headers(self, response: web.Response) -> web.Response:
         """Add CORS headers to response."""
         response.headers["Access-Control-Allow-Origin"] = "*"
@@ -102,6 +132,52 @@ class G13Server:
     async def _handle_options(self, request: web.Request) -> web.Response:
         """Handle CORS preflight requests."""
         return self._add_cors_headers(web.Response())
+
+    # Static file serving
+
+    async def _serve_index(self, request: web.Request) -> web.Response:
+        """Serve index.html for root path."""
+        return await self._serve_html_file("index.html")
+
+    async def _serve_static_file(self, request: web.Request) -> web.Response:
+        """Serve a static file from the static directory."""
+        filename = request.path.lstrip("/")
+        file_path = self._static_dir / filename
+
+        if not file_path.exists() or not file_path.is_file():
+            raise web.HTTPNotFound()
+
+        return web.FileResponse(file_path)
+
+    async def _serve_spa_fallback(self, request: web.Request) -> web.Response:
+        """
+        SPA fallback handler.
+
+        For paths that don't match API routes, serve index.html
+        to allow client-side routing to handle the path.
+        """
+        path = request.match_info.get("path", "")
+
+        # Don't intercept API or WebSocket paths
+        if path.startswith("api/") or path == "ws":
+            raise web.HTTPNotFound()
+
+        # Try to serve as static file first
+        file_path = self._static_dir / path
+        if file_path.exists() and file_path.is_file():
+            return web.FileResponse(file_path)
+
+        # Fall back to index.html for SPA routing
+        return await self._serve_html_file("index.html")
+
+    async def _serve_html_file(self, filename: str) -> web.Response:
+        """Serve an HTML file with proper content type."""
+        file_path = self._static_dir / filename
+
+        if not file_path.exists():
+            raise web.HTTPNotFound()
+
+        return web.FileResponse(file_path, headers={"Content-Type": "text/html"})
 
     # WebSocket handling
 

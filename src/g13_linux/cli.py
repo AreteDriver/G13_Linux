@@ -61,12 +61,14 @@ def cmd_run(args):
         enable_server = not getattr(args, "no_server", False)
         server_host = getattr(args, "server_host", "127.0.0.1")
         server_port = getattr(args, "server_port", 8765)
+        static_dir = getattr(args, "static_dir", None)
 
         print("Starting G13 daemon...")
         daemon = G13Daemon(
             enable_server=enable_server,
             server_host=server_host,
             server_port=server_port,
+            static_dir=static_dir,
         )
         daemon.run()
 
@@ -356,6 +358,10 @@ def main():
         type=int,
         default=8765,
         help="Server port (default: 8765)",
+    )
+    run_parser.add_argument(
+        "--static-dir",
+        help="Directory for web GUI static files (default: auto-detect)",
     )
     run_parser.set_defaults(func=cmd_run)
 

@@ -57,7 +57,7 @@ sudo ./find_g13_device.sh
 | Thumb buttons | Yes | ✅ Yes | LEFT, DOWN buttons |
 | Profile switching | Yes | ✅ Yes | M1/M2/M3 mode switching |
 | Joystick modes | Yes | ✅ Yes | Analog, Digital, Disabled |
-| Macro recording | Yes | ⚠️ Partial | Recording works, playback untested |
+| Macro recording | Yes | ✅ Yes | Recording and playback via evdev UInput |
 | LCD clock | Yes | ⚠️ Untested | 12/24h, seconds, date options |
 
 **Note**: Button/thumbstick input requires `sudo` or libusb mode to detach kernel driver.

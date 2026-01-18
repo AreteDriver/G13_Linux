@@ -4,6 +4,8 @@ G13 Linux CLI
 Command-line interface for controlling the Logitech G13.
 """
 
+from __future__ import annotations
+
 import argparse
 import sys
 
@@ -26,30 +28,39 @@ COLOR_PRESETS = {
 
 def cmd_run(args):
     """Run the G13 input daemon."""
-    from .device import open_g13, read_event
-    from .mapper import G13Mapper
+    if getattr(args, "simple", False):
+        # Simple mode: key mapping only, no LCD menu
+        from .device import open_g13
+        from .mapper import G13Mapper
 
-    print("Opening Logitech G13…")
-    try:
-        h = open_g13()
-    except Exception as e:
-        print(f"Error: Could not open G13 device: {e}", file=sys.stderr)
-        print("Make sure the G13 is connected and udev rules are installed.", file=sys.stderr)
-        sys.exit(1)
+        print("Opening Logitech G13 (simple mode)…")
+        try:
+            h = open_g13()
+        except Exception as e:
+            print(f"Error: Could not open G13 device: {e}", file=sys.stderr)
+            print("Make sure the G13 is connected and udev rules are installed.", file=sys.stderr)
+            sys.exit(1)
 
-    mapper = G13Mapper()
-    print("G13 opened. Press keys; Ctrl+C to exit.")
+        mapper = G13Mapper()
+        print("G13 opened. Press keys; Ctrl+C to exit.")
 
-    try:
-        while True:
-            data = read_event(h)
-            if data:
-                mapper.handle_raw_report(data)
-    except KeyboardInterrupt:
-        print("\nExiting.")
-    finally:
-        h.close()
-        mapper.close()
+        try:
+            while True:
+                data = h.read(timeout_ms=100)
+                if data:
+                    mapper.handle_raw_report(data)
+        except KeyboardInterrupt:
+            print("\nExiting.")
+        finally:
+            h.close()
+            mapper.close()
+    else:
+        # Full daemon with LCD menu
+        from .daemon import G13Daemon
+
+        print("Starting G13 daemon...")
+        daemon = G13Daemon()
+        daemon.run()
 
 
 def cmd_lcd(args):
@@ -129,7 +140,7 @@ def cmd_effect(args):
     """Control LED effects."""
     from .device import open_g13
     from .hardware.backlight import G13Backlight
-    from .led import LEDController, EffectType, RGB
+    from .led import RGB, EffectType, LEDController
 
     try:
         device = open_g13()
@@ -190,9 +201,9 @@ def cmd_effect(args):
     device.close()
 
 
-def _parse_effect_color(color_str: str | None) -> "RGB":
-    """Parse color string for effects."""
-    from .led import RGB, NAMED_COLORS
+def _parse_effect_color(color_str: str | None):
+    """Parse color string for effects and return RGB instance."""
+    from .led import NAMED_COLORS, RGB
 
     if not color_str:
         return RGB(255, 0, 0)  # Default red
@@ -216,6 +227,7 @@ def _parse_effect_color(color_str: str | None) -> "RGB":
 def _wait_for_effect(led):
     """Wait for user interrupt while effect runs."""
     import time
+
     print("Press Ctrl+C to stop...")
     try:
         while True:
@@ -315,6 +327,12 @@ def main():
 
     # run command
     run_parser = subparsers.add_parser("run", help="Run the input daemon")
+    run_parser.add_argument(
+        "--simple",
+        "-s",
+        action="store_true",
+        help="Simple mode: key mapping only, no LCD menu",
+    )
     run_parser.set_defaults(func=cmd_run)
 
     # lcd command
@@ -338,7 +356,8 @@ def main():
         help="Effect: solid, pulse, rainbow, fade, alert, off, or list",
     )
     effect_parser.add_argument(
-        "--color", "-c",
+        "--color",
+        "-c",
         help="Primary color (name, hex, or R,G,B)",
     )
     effect_parser.add_argument(
@@ -346,12 +365,14 @@ def main():
         help="Secondary color for fade effect",
     )
     effect_parser.add_argument(
-        "--speed", "-s",
+        "--speed",
+        "-s",
         type=float,
         help="Effect speed multiplier (default: 1.0)",
     )
     effect_parser.add_argument(
-        "--count", "-n",
+        "--count",
+        "-n",
         type=int,
         help="Flash count for alert effect (default: 3)",
     )

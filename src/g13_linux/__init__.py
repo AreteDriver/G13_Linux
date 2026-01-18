@@ -25,11 +25,13 @@ __license__ = "MIT"
 
 from .device import G13_PRODUCT_ID, G13_VENDOR_ID, open_g13, read_event
 from .mapper import G13Mapper
+from .daemon import G13Daemon
 
 __all__ = [
     "open_g13",
     "read_event",
     "G13Mapper",
+    "G13Daemon",
     "G13_VENDOR_ID",
     "G13_PRODUCT_ID",
 ]

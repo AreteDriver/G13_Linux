@@ -11,7 +11,7 @@ from typing import Generator
 
 from ..hardware.backlight import G13Backlight
 from .colors import RGB
-from .effects import EffectType, solid, pulse, rainbow, fade, alert
+from .effects import EffectType, alert, fade, pulse, rainbow, solid
 
 logger = logging.getLogger(__name__)
 
@@ -108,6 +108,20 @@ class LEDController:
     def get_current(self) -> RGB:
         """Get current color."""
         return self._current_color
+
+    @property
+    def brightness(self) -> int:
+        """Get current brightness (0-100)."""
+        return self._backlight.get_brightness()
+
+    def set_brightness(self, level: int):
+        """
+        Set brightness level.
+
+        Args:
+            level: Brightness (0-100)
+        """
+        self._backlight.set_brightness(level)
 
     def start_effect(self, effect_type: EffectType, **params):
         """

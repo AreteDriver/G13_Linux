@@ -54,9 +54,10 @@ class ProfileManager:
         if profiles_dir is None:
             # Default to configs/profiles in project root
             project_root = Path(__file__).parent.parent.parent.parent.parent
-            profiles_dir = project_root / "configs" / "profiles"
+            self.profiles_dir = project_root / "configs" / "profiles"
+        else:
+            self.profiles_dir = Path(profiles_dir)
 
-        self.profiles_dir = Path(profiles_dir)
         self.current_profile: Optional[ProfileData] = None
 
         # Ensure profiles directory exists

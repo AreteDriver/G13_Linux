@@ -3,6 +3,8 @@
 Provides a UI to manage rules that map window patterns to G13 profiles.
 """
 
+from typing import Optional
+
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import (
     QCheckBox,
@@ -29,11 +31,11 @@ from ..models.window_monitor import WindowMonitorThread, get_active_window_info
 class RuleEditDialog(QDialog):
     """Dialog for adding/editing an app profile rule."""
 
-    def __init__(self, rule: AppProfileRule | None = None, profiles: list[str] = None, parent=None):
+    def __init__(self, rule: AppProfileRule | None = None, profiles: Optional[list[str]] = None, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Edit Rule" if rule else "Add Rule")
         self.setMinimumWidth(400)
-        self.profiles = profiles or []
+        self.profiles = profiles if profiles is not None else []
 
         layout = QVBoxLayout(self)
 
@@ -115,11 +117,11 @@ class AppProfilesWidget(QWidget):
     enabled_changed = pyqtSignal(bool)
 
     def __init__(
-        self, rules_manager: AppProfileRulesManager, profiles: list[str] = None, parent=None
+        self, rules_manager: AppProfileRulesManager, profiles: Optional[list[str]] = None, parent=None
     ):
         super().__init__(parent)
         self.rules_manager = rules_manager
-        self.profiles = profiles or []
+        self.profiles = profiles if profiles is not None else []
         self.window_monitor = WindowMonitorThread()
 
         self._setup_ui()

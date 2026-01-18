@@ -194,7 +194,7 @@ def main():
     for i in range(2):
         try:
             usb.util.release_interface(dev, i)
-        except:
+        except Exception:
             pass
 
 

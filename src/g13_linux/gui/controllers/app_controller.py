@@ -4,6 +4,8 @@ Application Controller
 Main orchestrator connecting models to views.
 """
 
+from typing import Any, Dict
+
 from PyQt6.QtCore import QObject, pyqtSlot
 from PyQt6.QtWidgets import QMessageBox
 
@@ -50,7 +52,7 @@ class ApplicationController(QObject):
         self.current_profile_name: str | None = None
 
         # State
-        self.current_mappings = {}
+        self.current_mappings: Dict[str, Any] = {}
         self.current_joystick_config: dict = {}
         self.event_thread = None
         self._mr_button_held = False

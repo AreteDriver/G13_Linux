@@ -22,7 +22,7 @@ def main():
         try:
             if dev.is_kernel_driver_active(i):
                 dev.detach_kernel_driver(i)
-        except:
+        except Exception:
             pass
 
     dev.set_configuration()
@@ -51,7 +51,7 @@ def main():
 
         try:
             usb.util.claim_interface(dev, intf_num)
-        except:
+        except Exception:
             pass
 
         # Build all-white pattern
@@ -99,7 +99,7 @@ def main():
 
         try:
             usb.util.release_interface(dev, intf_num)
-        except:
+        except Exception:
             pass
 
     # Also try direct write to endpoint address 0x02
@@ -128,7 +128,7 @@ def main():
     try:
         dev.ctrl_transfer(0, 9, 1, 0, None, 1000)
         dev.write(0x02, bytes(buf), timeout=1000)
-    except:
+    except Exception:
         pass
 
     print("\nDone!")

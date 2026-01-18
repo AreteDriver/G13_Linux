@@ -85,7 +85,7 @@ def create_g13_layout():
         font_large = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 32)
         font_medium = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 24)
         ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 18)
-    except:
+    except Exception:
         font_large = ImageFont.load_default()
         font_medium = ImageFont.load_default()
         ImageFont.load_default()

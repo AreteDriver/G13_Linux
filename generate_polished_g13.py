@@ -50,7 +50,6 @@ def draw_key_glow(draw, cx, cy, w, h, color, intensity=0.4):
     r, g, b = color
     for i in range(8, 0, -1):
         expand = i * 2
-        alpha = int(255 * intensity * (1 - i / 10))
         glow_color = (
             int(r * 0.3 + 20),
             int(g * 0.3 + 20),
@@ -242,16 +241,6 @@ def draw_m_key(draw, cx, cy, w, h, label=None, font=None, backlight=None, intens
 def main():
     img = Image.new("RGB", (WIDTH, HEIGHT), BLACK)
     draw = ImageDraw.Draw(img)
-
-    # Load fonts for key labels
-    try:
-        font_key = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 11)
-        font_m = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 9)
-        font_thumb = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 10)
-    except:
-        font_key = ImageFont.load_default()
-        font_m = font_key
-        font_thumb = font_key
 
     # === MAIN BODY - Ergonomic curved shape ===
     # The G13 body curves like a hand rest - narrow top, wide curved bottom
@@ -447,7 +436,7 @@ def main():
     try:
         font_sm = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 12)
         font_lg = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 18)
-    except:
+    except Exception:
         font_sm = ImageFont.load_default()
         font_lg = font_sm
 

@@ -12,6 +12,7 @@ from PyQt6.QtWidgets import (
     QListWidget,
     QPushButton,
     QVBoxLayout,
+    QWidget,
 )
 
 from ..models.macro_recorder import MacroRecorder, RecorderState
@@ -27,7 +28,7 @@ class MacroRecordDialog(QDialog):
 
     macro_recorded = pyqtSignal(object)  # Macro
 
-    def __init__(self, recorder: Optional[MacroRecorder] = None, parent: Optional[object] = None):
+    def __init__(self, recorder: Optional[MacroRecorder] = None, parent: Optional[QWidget] = None):
         super().__init__(parent)
         self.recorder = recorder or MacroRecorder()
         self._recorded_macro: Optional[Macro] = None

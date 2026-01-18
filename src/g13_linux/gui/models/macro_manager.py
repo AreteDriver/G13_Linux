@@ -18,9 +18,10 @@ class MacroManager:
     def __init__(self, macros_dir: Optional[str] = None):
         if macros_dir is None:
             project_root = Path(__file__).parent.parent.parent.parent.parent
-            macros_dir = project_root / "configs" / "macros"
+            self.macros_dir = project_root / "configs" / "macros"
+        else:
+            self.macros_dir = Path(macros_dir)
 
-        self.macros_dir = Path(macros_dir)
         self.macros_dir.mkdir(parents=True, exist_ok=True)
         self._cache: Dict[str, Macro] = {}
 

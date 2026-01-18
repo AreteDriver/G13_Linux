@@ -50,9 +50,6 @@ def create_g13_background():
 
     body_color_dark = (25, 25, 28)
     body_color_mid = (35, 35, 38)
-    body_color_light = (50, 50, 55)
-    chrome_dark = (60, 62, 65)
-    chrome_light = (140, 145, 150)
     chrome_mid = (100, 105, 110)
 
     # Outer chrome/silver trim - distinctive G13 styling
@@ -208,8 +205,6 @@ def create_g13_background():
 
     # === THUMB AREA (right side) ===
     # Palm rest bump for thumb area
-    thumb_area_center = (620, 500)
-
     # Thumb rest curved surface
     draw.ellipse([500, 410, 750, 610], fill=(30, 30, 33))
 

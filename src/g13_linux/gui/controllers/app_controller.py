@@ -311,13 +311,21 @@ class ApplicationController(QObject):
     @pyqtSlot(str)
     def _assign_key_to_button(self, button_id: str):
         """Open key selector for button"""
-        dialog = KeySelectorDialog(button_id, self.main_window)
+        current_mapping = self.current_mappings.get(button_id)
+        dialog = KeySelectorDialog(button_id, current_mapping, self.main_window)
         if dialog.exec():
             key_name = dialog.selected_key
             if key_name:
                 self.current_mappings[button_id] = key_name
                 self.main_window.button_mapper.set_button_mapping(button_id, key_name)
-                self.main_window.set_status(f"Mapped {button_id} to {key_name}")
+                # Format status message for combos vs simple keys
+                if isinstance(key_name, dict):
+                    keys = key_name.get("keys", [])
+                    label = key_name.get("label", "")
+                    display = label if label else "+".join(k.replace("KEY_", "") for k in keys)
+                    self.main_window.set_status(f"Mapped {button_id} to {display}")
+                else:
+                    self.main_window.set_status(f"Mapped {button_id} to {key_name}")
 
     @pyqtSlot(str)
     def _update_lcd(self, text: str):

@@ -145,9 +145,7 @@ def strobe(color: RGB, frequency: float = 10.0) -> Generator[RGB, None, None]:
         yield color if phase < 0.5 else black
 
 
-def candle(
-    base_color: RGB = None, flicker_intensity: float = 0.3
-) -> Generator[RGB, None, None]:
+def candle(base_color: RGB = None, flicker_intensity: float = 0.3) -> Generator[RGB, None, None]:
     """
     Candle flicker effect - simulates flickering flame.
 

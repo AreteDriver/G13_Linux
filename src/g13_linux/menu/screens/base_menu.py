@@ -113,7 +113,13 @@ class MenuScreen(Screen):
 
             # Selection highlight (inverted bar)
             if is_selected:
-                canvas.draw_rect(0, y - 1, canvas.WIDTH - self.SCROLL_INDICATOR_WIDTH, self.ITEM_HEIGHT, filled=True)
+                canvas.draw_rect(
+                    0,
+                    y - 1,
+                    canvas.WIDTH - self.SCROLL_INDICATOR_WIDTH,
+                    self.ITEM_HEIGHT,
+                    filled=True,
+                )
 
             # Draw icon if present
             x = 2
@@ -174,6 +180,10 @@ class MenuScreen(Screen):
 
         # Draw thumb
         thumb_height = max(4, scroll_height * self.VISIBLE_ITEMS // len(self.items))
-        thumb_offset = (scroll_height - thumb_height) * self.scroll_offset // (len(self.items) - self.VISIBLE_ITEMS)
+        thumb_offset = (
+            (scroll_height - thumb_height)
+            * self.scroll_offset
+            // (len(self.items) - self.VISIBLE_ITEMS)
+        )
 
         canvas.draw_rect(scroll_x - 1, scroll_y + thumb_offset, 3, thumb_height, filled=True)

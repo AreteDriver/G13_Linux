@@ -165,8 +165,7 @@ class KeySelectorDialog(QDialog):
         preview_layout.addWidget(QLabel("Preview:"))
         self.preview_label = QLabel("(select a key)")
         self.preview_label.setStyleSheet(
-            "font-weight: bold; color: #0af; padding: 4px; "
-            "background: #333; border-radius: 4px;"
+            "font-weight: bold; color: #0af; padding: 4px; background: #333; border-radius: 4px;"
         )
         preview_layout.addWidget(self.preview_label)
         preview_layout.addStretch()

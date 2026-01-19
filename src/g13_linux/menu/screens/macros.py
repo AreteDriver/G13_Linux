@@ -32,17 +32,21 @@ class MacrosScreen(MenuScreen):
         items = []
 
         # Placeholder - integrate with macro manager
-        items.append(MenuItem(
-            id="no_macros",
-            label="No macros",
-            enabled=False,
-        ))
+        items.append(
+            MenuItem(
+                id="no_macros",
+                label="No macros",
+                enabled=False,
+            )
+        )
 
-        items.append(MenuItem(
-            id="record",
-            label="Record New",
-            action=self._record_macro,
-        ))
+        items.append(
+            MenuItem(
+                id="record",
+                label="Record New",
+                action=self._record_macro,
+            )
+        )
 
         return items
 

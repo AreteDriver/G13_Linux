@@ -58,24 +58,29 @@ class MainMenuScreen(MenuScreen):
     def _create_profiles_screen(self):
         """Create profiles submenu."""
         from .profiles import ProfilesScreen
+
         return ProfilesScreen(self.manager)
 
     def _create_macros_screen(self):
         """Create macros submenu."""
         from .macros import MacrosScreen
+
         return MacrosScreen(self.manager)
 
     def _create_led_screen(self):
         """Create LED settings submenu."""
         from .led_settings import LEDSettingsScreen
+
         return LEDSettingsScreen(self.manager)
 
     def _create_settings_screen(self):
         """Create general settings submenu."""
         from .settings import SettingsScreen
+
         return SettingsScreen(self.manager)
 
     def _create_info_screen(self):
         """Create system info screen."""
         from .info import InfoScreen
+
         return InfoScreen(self.manager)

@@ -186,8 +186,7 @@ class CalibrationDialog(QDialog):
         self.output_text = QTextEdit()
         self.output_text.setReadOnly(True)
         self.output_text.setStyleSheet(
-            "font-family: monospace; font-size: 10px; "
-            "background: #1e1e1e; color: #ddd;"
+            "font-family: monospace; font-size: 10px; background: #1e1e1e; color: #ddd;"
         )
         right_layout.addWidget(self.output_text)
 
@@ -234,17 +233,13 @@ class CalibrationDialog(QDialog):
             is_two_click = btn in TWO_CLICK_ITEMS
 
             if is_two_click and self._pending_first_click is not None:
-                self.status_label.setText(
-                    f"Click BOTTOM-RIGHT corner of: {btn}"
-                )
+                self.status_label.setText(f"Click BOTTOM-RIGHT corner of: {btn}")
                 self.status_label.setStyleSheet(
                     "font-size: 14px; font-weight: bold; padding: 8px; "
                     "background: #630; color: #ff0; border-radius: 4px;"
                 )
             elif is_two_click:
-                self.status_label.setText(
-                    f"Click TOP-LEFT corner of: {btn} [2-click item]"
-                )
+                self.status_label.setText(f"Click TOP-LEFT corner of: {btn} [2-click item]")
                 self.status_label.setStyleSheet(
                     "font-size: 14px; font-weight: bold; padding: 8px; "
                     "background: #036; color: #0ff; border-radius: 4px;"
@@ -372,20 +367,14 @@ class CalibrationDialog(QDialog):
         # Add JOYSTICK_AREA if STICK is defined
         if "STICK" in self.positions:
             x, y, w, h = self.positions["STICK"]
-            lines.append(
-                f'JOYSTICK_AREA = {{"x": {x}, "y": {y}, "width": {w}, "height": {h}}}'
-            )
+            lines.append(f'JOYSTICK_AREA = {{"x": {x}, "y": {y}, "width": {w}, "height": {h}}}')
 
         # Add LCD_AREA if LCD is defined
         if "LCD" in self.positions:
             x, y, w, h = self.positions["LCD"]
-            lines.append(
-                f'LCD_AREA = {{"x": {x}, "y": {y}, "width": {w}, "height": {h}}}'
-            )
+            lines.append(f'LCD_AREA = {{"x": {x}, "y": {y}, "width": {w}, "height": {h}}}')
         else:
-            lines.append(
-                'LCD_AREA = {"x": 385, "y": 158, "width": 160, "height": 45}  # Default'
-            )
+            lines.append('LCD_AREA = {"x": 385, "y": 158, "width": 160, "height": 45}  # Default')
 
         self.output_text.setText("\n".join(lines))
 

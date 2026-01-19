@@ -49,7 +49,9 @@ class ToastScreen(Screen):
         canvas.draw_rect(box_x, box_y, box_width, box_height, filled=True)
 
         # Draw border (inverts to white on black background)
-        canvas.draw_rect(box_x + 1, box_y + 1, box_width - 2, box_height - 2, filled=False, on=False)
+        canvas.draw_rect(
+            box_x + 1, box_y + 1, box_width - 2, box_height - 2, filled=False, on=False
+        )
 
         # Draw text centered in box (inverted - black on white)
         text_x = box_x + box_padding
@@ -115,7 +117,9 @@ class ConfirmDialog(Screen):
 
         # Draw box
         canvas.draw_rect(box_x, box_y, box_width, box_height, filled=True)
-        canvas.draw_rect(box_x + 1, box_y + 1, box_width - 2, box_height - 2, filled=False, on=False)
+        canvas.draw_rect(
+            box_x + 1, box_y + 1, box_width - 2, box_height - 2, filled=False, on=False
+        )
 
         # Draw message
         canvas.draw_text(box_x + 5, box_y + 4, self.message[:20], FONT_4X6, on=False)

@@ -202,9 +202,7 @@ class Canvas:
 
         return cursor_x - x
 
-    def draw_text_centered(
-        self, y: int, text: str, font: "Font | None" = None, on: bool = True
-    ):
+    def draw_text_centered(self, y: int, text: str, font: "Font | None" = None, on: bool = True):
         """
         Draw text centered horizontally.
 

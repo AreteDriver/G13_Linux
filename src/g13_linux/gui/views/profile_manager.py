@@ -6,6 +6,7 @@ UI for managing G13 button configuration profiles.
 
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import (
+    QFileDialog,
     QHBoxLayout,
     QInputDialog,
     QLabel,
@@ -23,6 +24,8 @@ class ProfileManagerWidget(QWidget):
     profile_selected = pyqtSignal(str)  # Profile name
     profile_saved = pyqtSignal(str)  # Profile name
     profile_deleted = pyqtSignal(str)  # Profile name
+    profile_export_requested = pyqtSignal(str, str)  # Profile name, export path
+    profile_import_requested = pyqtSignal(str)  # Import file path
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -61,6 +64,21 @@ class ProfileManagerWidget(QWidget):
         btn_layout.addWidget(delete_btn)
 
         layout.addLayout(btn_layout)
+
+        # Import/Export buttons
+        io_layout = QHBoxLayout()
+
+        import_btn = QPushButton("Import...")
+        import_btn.clicked.connect(self._on_import_profile)
+        io_layout.addWidget(import_btn)
+
+        export_btn = QPushButton("Export...")
+        export_btn.clicked.connect(self._on_export_profile)
+        io_layout.addWidget(export_btn)
+
+        io_layout.addStretch()
+        layout.addLayout(io_layout)
+
         self.setLayout(layout)
 
     def update_profile_list(self, profiles: list):
@@ -110,3 +128,35 @@ class ProfileManagerWidget(QWidget):
             )
             if reply == QMessageBox.StandardButton.Yes:
                 self.profile_deleted.emit(current.text())
+
+    def _on_import_profile(self):
+        """Import profile from file"""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Import Profile",
+            "",
+            "G13 Profiles (*.json);;All Files (*)",
+        )
+        if file_path:
+            self.profile_import_requested.emit(file_path)
+
+    def _on_export_profile(self):
+        """Export selected profile to file"""
+        current = self.profile_list.currentItem()
+        if not current:
+            QMessageBox.warning(
+                self,
+                "Export Profile",
+                "Please select a profile to export.",
+            )
+            return
+
+        profile_name = current.text()
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Export Profile",
+            f"{profile_name}.json",
+            "G13 Profiles (*.json);;All Files (*)",
+        )
+        if file_path:
+            self.profile_export_requested.emit(profile_name, file_path)

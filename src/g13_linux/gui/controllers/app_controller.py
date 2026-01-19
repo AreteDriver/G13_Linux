@@ -72,6 +72,8 @@ class ApplicationController(QObject):
         profile_widget.profile_selected.connect(self._load_profile)
         profile_widget.profile_saved.connect(self._save_profile)
         profile_widget.profile_deleted.connect(self._delete_profile)
+        profile_widget.profile_export_requested.connect(self._export_profile)
+        profile_widget.profile_import_requested.connect(self._import_profile)
 
         # Button mapper
         mapper_widget = self.main_window.button_mapper
@@ -307,6 +309,29 @@ class ApplicationController(QObject):
 
         except Exception as e:
             self._on_error(f"Failed to delete profile: {e}")
+
+    @pyqtSlot(str, str)
+    def _export_profile(self, profile_name: str, export_path: str):
+        """Export a profile to an external file"""
+        try:
+            self.profile_manager.export_profile(profile_name, export_path)
+            self.main_window.set_status(f"Exported profile: {profile_name}")
+        except Exception as e:
+            self._on_error(f"Failed to export profile: {e}")
+
+    @pyqtSlot(str)
+    def _import_profile(self, import_path: str):
+        """Import a profile from an external file"""
+        try:
+            imported_name = self.profile_manager.import_profile(import_path)
+
+            # Refresh profile list
+            profiles = self.profile_manager.list_profiles()
+            self.main_window.profile_widget.update_profile_list(profiles)
+
+            self.main_window.set_status(f"Imported profile: {imported_name}")
+        except Exception as e:
+            self._on_error(f"Failed to import profile: {e}")
 
     @pyqtSlot(str)
     def _assign_key_to_button(self, button_id: str):

@@ -184,3 +184,148 @@ class TestProfileManagerMissingCoverage:
         assert manager.profiles_dir.parent.name == "configs"
         # Directory should be created
         assert manager.profiles_dir.exists()
+
+
+class TestProfileImportExport:
+    """Test profile import/export functionality."""
+
+    @pytest.fixture
+    def temp_profiles_dir(self):
+        """Create temporary profiles directory."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            yield tmpdir
+
+    @pytest.fixture
+    def manager(self, temp_profiles_dir):
+        """Create ProfileManager with temp directory."""
+        return ProfileManager(temp_profiles_dir)
+
+    @pytest.fixture
+    def export_dir(self):
+        """Create temporary export directory."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            yield tmpdir
+
+    def test_export_profile(self, manager, export_dir):
+        """Export a profile to external location."""
+        profile = ProfileData(
+            name="Export Test",
+            mappings={"G1": "KEY_A"},
+        )
+        manager.save_profile(profile, "export_test")
+
+        export_path = Path(export_dir) / "exported.json"
+        manager.export_profile("export_test", str(export_path))
+
+        assert export_path.exists()
+        # Verify content
+        import json
+
+        with open(export_path) as f:
+            data = json.load(f)
+        assert data["name"] == "Export Test"
+        assert data["mappings"]["G1"] == "KEY_A"
+
+    def test_export_adds_json_extension(self, manager, export_dir):
+        """Export automatically adds .json extension."""
+        profile = ProfileData(name="No Extension")
+        manager.save_profile(profile, "no_ext")
+
+        export_path = Path(export_dir) / "exported"  # No extension
+        manager.export_profile("no_ext", str(export_path))
+
+        # Should have added .json
+        assert (Path(export_dir) / "exported.json").exists()
+
+    def test_export_nonexistent_raises(self, manager, export_dir):
+        """Exporting nonexistent profile raises FileNotFoundError."""
+        with pytest.raises(FileNotFoundError):
+            manager.export_profile("ghost", str(Path(export_dir) / "ghost.json"))
+
+    def test_import_profile(self, manager, export_dir):
+        """Import a profile from external location."""
+        # Create a profile file to import
+        import json
+
+        import_path = Path(export_dir) / "to_import.json"
+        profile_data = {
+            "name": "Imported Profile",
+            "description": "From external",
+            "version": "1.0.0",
+            "mappings": {"G1": "KEY_B"},
+            "lcd": {"enabled": True, "default_text": ""},
+            "backlight": {"color": "#00FF00", "brightness": 80},
+        }
+        with open(import_path, "w") as f:
+            json.dump(profile_data, f)
+
+        imported_name = manager.import_profile(str(import_path))
+
+        assert imported_name == "Imported Profile"
+        assert manager.profile_exists("Imported Profile")
+
+        # Load and verify
+        loaded = manager.load_profile("Imported Profile")
+        assert loaded.mappings["G1"] == "KEY_B"
+        assert loaded.backlight["color"] == "#00FF00"
+
+    def test_import_with_new_name(self, manager, export_dir):
+        """Import with custom name."""
+        import json
+
+        import_path = Path(export_dir) / "original.json"
+        with open(import_path, "w") as f:
+            json.dump({"name": "Original Name", "mappings": {}}, f)
+
+        imported_name = manager.import_profile(str(import_path), new_name="Custom Name")
+
+        assert imported_name == "Custom Name"
+        assert manager.profile_exists("Custom Name")
+        assert not manager.profile_exists("Original Name")
+
+    def test_import_handles_name_conflict(self, manager, export_dir):
+        """Import generates unique name on conflict."""
+        # Create existing profile
+        profile = ProfileData(name="Conflict")
+        manager.save_profile(profile, "Conflict")
+
+        # Create import file with same name
+        import json
+
+        import_path = Path(export_dir) / "conflict.json"
+        with open(import_path, "w") as f:
+            json.dump({"name": "Conflict", "mappings": {"G1": "KEY_NEW"}}, f)
+
+        imported_name = manager.import_profile(str(import_path))
+
+        # Should have generated unique name
+        assert imported_name == "Conflict_1"
+        assert manager.profile_exists("Conflict")
+        assert manager.profile_exists("Conflict_1")
+
+    def test_import_nonexistent_raises(self, manager):
+        """Importing nonexistent file raises FileNotFoundError."""
+        with pytest.raises(FileNotFoundError):
+            manager.import_profile("/path/to/nonexistent.json")
+
+    def test_import_invalid_json_raises(self, manager, export_dir):
+        """Importing invalid JSON raises ValueError."""
+        import_path = Path(export_dir) / "invalid.json"
+        import_path.write_text("{ not valid json")
+
+        with pytest.raises(ValueError):
+            manager.import_profile(str(import_path))
+
+    def test_import_missing_name_uses_filename(self, manager, export_dir):
+        """Import uses filename if profile has no name."""
+        import json
+
+        import_path = Path(export_dir) / "nameless_profile.json"
+        # Profile with empty name
+        with open(import_path, "w") as f:
+            json.dump({"name": "", "mappings": {}}, f)
+
+        imported_name = manager.import_profile(str(import_path))
+
+        # Should use filename stem since name is empty
+        assert imported_name == "nameless_profile"

@@ -176,3 +176,79 @@ class ProfileManager:
         """Check if a profile exists"""
         path = self.profiles_dir / f"{name}.json"
         return path.exists()
+
+    def export_profile(self, name: str, export_path: str) -> None:
+        """
+        Export a profile to an external location.
+
+        Args:
+            name: Profile name to export (without .json extension)
+            export_path: Full path where to save the exported profile
+
+        Raises:
+            FileNotFoundError: If profile doesn't exist
+        """
+        source_path = self.profiles_dir / f"{name}.json"
+
+        if not source_path.exists():
+            raise FileNotFoundError(f"Profile '{name}' not found")
+
+        # Ensure export path has .json extension
+        export_path = Path(export_path)
+        if export_path.suffix.lower() != ".json":
+            export_path = export_path.with_suffix(".json")
+
+        # Copy the profile file
+        import shutil
+
+        shutil.copy2(source_path, export_path)
+
+    def import_profile(self, import_path: str, new_name: str | None = None) -> str:
+        """
+        Import a profile from an external location.
+
+        Args:
+            import_path: Path to the profile JSON file to import
+            new_name: Optional new name for the profile (uses original name if None)
+
+        Returns:
+            The name of the imported profile
+
+        Raises:
+            FileNotFoundError: If import file doesn't exist
+            ValueError: If the file is not a valid profile JSON
+        """
+        import_path = Path(import_path)
+
+        if not import_path.exists():
+            raise FileNotFoundError(f"Import file not found: {import_path}")
+
+        # Load and validate the profile
+        try:
+            with open(import_path, "r") as f:
+                data = json.load(f)
+
+            # Validate it can be parsed as ProfileData
+            profile = ProfileData(**data)
+        except (json.JSONDecodeError, TypeError) as e:
+            raise ValueError(f"Invalid profile JSON: {e}")
+
+        # Determine the profile name
+        if new_name:
+            profile_name = new_name
+            profile.name = new_name
+        else:
+            # Use the profile's internal name or filename
+            profile_name = profile.name or import_path.stem
+
+        # Check for conflicts and generate unique name if needed
+        original_name = profile_name
+        counter = 1
+        while self.profile_exists(profile_name):
+            profile_name = f"{original_name}_{counter}"
+            counter += 1
+
+        # Save the profile
+        self.save_profile(profile, profile_name)
+
+        return profile_name

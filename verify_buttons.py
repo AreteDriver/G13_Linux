@@ -143,7 +143,7 @@ def _analyze_button_press(button_changes, predicted, data):
         print(f"  ✅ MATCH! Byte[{actual[0]}] bit {actual[1]}")
         return actual, True
     elif actual:
-        print(f"  ❌ MISMATCH!")
+        print("  ❌ MISMATCH!")
         print(f"     Predicted: Byte[{predicted[0]}] bit {predicted[1]}")
         print(f"     Actual:    Byte[{actual[0]}] bit {actual[1]}")
         return actual, False

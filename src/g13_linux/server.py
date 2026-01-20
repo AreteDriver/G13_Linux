@@ -204,13 +204,28 @@ class G13Server:
     async def _ws_set_mode(self, ws, message):
         """Handle set_mode message."""
         mode = message.get("mode", "M1")
-        await self._broadcast({"type": "mode_changed", "mode": mode})
+        self.daemon.set_mode(mode)
+        # Broadcast is handled by daemon.set_mode()
 
     async def _ws_set_mapping(self, ws, message):
         """Handle set_mapping message."""
         button = message.get("button")
         key = message.get("key")
-        logger.info(f"Set mapping: {button} -> {key}")
+        if button and key:
+            success = self.daemon.set_button_mapping(button, key)
+            if success:
+                await self._broadcast(
+                    {"type": "mapping_changed", "button": button, "key": key}
+                )
+                logger.info(f"Set mapping: {button} -> {key}")
+            else:
+                await ws.send_json(
+                    {"type": "error", "message": "Failed to update mapping"}
+                )
+        else:
+            await ws.send_json(
+                {"type": "error", "message": "Missing button or key parameter"}
+            )
 
     async def _ws_simulate_press(self, ws, message):
         """Handle simulate_press message."""
@@ -369,7 +384,7 @@ class G13Server:
         return {
             "connected": self.daemon._device is not None,
             "active_profile": profile_name,
-            "active_mode": "M1",  # TODO: Track mode state
+            "active_mode": self.daemon._current_mode,
             "pressed_keys": pressed_keys,
             "joystick": {"x": joystick_x, "y": joystick_y},
             "backlight": {

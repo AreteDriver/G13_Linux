@@ -82,6 +82,9 @@ class G13Daemon:
         self._event_decoder = EventDecoder()
         self._last_joystick = (128, 128)  # Track joystick for change detection
 
+        # Mode state (M1, M2, M3)
+        self._current_mode = "M1"
+
         # Server settings
         self._enable_server = enable_server
         self._server_host = server_host
@@ -190,16 +193,41 @@ class G13Daemon:
 
     def _on_mkey_pressed(self, m_num: int):
         """
-        Handle M-key press for profile mode indication.
+        Handle M-key press for profile mode switching.
 
         Args:
             m_num: M-key number (1, 2, or 3)
         """
+        mode = f"M{m_num}"
+        self.set_mode(mode)
+
+    def set_mode(self, mode: str):
+        """
+        Set the active mode (M1, M2, or M3).
+
+        Args:
+            mode: Mode name ("M1", "M2", or "M3")
+        """
+        if mode not in ("M1", "M2", "M3"):
+            logger.warning(f"Invalid mode: {mode}")
+            return
+
+        old_mode = self._current_mode
+        self._current_mode = mode
+
         profile_name = "None"
         if self.profile_manager.current_profile:
             profile_name = self.profile_manager.current_profile.name
 
-        self.show_toast(f"M{m_num}: {profile_name}", duration=1.5)
+        self.show_toast(f"{mode}: {profile_name}", duration=1.5)
+
+        # Broadcast mode change to WebSocket clients
+        if self._server and old_mode != mode:
+            self._broadcast_async(
+                self._server._broadcast({"type": "mode_changed", "mode": mode})
+            )
+
+        logger.info(f"Mode changed: {old_mode} -> {mode}")
 
     def _load_default_profile(self):
         """Load default/first profile if available."""
@@ -503,6 +531,42 @@ class G13Daemon:
         """
         if self._led_controller:
             self._led_controller.set_color(r, g, b)
+
+    def set_button_mapping(self, button: str, key: str) -> bool:
+        """
+        Update a single button mapping in the current profile.
+
+        Args:
+            button: Button ID (e.g., "G1", "G22", "LEFT")
+            key: Key code string (e.g., "KEY_A") or combo dict
+
+        Returns:
+            True if successful
+        """
+        if not self.profile_manager.current_profile:
+            logger.warning("No profile loaded - cannot update mapping")
+            return False
+
+        profile = self.profile_manager.current_profile
+
+        # Update the mapping
+        profile.mappings[button] = key
+
+        # Save the profile
+        try:
+            self.profile_manager.save_profile(profile, self.profile_manager.current_name)
+        except Exception as e:
+            logger.error(f"Failed to save profile: {e}")
+            return False
+
+        # Reload mappings into mapper
+        if self._mapper:
+            from dataclasses import asdict
+
+            self._mapper.load_profile(asdict(profile))
+
+        logger.info(f"Updated mapping: {button} -> {key}")
+        return True
 
     def show_toast(self, message: str, duration: float = 2.0):
         """

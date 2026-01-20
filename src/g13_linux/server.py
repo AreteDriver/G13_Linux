@@ -201,6 +201,51 @@ class G13Server:
 
         return ws
 
+    async def _ws_set_mode(self, ws, message):
+        """Handle set_mode message."""
+        mode = message.get("mode", "M1")
+        await self._broadcast({"type": "mode_changed", "mode": mode})
+
+    async def _ws_set_mapping(self, ws, message):
+        """Handle set_mapping message."""
+        button = message.get("button")
+        key = message.get("key")
+        logger.info(f"Set mapping: {button} -> {key}")
+
+    async def _ws_simulate_press(self, ws, message):
+        """Handle simulate_press message."""
+        await self._broadcast({"type": "button_pressed", "button": message.get("button")})
+
+    async def _ws_simulate_release(self, ws, message):
+        """Handle simulate_release message."""
+        await self._broadcast({"type": "button_released", "button": message.get("button")})
+
+    async def _ws_set_backlight(self, ws, message):
+        """Handle set_backlight message."""
+        color = message.get("color", "#ffffff")
+        brightness = message.get("brightness", 100)
+        self._set_backlight(color, brightness)
+        await self._broadcast({
+            "type": "backlight_changed",
+            "backlight": {"color": color, "brightness": brightness},
+        })
+
+    async def _ws_handle_play_macro(self, ws, message):
+        """Handle play_macro message."""
+        await self._ws_play_macro(ws, message.get("macro_id"))
+
+    async def _ws_handle_stop_macro(self, ws, message):
+        """Handle stop_macro message."""
+        await self._ws_stop_macro(ws)
+
+    async def _ws_handle_get_macros(self, ws, message):
+        """Handle get_macros message."""
+        await self._ws_send_macros(ws)
+
+    async def _ws_handle_get_state(self, ws, message):
+        """Handle get_state message."""
+        await self._ws_send_state(ws)
+
     async def _handle_ws_message(self, ws: web.WebSocketResponse, data: str):
         """
         Handle incoming WebSocket message.
@@ -209,56 +254,26 @@ class G13Server:
             ws: WebSocket connection
             data: JSON message string
         """
+        handlers = {
+            "get_state": self._ws_handle_get_state,
+            "set_mode": self._ws_set_mode,
+            "set_mapping": self._ws_set_mapping,
+            "simulate_press": self._ws_simulate_press,
+            "simulate_release": self._ws_simulate_release,
+            "set_backlight": self._ws_set_backlight,
+            "play_macro": self._ws_handle_play_macro,
+            "stop_macro": self._ws_handle_stop_macro,
+            "get_macros": self._ws_handle_get_macros,
+        }
+
         try:
             message = json.loads(data)
             msg_type = message.get("type")
-
-            if msg_type == "get_state":
-                await self._ws_send_state(ws)
-
-            elif msg_type == "set_mode":
-                mode = message.get("mode", "M1")
-                # TODO: Implement mode switching
-                await self._broadcast({"type": "mode_changed", "mode": mode})
-
-            elif msg_type == "set_mapping":
-                button = message.get("button")
-                key = message.get("key")
-                # TODO: Implement mapping change
-                logger.info(f"Set mapping: {button} -> {key}")
-
-            elif msg_type == "simulate_press":
-                button = message.get("button")
-                await self._broadcast({"type": "button_pressed", "button": button})
-
-            elif msg_type == "simulate_release":
-                button = message.get("button")
-                await self._broadcast({"type": "button_released", "button": button})
-
-            elif msg_type == "set_backlight":
-                color = message.get("color", "#ffffff")
-                brightness = message.get("brightness", 100)
-                self._set_backlight(color, brightness)
-                await self._broadcast(
-                    {
-                        "type": "backlight_changed",
-                        "backlight": {"color": color, "brightness": brightness},
-                    }
-                )
-
-            elif msg_type == "play_macro":
-                macro_id = message.get("macro_id")
-                await self._ws_play_macro(ws, macro_id)
-
-            elif msg_type == "stop_macro":
-                await self._ws_stop_macro(ws)
-
-            elif msg_type == "get_macros":
-                await self._ws_send_macros(ws)
-
+            handler = handlers.get(msg_type)
+            if handler:
+                await handler(ws, message)
             else:
                 logger.warning(f"Unknown WebSocket message type: {msg_type}")
-
         except json.JSONDecodeError:
             logger.error(f"Invalid JSON in WebSocket message: {data}")
         except Exception as e:
@@ -534,44 +549,33 @@ class G13Server:
 
         return self._add_cors_headers(response)
 
+    def _update_macro_fields(self, macro, data: dict):
+        """Update macro fields from request data."""
+        from .gui.models.macro_types import MacroStep, PlaybackMode
+
+        simple_fields = [
+            "name", "description", "speed_multiplier", "repeat_count",
+            "repeat_delay_ms", "fixed_delay_ms", "assigned_button", "global_hotkey"
+        ]
+        for field in simple_fields:
+            if field in data:
+                setattr(macro, field, data[field])
+
+        if "steps" in data:
+            macro.steps = [MacroStep.from_dict(s) for s in data["steps"]]
+        if "playback_mode" in data:
+            macro.playback_mode = PlaybackMode(data["playback_mode"])
+
     async def _api_create_macro(self, request: web.Request) -> web.Response:
         """POST /api/macros - Create new macro."""
         mm = self.daemon.macro_manager
 
         try:
             data = await request.json()
-            name = data.get("name", "New Macro")
-
-            # Create macro
-            macro = mm.create_macro(name)
-
-            # Update with any provided data
-            if "description" in data:
-                macro.description = data["description"]
-            if "steps" in data:
-                from .gui.models.macro_types import MacroStep
-
-                macro.steps = [MacroStep.from_dict(s) for s in data["steps"]]
-            if "speed_multiplier" in data:
-                macro.speed_multiplier = data["speed_multiplier"]
-            if "repeat_count" in data:
-                macro.repeat_count = data["repeat_count"]
-            if "repeat_delay_ms" in data:
-                macro.repeat_delay_ms = data["repeat_delay_ms"]
-            if "playback_mode" in data:
-                from .gui.models.macro_types import PlaybackMode
-
-                macro.playback_mode = PlaybackMode(data["playback_mode"])
-            if "fixed_delay_ms" in data:
-                macro.fixed_delay_ms = data["fixed_delay_ms"]
-            if "assigned_button" in data:
-                macro.assigned_button = data["assigned_button"]
-            if "global_hotkey" in data:
-                macro.global_hotkey = data["global_hotkey"]
-
+            macro = mm.create_macro(data.get("name", "New Macro"))
+            self._update_macro_fields(macro, data)
             mm.save_macro(macro)
             response = web.json_response({"status": "created", "id": macro.id})
-
         except Exception as e:
             response = web.json_response({"error": str(e)}, status=400)
 
@@ -584,39 +588,10 @@ class G13Server:
 
         try:
             data = await request.json()
-
-            # Load existing macro
             macro = mm.load_macro(macro_id)
-
-            # Update fields
-            if "name" in data:
-                macro.name = data["name"]
-            if "description" in data:
-                macro.description = data["description"]
-            if "steps" in data:
-                from .gui.models.macro_types import MacroStep
-
-                macro.steps = [MacroStep.from_dict(s) for s in data["steps"]]
-            if "speed_multiplier" in data:
-                macro.speed_multiplier = data["speed_multiplier"]
-            if "repeat_count" in data:
-                macro.repeat_count = data["repeat_count"]
-            if "repeat_delay_ms" in data:
-                macro.repeat_delay_ms = data["repeat_delay_ms"]
-            if "playback_mode" in data:
-                from .gui.models.macro_types import PlaybackMode
-
-                macro.playback_mode = PlaybackMode(data["playback_mode"])
-            if "fixed_delay_ms" in data:
-                macro.fixed_delay_ms = data["fixed_delay_ms"]
-            if "assigned_button" in data:
-                macro.assigned_button = data["assigned_button"]
-            if "global_hotkey" in data:
-                macro.global_hotkey = data["global_hotkey"]
-
+            self._update_macro_fields(macro, data)
             mm.save_macro(macro)
             response = web.json_response({"status": "updated"})
-
         except FileNotFoundError:
             response = web.json_response({"error": "Macro not found"}, status=404)
         except Exception as e:

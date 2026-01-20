@@ -182,6 +182,20 @@ class EventDecoder:
     # Buttons to check directly from raw data (not G1-G22 or M1-M3)
     OTHER_BUTTONS = ["BD", "L1", "L2", "L3", "L4", "MR", "LEFT", "DOWN", "STICK"]
 
+    def _get_bitmask_buttons(self, bitmask: int, prefix: str, count: int) -> List[str]:
+        """Extract pressed button names from a bitmask."""
+        return [f"{prefix}{i}" for i in range(1, count + 1) if bitmask & (1 << i)]
+
+    def _get_other_pressed(self, raw_data: bytes) -> List[str]:
+        """Extract pressed 'other' buttons from raw data."""
+        pressed = []
+        for button_name in self.OTHER_BUTTONS:
+            if button_name in self.BUTTON_MAP:
+                byte_idx, bit_pos = self.BUTTON_MAP[button_name]
+                if byte_idx < len(raw_data) and raw_data[byte_idx] & (1 << bit_pos):
+                    pressed.append(button_name)
+        return pressed
+
     def get_pressed_buttons(self, state: G13ButtonState | None = None) -> List[str]:
         """
         Return list of currently pressed button names.
@@ -194,30 +208,14 @@ class EventDecoder:
         """
         if state is None:
             state = self.last_state
-
         if state is None:
             return []
 
-        pressed = []
+        pressed = self._get_bitmask_buttons(state.g_buttons, "G", 22)
+        pressed.extend(self._get_bitmask_buttons(state.m_buttons, "M", 3))
 
-        # Check G buttons
-        for i in range(1, 23):
-            if state.g_buttons & (1 << i):
-                pressed.append(f"G{i}")
-
-        # Check M buttons
-        for i in range(1, 4):
-            if state.m_buttons & (1 << i):
-                pressed.append(f"M{i}")
-
-        # Check other buttons directly from raw data
         if state.raw_data and len(state.raw_data) >= 8:
-            for button_name in self.OTHER_BUTTONS:
-                if button_name in self.BUTTON_MAP:
-                    byte_idx, bit_pos = self.BUTTON_MAP[button_name]
-                    if byte_idx < len(state.raw_data):
-                        if state.raw_data[byte_idx] & (1 << bit_pos):
-                            pressed.append(button_name)
+            pressed.extend(self._get_other_pressed(state.raw_data))
 
         return pressed
 

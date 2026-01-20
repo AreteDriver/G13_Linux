@@ -75,6 +75,62 @@ def format_byte_bits(val, baseline_val, byte_idx):
     return " ".join(bits)
 
 
+def _create_baseline(data):
+    """Create baseline from initial read with button bytes zeroed."""
+    baseline = list(data[:8])
+    baseline[3] = 0
+    baseline[4] = 0
+    baseline[6] = 0
+    baseline[7] = baseline[7] & 0x80
+    return baseline
+
+
+def _get_pressed_buttons(data):
+    """Extract list of pressed button names from raw data."""
+    pressed = []
+    for byte_idx, byte_val in [(3, data[3]), (4, data[4]), (5, data[5]), (6, data[6])]:
+        for bit in range(8):
+            if (byte_idx, bit) in IGNORE_BITS:
+                continue
+            if byte_val & (1 << bit):
+                pressed.append(KNOWN_BUTTONS.get((byte_idx, bit), f"?B{byte_idx}b{bit}"))
+    # Byte 7 - separate M3/MR from joystick
+    if data[7] & 0x01:
+        pressed.append(KNOWN_BUTTONS.get((7, 0), "M3"))
+    if data[7] & 0x02:
+        pressed.append(KNOWN_BUTTONS.get((7, 1), "MR"))
+    return pressed
+
+
+def _monitor_loop(f):
+    """Main monitoring loop reading from device file."""
+    baseline = None
+    last_buttons = None
+
+    while True:
+        ready = select.select([f], [], [], 0.05)
+        if not ready[0]:
+            continue
+        data = f.read(64)
+        if not data:
+            continue
+
+        if baseline is None:
+            baseline = _create_baseline(data)
+            print("Baseline captured. Start pressing buttons!\n")
+            continue
+
+        button_state = (data[3], data[4], data[5] & 0x7F, data[6], data[7] & 0x03)
+        if button_state != last_buttons:
+            last_buttons = button_state
+            pressed = _get_pressed_buttons(data)
+            all_bytes = " ".join(f"{data[i]:02x}" for i in range(8))
+            if pressed:
+                print(f"PRESSED: {', '.join(pressed):20s} | Bytes: {all_bytes}")
+            else:
+                print(f"(released)                     | Bytes: {all_bytes}")
+
+
 def main():
     device_path = "/dev/hidraw3"
 
@@ -89,66 +145,7 @@ def main():
 
     try:
         with open(device_path, "rb") as f:
-            baseline = None
-            last_buttons = None  # Will store all 8 bytes
-
-            while True:
-                ready = select.select([f], [], [], 0.05)
-                if ready[0]:
-                    data = f.read(64)
-                    if not data:
-                        continue
-
-                    # Capture baseline on first read
-                    if baseline is None:
-                        baseline = list(data[:8])
-                        # Zero out button bytes in baseline
-                        baseline[3] = 0
-                        baseline[4] = 0
-                        baseline[6] = 0
-                        baseline[7] = baseline[7] & 0x80
-                        print("Baseline captured. Start pressing buttons!\n")
-                        continue
-
-                    # Extract button bytes
-                    [data[3], data[4], data[6], data[7] & 0x03]
-
-                    # Only track button bytes for change detection (ignore joystick noise)
-                    # Bytes 1,2 = joystick X,Y - ignore for button detection
-                    button_state = (data[3], data[4], data[5] & 0x7F, data[6], data[7] & 0x03)
-
-                    # Only update display if button state changed
-                    if button_state != last_buttons:
-                        last_buttons = button_state
-
-                        # Find which button(s) are pressed
-                        pressed = []
-                        for byte_idx, byte_val in [
-                            (3, data[3]),
-                            (4, data[4]),
-                            (5, data[5]),
-                            (6, data[6]),
-                        ]:
-                            for bit in range(8):
-                                if (byte_idx, bit) in IGNORE_BITS:
-                                    continue  # Skip status flags
-                                if byte_val & (1 << bit):
-                                    name = KNOWN_BUTTONS.get((byte_idx, bit), f"?B{byte_idx}b{bit}")
-                                    pressed.append(name)
-                        # Byte 7 - separate M3/MR from joystick
-                        if data[7] & 0x01:
-                            pressed.append(KNOWN_BUTTONS.get((7, 0), "M3"))
-                        if data[7] & 0x02:
-                            pressed.append(KNOWN_BUTTONS.get((7, 1), "MR"))
-
-                        # Show all 8 bytes for debugging
-                        all_bytes = " ".join(f"{data[i]:02x}" for i in range(8))
-
-                        if pressed:
-                            print(f"PRESSED: {', '.join(pressed):20s} | Bytes: {all_bytes}")
-                        else:
-                            print(f"(released)                     | Bytes: {all_bytes}")
-
+            _monitor_loop(f)
     except KeyboardInterrupt:
         print("\n\nMonitor stopped.")
     except PermissionError:

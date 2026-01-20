@@ -94,75 +94,46 @@ class MenuScreen(Screen):
             item.action()
             self.mark_dirty()
 
+    def _render_item(self, canvas: Canvas, item: MenuItem, y: int, is_selected: bool):
+        """Render a single menu item."""
+        on = not is_selected  # Invert text color for selected items
+
+        if is_selected:
+            canvas.draw_rect(
+                0, y - 1, canvas.WIDTH - self.SCROLL_INDICATOR_WIDTH,
+                self.ITEM_HEIGHT, filled=True,
+            )
+
+        x = 2
+        if item.icon:
+            x += 10
+
+        label = f"[{item.label}]" if not item.enabled else item.label
+        canvas.draw_text(x, y, label, FONT_4X6, on=on)
+
+        value = item.get_display_value()
+        if value:
+            value_width = len(value) * 5
+            vx = canvas.WIDTH - self.SCROLL_INDICATOR_WIDTH - value_width - 4
+            canvas.draw_text(vx, y, value, FONT_4X6, on=on)
+
+        if item.submenu:
+            arrow_x = canvas.WIDTH - self.SCROLL_INDICATOR_WIDTH - 6
+            canvas.draw_text(arrow_x, y, ">", FONT_4X6, on=on)
+
     def render(self, canvas: Canvas):
         """Render menu to canvas."""
-        # Draw title bar
         canvas.draw_text(0, 0, self.title.upper(), FONT_5X7)
         canvas.draw_hline(0, 9, canvas.WIDTH)
 
-        # Draw visible items
         y = self.TITLE_HEIGHT + 2
-
         for i in range(self.VISIBLE_ITEMS):
             item_idx = self.scroll_offset + i
             if item_idx >= len(self.items):
                 break
-
-            item = self.items[item_idx]
-            is_selected = item_idx == self.selected_index
-
-            # Selection highlight (inverted bar)
-            if is_selected:
-                canvas.draw_rect(
-                    0,
-                    y - 1,
-                    canvas.WIDTH - self.SCROLL_INDICATOR_WIDTH,
-                    self.ITEM_HEIGHT,
-                    filled=True,
-                )
-
-            # Draw icon if present
-            x = 2
-            if item.icon:
-                # Icons would be drawn here
-                x += 10
-
-            # Draw label
-            label = item.label
-            if not item.enabled:
-                label = f"[{label}]"
-
-            # For selected items, we need to invert the text
-            # Since canvas doesn't support inverted text directly,
-            # we'll draw the text and then need to handle this differently
-            # For now, use a prefix to indicate selection
-            if is_selected:
-                # Draw text in "inverted" area - clear pixels for text
-                canvas.draw_text(x, y, label, FONT_4X6, on=False)
-            else:
-                canvas.draw_text(x, y, label, FONT_4X6, on=True)
-
-            # Draw value if present
-            value = item.get_display_value()
-            if value:
-                value_width = len(value) * 5
-                vx = canvas.WIDTH - self.SCROLL_INDICATOR_WIDTH - value_width - 4
-                if is_selected:
-                    canvas.draw_text(vx, y, value, FONT_4X6, on=False)
-                else:
-                    canvas.draw_text(vx, y, value, FONT_4X6, on=True)
-
-            # Draw submenu indicator
-            if item.submenu:
-                arrow_x = canvas.WIDTH - self.SCROLL_INDICATOR_WIDTH - 6
-                if is_selected:
-                    canvas.draw_text(arrow_x, y, ">", FONT_4X6, on=False)
-                else:
-                    canvas.draw_text(arrow_x, y, ">", FONT_4X6, on=True)
-
+            self._render_item(canvas, self.items[item_idx], y, item_idx == self.selected_index)
             y += self.ITEM_HEIGHT
 
-        # Draw scroll indicators
         self._draw_scroll_indicators(canvas)
 
     def _draw_scroll_indicators(self, canvas: Canvas):

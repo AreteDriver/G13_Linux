@@ -28,12 +28,48 @@ def find_g13_hidraw():
     return None
 
 
+def _print_event(event_count, data, last_data):
+    """Print event details including raw bytes and changes."""
+    print(f"\n[Event #{event_count}] {time.strftime('%H:%M:%S')}")
+    print(f"RAW ({len(data)} bytes): {' '.join(f'{b:02x}' for b in data)}")
+
+    non_zero = [(idx, b) for idx, b in enumerate(data) if b != 0]
+    if non_zero:
+        print("Non-zero bytes:")
+        for idx, val in non_zero:
+            print(f"  Byte[{idx:2d}] = 0x{val:02x} ({val:3d}) = {bin(val)[2:].zfill(8)}")
+
+    if last_data:
+        changes = [f"Byte[{i}]: {old:02x} -> {new:02x}"
+                   for i, (old, new) in enumerate(zip(last_data, data)) if old != new]
+        if changes:
+            print("Changes from previous:")
+            for c in changes:
+                print(f"  {c}")
+
+
+def _capture_loop(f):
+    """Main capture loop, returns event count."""
+    event_count = 0
+    last_data = None
+
+    while True:
+        ready, _, _ = select.select([f], [], [], 0.1)
+        if ready:
+            data = f.read(64)
+            if data and data != last_data:
+                event_count += 1
+                _print_event(event_count, data, last_data)
+                last_data = data
+
+    return event_count
+
+
 def main():
     print("=" * 70)
     print("G13 BUTTON CAPTURE - Direct hidraw access")
     print("=" * 70)
 
-    # Find G13
     hidraw_path = find_g13_hidraw()
     if not hidraw_path:
         print("ERROR: No G13 device found!")
@@ -45,7 +81,6 @@ def main():
     try:
         f = open(hidraw_path, "rb")
         print("Device opened successfully!")
-
         print("\n" + "=" * 70)
         print("INSTRUCTIONS:")
         print("  1. Press each G-key (G1-G22) one at a time")
@@ -57,40 +92,7 @@ def main():
         print("\nWaiting for button presses...")
         print("-" * 70)
 
-        event_count = 0
-        last_data = None
-
-        while True:
-            # Use select for timeout
-            ready, _, _ = select.select([f], [], [], 0.1)
-            if ready:
-                data = f.read(64)
-                if data and data != last_data:
-                    event_count += 1
-                    print(f"\n[Event #{event_count}] {time.strftime('%H:%M:%S')}")
-                    print(f"RAW ({len(data)} bytes): {' '.join(f'{b:02x}' for b in data)}")
-
-                    # Show non-zero bytes
-                    non_zero = [(idx, b) for idx, b in enumerate(data) if b != 0]
-                    if non_zero:
-                        print("Non-zero bytes:")
-                        for idx, val in non_zero:
-                            binary = bin(val)[2:].zfill(8)
-                            print(f"  Byte[{idx:2d}] = 0x{val:02x} ({val:3d}) = {binary}")
-
-                    # Show what changed from last event
-                    if last_data:
-                        changes = []
-                        for i, (old, new) in enumerate(zip(last_data, data)):
-                            if old != new:
-                                changes.append(f"Byte[{i}]: {old:02x} -> {new:02x}")
-                        if changes:
-                            print("Changes from previous:")
-                            for c in changes:
-                                print(f"  {c}")
-
-                    last_data = data
-
+        event_count = _capture_loop(f)
     except KeyboardInterrupt:
         print(f"\n\n{'=' * 70}")
         print(f"Capture complete. Total events: {event_count}")

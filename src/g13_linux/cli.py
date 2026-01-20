@@ -247,82 +247,107 @@ def _wait_for_effect(led):
         print("\nStopped")
 
 
+def _profile_list(pm, args):
+    """List all profiles."""
+    profiles = pm.list_profiles()
+    if profiles:
+        print("Available profiles:")
+        for p in profiles:
+            print(f"  - {p}")
+    else:
+        print("No profiles found.")
+
+
+def _profile_show(pm, args):
+    """Show profile details."""
+    try:
+        profile = pm.load_profile(args.name)
+        print(f"Profile: {profile.name}")
+        print(f"Description: {profile.description or '(none)'}")
+        print(f"Backlight: {profile.backlight}")
+        print(f"LCD: {profile.lcd}")
+        print(f"Mappings ({len(profile.mappings)}):")
+        for key, value in sorted(profile.mappings.items()):
+            if isinstance(value, dict):
+                print(f"  {key}: {value.get('keys', value)}")
+            elif value != "KEY_RESERVED":
+                print(f"  {key}: {value}")
+    except FileNotFoundError:
+        print(f"Error: Profile '{args.name}' not found.", file=sys.stderr)
+        sys.exit(1)
+
+
+def _profile_load(pm, args):
+    """Load and apply a profile."""
+    try:
+        profile = pm.load_profile(args.name)
+        print(f"Loaded profile: {profile.name}")
+        _apply_profile_backlight(profile)
+    except FileNotFoundError:
+        print(f"Error: Profile '{args.name}' not found.", file=sys.stderr)
+        sys.exit(1)
+
+
+def _apply_profile_backlight(profile):
+    """Apply profile backlight to device if available."""
+    try:
+        from .device import open_g13
+        from .hardware.backlight import G13Backlight
+
+        device = open_g13()
+        backlight = G13Backlight(device)
+
+        color = profile.backlight.get("color", "#FFFFFF")
+        if color.startswith("#"):
+            r = int(color[1:3], 16)
+            g = int(color[3:5], 16)
+            b = int(color[5:7], 16)
+            backlight.set_color(r, g, b)
+            print(f"Applied backlight: RGB({r}, {g}, {b})")
+
+        device.close()
+    except Exception as e:
+        print(f"Note: Could not apply to device: {e}")
+
+
+def _profile_create(pm, args):
+    """Create a new profile."""
+    if pm.profile_exists(args.name):
+        print(f"Error: Profile '{args.name}' already exists.", file=sys.stderr)
+        sys.exit(1)
+    profile = pm.create_profile(args.name)
+    pm.save_profile(profile)
+    print(f"Created profile: {args.name}")
+
+
+def _profile_delete(pm, args):
+    """Delete a profile."""
+    try:
+        pm.delete_profile(args.name)
+        print(f"Deleted profile: {args.name}")
+    except FileNotFoundError:
+        print(f"Error: Profile '{args.name}' not found.", file=sys.stderr)
+        sys.exit(1)
+
+
+# Profile command dispatch
+_PROFILE_COMMANDS = {
+    "list": _profile_list,
+    "show": _profile_show,
+    "load": _profile_load,
+    "create": _profile_create,
+    "delete": _profile_delete,
+}
+
+
 def cmd_profile(args):
     """Manage profiles."""
     from .gui.models.profile_manager import ProfileManager
 
     pm = ProfileManager()
-
-    if args.profile_cmd == "list":
-        profiles = pm.list_profiles()
-        if profiles:
-            print("Available profiles:")
-            for p in profiles:
-                print(f"  - {p}")
-        else:
-            print("No profiles found.")
-
-    elif args.profile_cmd == "show":
-        try:
-            profile = pm.load_profile(args.name)
-            print(f"Profile: {profile.name}")
-            print(f"Description: {profile.description or '(none)'}")
-            print(f"Backlight: {profile.backlight}")
-            print(f"LCD: {profile.lcd}")
-            print(f"Mappings ({len(profile.mappings)}):")
-            for key, value in sorted(profile.mappings.items()):
-                if isinstance(value, dict):
-                    print(f"  {key}: {value.get('keys', value)}")
-                elif value != "KEY_RESERVED":
-                    print(f"  {key}: {value}")
-        except FileNotFoundError:
-            print(f"Error: Profile '{args.name}' not found.", file=sys.stderr)
-            sys.exit(1)
-
-    elif args.profile_cmd == "load":
-        try:
-            profile = pm.load_profile(args.name)
-            print(f"Loaded profile: {profile.name}")
-
-            # Apply backlight if device is available
-            try:
-                from .device import open_g13
-                from .hardware.backlight import G13Backlight
-
-                device = open_g13()
-                backlight = G13Backlight(device)
-
-                color = profile.backlight.get("color", "#FFFFFF")
-                if color.startswith("#"):
-                    r = int(color[1:3], 16)
-                    g = int(color[3:5], 16)
-                    b = int(color[5:7], 16)
-                    backlight.set_color(r, g, b)
-                    print(f"Applied backlight: RGB({r}, {g}, {b})")
-
-                device.close()
-            except Exception as e:
-                print(f"Note: Could not apply to device: {e}")
-
-        except FileNotFoundError:
-            print(f"Error: Profile '{args.name}' not found.", file=sys.stderr)
-            sys.exit(1)
-
-    elif args.profile_cmd == "create":
-        if pm.profile_exists(args.name):
-            print(f"Error: Profile '{args.name}' already exists.", file=sys.stderr)
-            sys.exit(1)
-        profile = pm.create_profile(args.name)
-        pm.save_profile(profile)
-        print(f"Created profile: {args.name}")
-
-    elif args.profile_cmd == "delete":
-        try:
-            pm.delete_profile(args.name)
-            print(f"Deleted profile: {args.name}")
-        except FileNotFoundError:
-            print(f"Error: Profile '{args.name}' not found.", file=sys.stderr)
-            sys.exit(1)
+    handler = _PROFILE_COMMANDS.get(args.profile_cmd)
+    if handler:
+        handler(pm, args)
 
 
 def main():

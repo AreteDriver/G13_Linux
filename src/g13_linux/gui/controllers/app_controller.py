@@ -156,63 +156,61 @@ class ApplicationController(QObject):
         if self.app_profile_rules.enabled and self.window_monitor.is_available:
             self.window_monitor.start()
 
+    def _handle_mr_button(self, pressed: list, released: list):
+        """Handle MR button press/release for macro recording."""
+        if "MR" in pressed:
+            self._on_mr_button_pressed()
+        if "MR" in released:
+            self._on_mr_button_released()
+
+    def _forward_to_recorder(self, pressed: list, released: list):
+        """Forward button events to macro recorder if recording."""
+        if not self.macro_recorder.is_recording:
+            return
+        for button_id in pressed:
+            self.macro_recorder.on_g13_button_event(button_id, True)
+        for button_id in released:
+            self.macro_recorder.on_g13_button_event(button_id, False)
+
+    def _update_button_ui(self, pressed: list, released: list):
+        """Update button highlights and monitor for press/release events."""
+        for button_id in pressed:
+            self.main_window.button_mapper.highlight_button(button_id, True)
+            self.main_window.monitor_widget.on_button_event(button_id, True)
+        for button_id in released:
+            self.main_window.button_mapper.highlight_button(button_id, False)
+            self.main_window.monitor_widget.on_button_event(button_id, False)
+
+    def _handle_joystick_events(self, state, pressed: list, released: list):
+        """Handle joystick position and click events."""
+        self.main_window.button_mapper.update_joystick(state.joystick_x, state.joystick_y)
+        self.joystick_handler.update(state.joystick_x, state.joystick_y)
+
+        if "STICK" in pressed:
+            self.joystick_handler.handle_stick_click(True)
+        if "STICK" in released:
+            self.joystick_handler.handle_stick_click(False)
+
+        if abs(state.joystick_x - 128) > 20 or abs(state.joystick_y - 128) > 20:
+            self.main_window.monitor_widget.on_joystick_event(state.joystick_x, state.joystick_y)
+
     @pyqtSlot(bytes)
     def _on_raw_event(self, data: bytes):
         """Handle raw HID event from device"""
-        # Send to live monitor
         self.main_window.monitor_widget.on_raw_event(data)
 
-        # Decode event
         try:
             state = self.event_decoder.decode_report(data)
             pressed, released = self.event_decoder.get_button_changes(state)
 
-            # Handle MR button for macro recording
-            if "MR" in pressed:
-                self._on_mr_button_pressed()
-            if "MR" in released:
-                self._on_mr_button_released()
-
-            # Forward G13 events to macro recorder if recording
-            if self.macro_recorder.is_recording:
-                for button_id in pressed:
-                    self.macro_recorder.on_g13_button_event(button_id, True)
-                for button_id in released:
-                    self.macro_recorder.on_g13_button_event(button_id, False)
-
-            # Check if pressed button triggers a macro
+            self._handle_mr_button(pressed, released)
+            self._forward_to_recorder(pressed, released)
             for button_id in pressed:
                 self._check_macro_trigger(button_id)
-
-            # Update button highlights
-            for button_id in pressed:
-                self.main_window.button_mapper.highlight_button(button_id, True)
-                self.main_window.monitor_widget.on_button_event(button_id, True)
-
-            for button_id in released:
-                self.main_window.button_mapper.highlight_button(button_id, False)
-                self.main_window.monitor_widget.on_button_event(button_id, False)
-
-            # Update joystick visual indicator (always update for smooth movement)
-            self.main_window.button_mapper.update_joystick(state.joystick_x, state.joystick_y)
-
-            # Forward joystick to handler (analog or digital mode)
-            self.joystick_handler.update(state.joystick_x, state.joystick_y)
-
-            # Handle joystick click (STICK button)
-            if "STICK" in pressed:
-                self.joystick_handler.handle_stick_click(True)
-            if "STICK" in released:
-                self.joystick_handler.handle_stick_click(False)
-
-            # Forward joystick movement to monitor (only if significantly moved)
-            if abs(state.joystick_x - 128) > 20 or abs(state.joystick_y - 128) > 20:
-                self.main_window.monitor_widget.on_joystick_event(
-                    state.joystick_x, state.joystick_y
-                )
+            self._update_button_ui(pressed, released)
+            self._handle_joystick_events(state, pressed, released)
 
         except Exception as e:
-            # Debug: show decoder errors
             print(f"Decoder error: {e}")
 
     @pyqtSlot()

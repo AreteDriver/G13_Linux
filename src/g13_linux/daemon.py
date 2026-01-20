@@ -319,6 +319,32 @@ class G13Daemon:
         finally:
             self.stop()
 
+    def _stop_components(self):
+        """Stop all daemon components."""
+        if self._enable_server:
+            self._stop_server()
+        if self._input_handler:
+            self._input_handler.stop()
+        if self._led_controller:
+            self._led_controller.stop_effect()
+        if self._render_thread and self._render_thread.is_alive():
+            self._render_thread.join(timeout=1.0)
+
+    def _close_hardware(self):
+        """Close hardware resources safely."""
+        if self._mapper:
+            self._mapper.close()
+        if self._lcd:
+            try:
+                self._lcd.clear()
+            except Exception:
+                pass
+        if self._device:
+            try:
+                self._device.close()
+            except Exception:
+                pass
+
     def stop(self):
         """Stop the daemon and clean up resources."""
         if not self._running:
@@ -327,39 +353,8 @@ class G13Daemon:
         logger.info("Stopping G13 daemon...")
         self._running = False
 
-        # Stop server first (broadcasts device_disconnected)
-        if self._enable_server:
-            self._stop_server()
-
-        # Stop input handler
-        if self._input_handler:
-            self._input_handler.stop()
-
-        # Stop LED effects
-        if self._led_controller:
-            self._led_controller.stop_effect()
-
-        # Wait for render thread
-        if self._render_thread and self._render_thread.is_alive():
-            self._render_thread.join(timeout=1.0)
-
-        # Close mapper
-        if self._mapper:
-            self._mapper.close()
-
-        # Clear LCD
-        if self._lcd:
-            try:
-                self._lcd.clear()
-            except Exception:
-                pass
-
-        # Close device
-        if self._device:
-            try:
-                self._device.close()
-            except Exception:
-                pass
+        self._stop_components()
+        self._close_hardware()
 
         logger.info("G13 daemon stopped")
         print("\nG13 daemon stopped.")

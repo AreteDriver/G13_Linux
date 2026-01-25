@@ -40,8 +40,11 @@ def _print_event(event_count, data, last_data):
             print(f"  Byte[{idx:2d}] = 0x{val:02x} ({val:3d}) = {bin(val)[2:].zfill(8)}")
 
     if last_data:
-        changes = [f"Byte[{i}]: {old:02x} -> {new:02x}"
-                   for i, (old, new) in enumerate(zip(last_data, data)) if old != new]
+        changes = [
+            f"Byte[{i}]: {old:02x} -> {new:02x}"
+            for i, (old, new) in enumerate(zip(last_data, data))
+            if old != new
+        ]
         if changes:
             print("Changes from previous:")
             for c in changes:

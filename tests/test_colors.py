@@ -8,7 +8,7 @@ import pytest
 # Add src to path without importing through __init__.py
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from g13_linux.led.colors import RGB, NAMED_COLORS, blend, brighten, dim, hsv_to_rgb
+from g13_linux.led.colors import NAMED_COLORS, RGB, blend, brighten, dim, hsv_to_rgb
 
 
 class TestRGBCreation:

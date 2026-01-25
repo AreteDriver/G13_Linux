@@ -35,8 +35,10 @@ def _find_out_endpoints(cfg):
             if usb.util.endpoint_direction(ep.bEndpointAddress) == usb.util.ENDPOINT_OUT:
                 ep_type = usb.util.endpoint_type(ep.bmAttributes)
                 type_name = {1: "ISO", 2: "BULK", 3: "INT"}.get(ep_type, "?")
-                print(f"  Interface {intf.bInterfaceNumber}: EP 0x{ep.bEndpointAddress:02X} "
-                      f"{type_name} maxPacket={ep.wMaxPacketSize}")
+                print(
+                    f"  Interface {intf.bInterfaceNumber}: EP 0x{ep.bEndpointAddress:02X} "
+                    f"{type_name} maxPacket={ep.wMaxPacketSize}"
+                )
                 out_eps.append((intf.bInterfaceNumber, ep))
     return out_eps
 
@@ -66,7 +68,7 @@ def _test_endpoint(dev, intf_num, ep, buf):
     print("\n[Method 2] Chunked write (64-byte chunks)...")
     try:
         dev.ctrl_transfer(0, 9, 1, 0, None, 1000)
-        total = sum(ep.write(bytes(buf[i:i + 64]), timeout=1000) for i in range(0, 992, 64))
+        total = sum(ep.write(bytes(buf[i : i + 64]), timeout=1000) for i in range(0, 992, 64))
         print(f"  Wrote {total} bytes in chunks")
     except Exception as e:
         print(f"  Error: {e}")

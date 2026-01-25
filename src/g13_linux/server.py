@@ -214,18 +214,12 @@ class G13Server:
         if button and key:
             success = self.daemon.set_button_mapping(button, key)
             if success:
-                await self._broadcast(
-                    {"type": "mapping_changed", "button": button, "key": key}
-                )
+                await self._broadcast({"type": "mapping_changed", "button": button, "key": key})
                 logger.info(f"Set mapping: {button} -> {key}")
             else:
-                await ws.send_json(
-                    {"type": "error", "message": "Failed to update mapping"}
-                )
+                await ws.send_json({"type": "error", "message": "Failed to update mapping"})
         else:
-            await ws.send_json(
-                {"type": "error", "message": "Missing button or key parameter"}
-            )
+            await ws.send_json({"type": "error", "message": "Missing button or key parameter"})
 
     async def _ws_simulate_press(self, ws, message):
         """Handle simulate_press message."""
@@ -240,10 +234,12 @@ class G13Server:
         color = message.get("color", "#ffffff")
         brightness = message.get("brightness", 100)
         self._set_backlight(color, brightness)
-        await self._broadcast({
-            "type": "backlight_changed",
-            "backlight": {"color": color, "brightness": brightness},
-        })
+        await self._broadcast(
+            {
+                "type": "backlight_changed",
+                "backlight": {"color": color, "brightness": brightness},
+            }
+        )
 
     async def _ws_handle_play_macro(self, ws, message):
         """Handle play_macro message."""
@@ -569,8 +565,14 @@ class G13Server:
         from .gui.models.macro_types import MacroStep, PlaybackMode
 
         simple_fields = [
-            "name", "description", "speed_multiplier", "repeat_count",
-            "repeat_delay_ms", "fixed_delay_ms", "assigned_button", "global_hotkey"
+            "name",
+            "description",
+            "speed_multiplier",
+            "repeat_count",
+            "repeat_delay_ms",
+            "fixed_delay_ms",
+            "assigned_button",
+            "global_hotkey",
         ]
         for field in simple_fields:
             if field in data:

@@ -50,9 +50,7 @@ class MacrosScreen(MenuScreen):
                     macro_name = summary["name"]
                     step_count = summary.get("step_count", 0)
                     # Truncate name if too long for display
-                    display_name = (
-                        macro_name[:16] if len(macro_name) > 16 else macro_name
-                    )
+                    display_name = macro_name[:16] if len(macro_name) > 16 else macro_name
                     items.append(
                         MenuItem(
                             id=f"macro_{macro_id}",

@@ -41,31 +41,61 @@ def _draw_body_shape(draw, chrome_mid, body_color_dark, body_color_mid):
     """Draw the main G13 body outline and chrome trim."""
     # Left chrome accent
     points_left_chrome = [
-        (20, 80), (60, 30), (70, 30), (45, 100), (35, 200),
-        (25, 400), (40, 580), (60, 620), (40, 620), (15, 580), (10, 400), (15, 150),
+        (20, 80),
+        (60, 30),
+        (70, 30),
+        (45, 100),
+        (35, 200),
+        (25, 400),
+        (40, 580),
+        (60, 620),
+        (40, 620),
+        (15, 580),
+        (10, 400),
+        (15, 150),
     ]
     draw.polygon(points_left_chrome, fill=chrome_mid)
 
     # Right chrome accent
     points_right_chrome = [
-        (KEYBOARD_WIDTH - 20, 80), (KEYBOARD_WIDTH - 60, 30), (KEYBOARD_WIDTH - 70, 30),
-        (KEYBOARD_WIDTH - 45, 100), (KEYBOARD_WIDTH - 35, 200), (KEYBOARD_WIDTH - 25, 400),
-        (KEYBOARD_WIDTH - 40, 580), (KEYBOARD_WIDTH - 60, 620), (KEYBOARD_WIDTH - 40, 620),
-        (KEYBOARD_WIDTH - 15, 580), (KEYBOARD_WIDTH - 10, 400), (KEYBOARD_WIDTH - 15, 150),
+        (KEYBOARD_WIDTH - 20, 80),
+        (KEYBOARD_WIDTH - 60, 30),
+        (KEYBOARD_WIDTH - 70, 30),
+        (KEYBOARD_WIDTH - 45, 100),
+        (KEYBOARD_WIDTH - 35, 200),
+        (KEYBOARD_WIDTH - 25, 400),
+        (KEYBOARD_WIDTH - 40, 580),
+        (KEYBOARD_WIDTH - 60, 620),
+        (KEYBOARD_WIDTH - 40, 620),
+        (KEYBOARD_WIDTH - 15, 580),
+        (KEYBOARD_WIDTH - 10, 400),
+        (KEYBOARD_WIDTH - 15, 150),
     ]
     draw.polygon(points_right_chrome, fill=chrome_mid)
 
     # Main body
     body_points = [
-        (60, 35), (KEYBOARD_WIDTH - 60, 35), (KEYBOARD_WIDTH - 40, 150),
-        (KEYBOARD_WIDTH - 35, 420), (KEYBOARD_WIDTH - 50, 600), (50, 600), (35, 420), (40, 150),
+        (60, 35),
+        (KEYBOARD_WIDTH - 60, 35),
+        (KEYBOARD_WIDTH - 40, 150),
+        (KEYBOARD_WIDTH - 35, 420),
+        (KEYBOARD_WIDTH - 50, 600),
+        (50, 600),
+        (35, 420),
+        (40, 150),
     ]
     draw.polygon(body_points, fill=body_color_dark)
 
     # Inner body panel
     inner_points = [
-        (70, 45), (KEYBOARD_WIDTH - 70, 45), (KEYBOARD_WIDTH - 55, 150),
-        (KEYBOARD_WIDTH - 50, 400), (KEYBOARD_WIDTH - 65, 585), (65, 585), (50, 400), (55, 150),
+        (70, 45),
+        (KEYBOARD_WIDTH - 70, 45),
+        (KEYBOARD_WIDTH - 55, 150),
+        (KEYBOARD_WIDTH - 50, 400),
+        (KEYBOARD_WIDTH - 65, 585),
+        (65, 585),
+        (50, 400),
+        (55, 150),
     ]
     draw.polygon(inner_points, fill=body_color_mid)
 
@@ -75,20 +105,31 @@ def _draw_lcd_area(draw, lcd):
     lcd_bezel = 12
     # Outer frame shadow
     draw.rounded_rectangle(
-        [lcd["x"] - lcd_bezel - 3, lcd["y"] - lcd_bezel - 3,
-         lcd["x"] + lcd["width"] + lcd_bezel + 3, lcd["y"] + lcd["height"] + lcd_bezel + 3],
-        radius=8, fill=(20, 20, 22),
+        [
+            lcd["x"] - lcd_bezel - 3,
+            lcd["y"] - lcd_bezel - 3,
+            lcd["x"] + lcd["width"] + lcd_bezel + 3,
+            lcd["y"] + lcd["height"] + lcd_bezel + 3,
+        ],
+        radius=8,
+        fill=(20, 20, 22),
     )
     # Frame
     draw.rounded_rectangle(
-        [lcd["x"] - lcd_bezel, lcd["y"] - lcd_bezel,
-         lcd["x"] + lcd["width"] + lcd_bezel, lcd["y"] + lcd["height"] + lcd_bezel],
-        radius=6, fill=(45, 45, 48),
+        [
+            lcd["x"] - lcd_bezel,
+            lcd["y"] - lcd_bezel,
+            lcd["x"] + lcd["width"] + lcd_bezel,
+            lcd["y"] + lcd["height"] + lcd_bezel,
+        ],
+        radius=6,
+        fill=(45, 45, 48),
     )
     # Inner bezel
     draw.rounded_rectangle(
         [lcd["x"] - 4, lcd["y"] - 4, lcd["x"] + lcd["width"] + 4, lcd["y"] + lcd["height"] + 4],
-        radius=3, fill=(15, 15, 18),
+        radius=3,
+        fill=(15, 15, 18),
     )
     # LCD screen
     draw.rectangle(
@@ -98,7 +139,8 @@ def _draw_lcd_area(draw, lcd):
     for i in range(0, lcd["height"], 3):
         draw.line(
             [(lcd["x"], lcd["y"] + i), (lcd["x"] + lcd["width"], lcd["y"] + i)],
-            fill=(8, 20, 8), width=1,
+            fill=(8, 20, 8),
+            width=1,
         )
 
 
@@ -135,15 +177,21 @@ def _draw_joystick(draw, js, chrome_mid):
         shade = chrome_mid[0] - i * 15
         draw.ellipse(
             [jx - jr - 12 + i, jy - jr - 12 + i, jx + jr + 12 - i, jy + jr + 12 - i],
-            fill=(shade, shade + 2, shade + 5), outline=(shade - 10, shade - 8, shade - 5), width=1,
+            fill=(shade, shade + 2, shade + 5),
+            outline=(shade - 10, shade - 8, shade - 5),
+            width=1,
         )
     draw.ellipse([jx - jr, jy - jr, jx + jr, jy + jr], fill=(18, 18, 20))
 
     # Stick
     stick_r = 20
-    draw.ellipse([jx - stick_r + 3, jy - stick_r + 3, jx + stick_r + 3, jy + stick_r + 3], fill=(10, 10, 12))
+    draw.ellipse(
+        [jx - stick_r + 3, jy - stick_r + 3, jx + stick_r + 3, jy + stick_r + 3], fill=(10, 10, 12)
+    )
     draw.ellipse([jx - stick_r, jy - stick_r, jx + stick_r, jy + stick_r], fill=(45, 45, 50))
-    draw.ellipse([jx - stick_r + 4, jy - stick_r + 4, jx + stick_r - 4, jy + stick_r - 4], fill=(55, 55, 60))
+    draw.ellipse(
+        [jx - stick_r + 4, jy - stick_r + 4, jx + stick_r - 4, jy + stick_r - 4], fill=(55, 55, 60)
+    )
 
     # Grip pattern
     for angle in range(0, 360, 30):
@@ -168,8 +216,11 @@ def create_g13_background():
 
     # Key area panel
     key_panel = [80, 152, 480, 395]
-    draw.rounded_rectangle([key_panel[0] - 3, key_panel[1] - 3, key_panel[2] + 3, key_panel[3] + 3],
-                           radius=12, fill=(15, 15, 18))
+    draw.rounded_rectangle(
+        [key_panel[0] - 3, key_panel[1] - 3, key_panel[2] + 3, key_panel[3] + 3],
+        radius=12,
+        fill=(15, 15, 18),
+    )
     draw.rounded_rectangle(key_panel, radius=10, fill=(22, 22, 25))
 
     _draw_keys(draw)

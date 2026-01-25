@@ -137,7 +137,9 @@ def _analyze_button_press(button_changes, predicted, data):
     hex_str = " ".join(f"{b:02x}" for b in data[:8])
     print(f"  RAW: {hex_str}")
 
-    actual = next(((chg_byte, chg_bit) for chg_byte, chg_bit, is_set in button_changes if is_set), None)
+    actual = next(
+        ((chg_byte, chg_bit) for chg_byte, chg_bit, is_set in button_changes if is_set), None
+    )
 
     if actual == predicted:
         print(f"  ✅ MATCH! Byte[{actual[0]}] bit {actual[1]}")
@@ -194,7 +196,11 @@ def _run_verification_loop(f, results):
             print()
         elif not waiting_for_press:
             hex_str = " ".join(f"{b:02x}" for b in data[:8])
-            print(f"\r  Waiting release... [{hex_str}] idle={_check_buttons_idle(data)}", end="", flush=True)
+            print(
+                f"\r  Waiting release... [{hex_str}] idle={_check_buttons_idle(data)}",
+                end="",
+                flush=True,
+            )
             if _check_buttons_idle(data):
                 waiting_for_press = True
                 current_idx += 1
@@ -208,7 +214,9 @@ def _print_summary(results):
     print("=" * 70)
 
     confirmed = [b for b in TEST_ORDER if b in results and results[b][2]]
-    mismatched = [(b, results[b][0], results[b][1]) for b in TEST_ORDER if b in results and not results[b][2]]
+    mismatched = [
+        (b, results[b][0], results[b][1]) for b in TEST_ORDER if b in results and not results[b][2]
+    ]
     untested = [b for b in TEST_ORDER if b not in results]
 
     print(f"\n✅ Confirmed ({len(confirmed)}): {', '.join(confirmed)}")

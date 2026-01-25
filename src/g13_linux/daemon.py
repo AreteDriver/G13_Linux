@@ -223,9 +223,7 @@ class G13Daemon:
 
         # Broadcast mode change to WebSocket clients
         if self._server and old_mode != mode:
-            self._broadcast_async(
-                self._server._broadcast({"type": "mode_changed", "mode": mode})
-            )
+            self._broadcast_async(self._server._broadcast({"type": "mode_changed", "mode": mode}))
 
         logger.info(f"Mode changed: {old_mode} -> {mode}")
 

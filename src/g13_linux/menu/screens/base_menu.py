@@ -100,8 +100,11 @@ class MenuScreen(Screen):
 
         if is_selected:
             canvas.draw_rect(
-                0, y - 1, canvas.WIDTH - self.SCROLL_INDICATOR_WIDTH,
-                self.ITEM_HEIGHT, filled=True,
+                0,
+                y - 1,
+                canvas.WIDTH - self.SCROLL_INDICATOR_WIDTH,
+                self.ITEM_HEIGHT,
+                filled=True,
             )
 
         x = 2

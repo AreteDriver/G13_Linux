@@ -52,9 +52,17 @@ def _print_endpoint_info(dev):
     for intf in cfg:
         print(f"\nInterface {intf.bInterfaceNumber}, Alt {intf.bAlternateSetting}")
         for ep in intf:
-            direction = "IN" if usb.util.endpoint_direction(ep.bEndpointAddress) == usb.util.ENDPOINT_IN else "OUT"
-            ep_type = {1: "ISO", 2: "BULK", 3: "INT"}.get(usb.util.endpoint_type(ep.bmAttributes), "?")
-            print(f"  EP 0x{ep.bEndpointAddress:02X} {direction} {ep_type} maxPacket={ep.wMaxPacketSize}")
+            direction = (
+                "IN"
+                if usb.util.endpoint_direction(ep.bEndpointAddress) == usb.util.ENDPOINT_IN
+                else "OUT"
+            )
+            ep_type = {1: "ISO", 2: "BULK", 3: "INT"}.get(
+                usb.util.endpoint_type(ep.bmAttributes), "?"
+            )
+            print(
+                f"  EP 0x{ep.bEndpointAddress:02X} {direction} {ep_type} maxPacket={ep.wMaxPacketSize}"
+            )
 
 
 def _write_pattern(dev, buf, name):

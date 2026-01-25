@@ -115,6 +115,7 @@ class MacroData(BaseModel):
 
 # REST API Endpoints
 
+
 @app.get("/api/status")
 async def get_status():
     """Get current device status."""
@@ -128,11 +129,13 @@ async def list_profiles():
     for f in PROFILES_DIR.glob("*.json"):
         try:
             data = json.loads(f.read_text())
-            profiles.append({
-                "name": data.get("name", f.stem),
-                "filename": f.name,
-                "description": data.get("description", ""),
-            })
+            profiles.append(
+                {
+                    "name": data.get("name", f.stem),
+                    "filename": f.name,
+                    "description": data.get("description", ""),
+                }
+            )
         except Exception as e:
             logger.error(f"Error reading profile {f}: {e}")
     return {"profiles": profiles}
@@ -187,12 +190,14 @@ async def list_macros():
     for f in MACROS_DIR.glob("*.json"):
         try:
             data = json.loads(f.read_text())
-            macros.append({
-                "id": f.stem,
-                "name": data.get("name", f.stem),
-                "description": data.get("description", ""),
-                "steps_count": len(data.get("steps", [])),
-            })
+            macros.append(
+                {
+                    "id": f.stem,
+                    "name": data.get("name", f.stem),
+                    "description": data.get("description", ""),
+                    "steps_count": len(data.get("steps", [])),
+                }
+            )
         except Exception as e:
             logger.error(f"Error reading macro {f}: {e}")
     return {"macros": macros}
@@ -211,6 +216,7 @@ async def get_macro(macro_id: str):
 async def create_macro(macro: MacroData):
     """Create a new macro."""
     import uuid
+
     macro_id = str(uuid.uuid4())
     macro_path = MACROS_DIR / f"{macro_id}.json"
     data = macro.model_dump()
@@ -238,10 +244,7 @@ async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
 
     # Send initial state
-    await websocket.send_json({
-        "type": "state",
-        "data": device_state.to_dict()
-    })
+    await websocket.send_json({"type": "state", "data": device_state.to_dict()})
 
     try:
         while True:
@@ -269,11 +272,7 @@ async def handle_ws_message(websocket: WebSocket, message: dict):
         key = message.get("key")
         # Update mapping in active profile
         logger.info(f"Set mapping: {button} -> {key}")
-        await manager.broadcast({
-            "type": "mapping_changed",
-            "button": button,
-            "key": key
-        })
+        await manager.broadcast({"type": "mapping_changed", "button": button, "key": key})
 
     elif msg_type == "simulate_press":
         button = message.get("button")
@@ -286,10 +285,7 @@ async def handle_ws_message(websocket: WebSocket, message: dict):
         await manager.broadcast({"type": "button_released", "button": button})
 
     elif msg_type == "get_state":
-        await websocket.send_json({
-            "type": "state",
-            "data": device_state.to_dict()
-        })
+        await websocket.send_json({"type": "state", "data": device_state.to_dict()})
 
     elif msg_type == "set_backlight":
         color = message.get("color")
@@ -298,10 +294,7 @@ async def handle_ws_message(websocket: WebSocket, message: dict):
             device_state.backlight["color"] = color
         if brightness is not None:
             device_state.backlight["brightness"] = brightness
-        await manager.broadcast({
-            "type": "backlight_changed",
-            "backlight": device_state.backlight
-        })
+        await manager.broadcast({"type": "backlight_changed", "backlight": device_state.backlight})
 
 
 # Device integration (when hardware available)
@@ -331,16 +324,10 @@ async def device_event_loop():
                         for btn, pressed in state.buttons.items():
                             if pressed and btn not in device_state.pressed_keys:
                                 device_state.pressed_keys.add(btn)
-                                await manager.broadcast({
-                                    "type": "button_pressed",
-                                    "button": btn
-                                })
+                                await manager.broadcast({"type": "button_pressed", "button": btn})
                             elif not pressed and btn in device_state.pressed_keys:
                                 device_state.pressed_keys.discard(btn)
-                                await manager.broadcast({
-                                    "type": "button_released",
-                                    "button": btn
-                                })
+                                await manager.broadcast({"type": "button_released", "button": btn})
                 except Exception as e:
                     logger.debug(f"Device read: {e}")
 
@@ -370,10 +357,4 @@ async def shutdown_event():
 
 
 if __name__ == "__main__":
-    uvicorn.run(
-        "server:app",
-        host="127.0.0.1",
-        port=8765,
-        reload=True,
-        log_level="info"
-    )
+    uvicorn.run("server:app", host="127.0.0.1", port=8765, reload=True, log_level="info")

@@ -314,7 +314,9 @@ class G13Calibrator(QMainWindow):
             x, y, w, h = self.positions["LCD"]
             lines.append(f'LCD_AREA = {{"x": {x}, "y": {y}, "width": {w}, "height": {h}}}')
         else:
-            lines.append('LCD_AREA = {"x": 385, "y": 158, "width": 160, "height": 45}  # Default - recalibrate!')
+            lines.append(
+                'LCD_AREA = {"x": 385, "y": 158, "width": 160, "height": 45}  # Default - recalibrate!'
+            )
 
         self.output_text.setText("\n".join(lines))
 

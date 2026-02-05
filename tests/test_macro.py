@@ -524,7 +524,7 @@ class TestMacroRecorderSystemListener:
             try:
                 recorder._start_system_listener()
             except Exception:
-                pass
+                pass  # Test verifies no crash - exception expected during import
 
         # Error may or may not be emitted depending on pynput availability
         # Just verify no crash occurred

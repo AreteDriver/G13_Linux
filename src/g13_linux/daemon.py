@@ -364,12 +364,12 @@ class G13Daemon:
             try:
                 self._lcd.clear()
             except Exception:
-                pass
+                pass  # Best-effort cleanup, device may already be disconnected
         if self._device:
             try:
                 self._device.close()
             except Exception:
-                pass
+                pass  # Best-effort cleanup, device may already be closed
 
     def stop(self):
         """Stop the daemon and clean up resources."""

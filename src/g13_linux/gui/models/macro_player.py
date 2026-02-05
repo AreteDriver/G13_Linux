@@ -76,7 +76,7 @@ class MacroPlayerThread(QThread):
             try:
                 self._uinput.close()
             except Exception:
-                pass
+                pass  # Best-effort cleanup, device may already be closed
             self._uinput = None
 
     def _play_once(self) -> None:

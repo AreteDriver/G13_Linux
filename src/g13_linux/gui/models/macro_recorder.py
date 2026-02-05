@@ -274,7 +274,7 @@ class MacroRecorder(QObject):
                         key_code = str(key)
                     self.on_system_key_event(key_code, True)
                 except Exception:
-                    pass
+                    pass  # Ignore unknown key types from pynput
 
             def on_release(key):
                 try:
@@ -286,7 +286,7 @@ class MacroRecorder(QObject):
                         key_code = str(key)
                     self.on_system_key_event(key_code, False)
                 except Exception:
-                    pass
+                    pass  # Ignore unknown key types from pynput
 
             self._system_listener = keyboard.Listener(on_press=on_press, on_release=on_release)
             self._system_listener.start()

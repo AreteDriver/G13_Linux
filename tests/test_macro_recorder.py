@@ -572,7 +572,7 @@ def on_press(key):
             key_code = str(key)
         recorder.on_system_key_event(key_code, True)
     except Exception:
-        pass
+        pass  # Mimics production callback - pynput silently catches exceptions
 
 def on_release(key):
     try:
@@ -584,7 +584,7 @@ def on_release(key):
             key_code = str(key)
         recorder.on_system_key_event(key_code, False)
     except Exception:
-        pass
+        pass  # Mimics production callback - pynput silently catches exceptions
 
 listener = keyboard.Listener(on_press=on_press, on_release=on_release)
 listener.start()
@@ -616,7 +616,7 @@ listener.start()
                 key_code = str(mock_key)
             recorder.on_system_key_event(key_code, True)
         except Exception:
-            pass
+            pass  # Mimics production callback behavior - exceptions silently caught
 
         assert events == [("KEY_A", True)]
 
@@ -638,7 +638,7 @@ listener.start()
                 key_code = str(mock_key)
             recorder.on_system_key_event(key_code, True)
         except Exception:
-            pass
+            pass  # Mimics production callback behavior - exceptions silently caught
 
         assert events == [("KEY_SHIFT", True)]
 
@@ -660,7 +660,7 @@ listener.start()
                 key_code = str(mock_key)
             recorder.on_system_key_event(key_code, True)
         except Exception:
-            pass
+            pass  # Mimics production callback behavior - exceptions silently caught
 
         assert len(events) == 1
 
@@ -682,7 +682,7 @@ listener.start()
                 key_code = str(mock_key)
             recorder.on_system_key_event(key_code, False)
         except Exception:
-            pass
+            pass  # Mimics production callback behavior - exceptions silently caught
 
         assert events == [("KEY_Z", False)]
 

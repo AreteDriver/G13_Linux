@@ -405,7 +405,7 @@ class MacroEditorWidget(QWidget):
                 self._refresh_macro_list()
                 self._set_editor_enabled(False)
             except FileNotFoundError:
-                pass
+                pass  # Macro file already deleted, update UI anyway
 
     def _insert_delay(self) -> None:
         """Insert a delay step at current position."""

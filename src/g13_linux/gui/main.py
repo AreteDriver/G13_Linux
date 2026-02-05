@@ -48,12 +48,12 @@ def release_instance_lock():
             fcntl.flock(_lock_file_handle.fileno(), fcntl.LOCK_UN)
             _lock_file_handle.close()
         except (IOError, OSError):
-            pass
+            pass  # Best-effort unlock, file may already be closed
         _lock_file_handle = None
     try:
         LOCK_FILE.unlink(missing_ok=True)
     except (IOError, OSError):
-        pass
+        pass  # Best-effort delete, another process may hold the lock
 
 
 def main():

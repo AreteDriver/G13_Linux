@@ -270,8 +270,10 @@ async def handle_ws_message(websocket: WebSocket, message: dict):
     elif msg_type == "set_mapping":
         button = message.get("button")
         key = message.get("key")
-        # Update mapping in active profile
-        logger.info(f"Set mapping: {button} -> {key}")
+        # Update mapping in active profile (sanitize for log injection)
+        safe_button = str(button).replace("\n", "").replace("\r", "")[:20]
+        safe_key = str(key).replace("\n", "").replace("\r", "")[:20]
+        logger.info(f"Set mapping: {safe_button} -> {safe_key}")
         await manager.broadcast({"type": "mapping_changed", "button": button, "key": key})
 
     elif msg_type == "simulate_press":

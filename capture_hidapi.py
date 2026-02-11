@@ -52,18 +52,21 @@ def _print_event(event_count, data, last_data):
 
 
 def _capture_loop(f):
-    """Main capture loop, returns event count."""
+    """Main capture loop, returns event count on KeyboardInterrupt."""
     event_count = 0
     last_data = None
 
-    while True:
-        ready, _, _ = select.select([f], [], [], 0.1)
-        if ready:
-            data = f.read(64)
-            if data and data != last_data:
-                event_count += 1
-                _print_event(event_count, data, last_data)
-                last_data = data
+    try:
+        while True:
+            ready, _, _ = select.select([f], [], [], 0.1)
+            if ready:
+                data = f.read(64)
+                if data and data != last_data:
+                    event_count += 1
+                    _print_event(event_count, data, last_data)
+                    last_data = data
+    except KeyboardInterrupt:
+        pass
 
     return event_count
 
@@ -96,7 +99,6 @@ def main():
         print("-" * 70)
 
         event_count = _capture_loop(f)
-    except KeyboardInterrupt:
         print(f"\n\n{'=' * 70}")
         print(f"Capture complete. Total events: {event_count}")
         print("=" * 70)

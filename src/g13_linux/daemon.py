@@ -341,7 +341,7 @@ class G13Daemon:
                     logger.debug(f"Read error: {e}")
                     time.sleep(0.01)
         except KeyboardInterrupt:
-            pass
+            logger.info("Received keyboard interrupt, stopping daemon")
         finally:
             self.stop()
 

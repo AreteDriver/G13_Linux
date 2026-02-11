@@ -103,4 +103,4 @@ finally:
             mapper.close()
         print("Device closed, kernel driver reattached")
     except Exception:
-        pass
+        pass  # Best-effort device cleanup on exit

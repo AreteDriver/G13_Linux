@@ -166,7 +166,7 @@ def main():
         try:
             usb.util.release_interface(dev, i)
         except Exception:
-            pass
+            pass  # Best-effort USB cleanup, interface may not be claimed
 
 
 if __name__ == "__main__":

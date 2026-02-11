@@ -52,7 +52,7 @@ def _test_endpoint(dev, intf_num, ep, buf):
     try:
         usb.util.claim_interface(dev, intf_num)
     except Exception:
-        pass
+        pass  # Best-effort USB operation, device may not respond
 
     # Method 1: Single write
     print("\n[Method 1] Single write of 992 bytes...")
@@ -86,7 +86,7 @@ def _test_endpoint(dev, intf_num, ep, buf):
     try:
         usb.util.release_interface(dev, intf_num)
     except Exception:
-        pass
+        pass  # Best-effort USB operation, device may not respond
 
 
 def main():
@@ -126,7 +126,7 @@ def main():
         dev.ctrl_transfer(0, 9, 1, 0, None, 1000)
         dev.write(0x02, bytes(_build_black_buffer()), timeout=1000)
     except Exception:
-        pass
+        pass  # Best-effort USB operation, device may not respond
 
     print("\nDone!")
 

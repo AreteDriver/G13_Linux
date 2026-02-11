@@ -101,7 +101,7 @@ def main():
             if dev.is_kernel_driver_active(i):
                 dev.detach_kernel_driver(i)
         except Exception:
-            pass
+            pass  # Best-effort USB operation, device may not respond
 
     dev.set_configuration()
     out_eps = _find_out_endpoints(dev.get_active_configuration())

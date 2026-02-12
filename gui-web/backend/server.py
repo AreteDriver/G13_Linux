@@ -9,6 +9,7 @@ Provides real-time button events and profile/macro management.
 import asyncio
 import json
 import logging
+import re
 import sys
 from pathlib import Path
 from typing import Optional
@@ -113,6 +114,17 @@ class MacroData(BaseModel):
     repeat_count: int = 1
 
 
+def _safe_path(base_dir: Path, name: str) -> Path:
+    """Resolve a user-supplied name to a safe path within base_dir."""
+    safe_name = re.sub(r"[^a-zA-Z0-9_\-.]", "", name)
+    if not safe_name or safe_name.startswith("."):
+        raise HTTPException(status_code=400, detail="Invalid name")
+    filepath = (base_dir / f"{safe_name}.json").resolve()
+    if not filepath.is_relative_to(base_dir.resolve()):
+        raise HTTPException(status_code=400, detail="Invalid name")
+    return filepath
+
+
 # REST API Endpoints
 
 
@@ -144,7 +156,7 @@ async def list_profiles():
 @app.get("/api/profiles/{name}")
 async def get_profile(name: str):
     """Get a specific profile."""
-    profile_path = PROFILES_DIR / f"{name}.json"
+    profile_path = _safe_path(PROFILES_DIR, name)
     if not profile_path.exists():
         raise HTTPException(status_code=404, detail="Profile not found")
     return json.loads(profile_path.read_text())
@@ -153,7 +165,7 @@ async def get_profile(name: str):
 @app.post("/api/profiles/{name}")
 async def save_profile(name: str, profile: ProfileData):
     """Save a profile."""
-    profile_path = PROFILES_DIR / f"{name}.json"
+    profile_path = _safe_path(PROFILES_DIR, name)
     data = profile.model_dump()
     data["name"] = name
     profile_path.write_text(json.dumps(data, indent=2))
@@ -164,7 +176,7 @@ async def save_profile(name: str, profile: ProfileData):
 @app.delete("/api/profiles/{name}")
 async def delete_profile(name: str):
     """Delete a profile."""
-    profile_path = PROFILES_DIR / f"{name}.json"
+    profile_path = _safe_path(PROFILES_DIR, name)
     if not profile_path.exists():
         raise HTTPException(status_code=404, detail="Profile not found")
     profile_path.unlink()
@@ -175,7 +187,7 @@ async def delete_profile(name: str):
 @app.post("/api/profiles/{name}/activate")
 async def activate_profile(name: str):
     """Activate a profile."""
-    profile_path = PROFILES_DIR / f"{name}.json"
+    profile_path = _safe_path(PROFILES_DIR, name)
     if not profile_path.exists():
         raise HTTPException(status_code=404, detail="Profile not found")
     device_state.active_profile = name
@@ -206,7 +218,7 @@ async def list_macros():
 @app.get("/api/macros/{macro_id}")
 async def get_macro(macro_id: str):
     """Get a specific macro."""
-    macro_path = MACROS_DIR / f"{macro_id}.json"
+    macro_path = _safe_path(MACROS_DIR, macro_id)
     if not macro_path.exists():
         raise HTTPException(status_code=404, detail="Macro not found")
     return json.loads(macro_path.read_text())
@@ -229,7 +241,7 @@ async def create_macro(macro: MacroData):
 @app.delete("/api/macros/{macro_id}")
 async def delete_macro(macro_id: str):
     """Delete a macro."""
-    macro_path = MACROS_DIR / f"{macro_id}.json"
+    macro_path = _safe_path(MACROS_DIR, macro_id)
     if not macro_path.exists():
         raise HTTPException(status_code=404, detail="Macro not found")
     macro_path.unlink()

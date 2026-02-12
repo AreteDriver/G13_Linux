@@ -1,4 +1,3 @@
-from typing import Union
 
 from evdev import UInput
 from evdev import ecodes as e
@@ -39,7 +38,7 @@ class G13Mapper:
             if keycodes:
                 self.button_map[button_id] = keycodes
 
-    def _parse_mapping(self, mapping: Union[str, dict]) -> list[int]:
+    def _parse_mapping(self, mapping: str | dict) -> list[int]:
         """Parse a mapping entry into a list of keycodes."""
         if isinstance(mapping, str):
             # Simple format: 'KEY_1'

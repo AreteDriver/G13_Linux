@@ -1,6 +1,5 @@
 """Macro editor widget with list, editor, and playback controls."""
 
-from typing import Optional
 
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import (
@@ -50,12 +49,12 @@ class MacroEditorWidget(QWidget):
     macro_assigned = pyqtSignal(str, str)  # (button_id, macro_id)
     macro_saved = pyqtSignal(object)  # Emits Macro when saved
 
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
         self.macro_manager = MacroManager()
         self.macro_recorder = MacroRecorder()
         self.macro_player = MacroPlayer()
-        self._current_macro: Optional[Macro] = None
+        self._current_macro: Macro | None = None
         self._init_ui()
         self._connect_signals()
         self._refresh_macro_list()
@@ -245,7 +244,7 @@ class MacroEditorWidget(QWidget):
             self.macro_list.addItem(item)
 
     def _on_macro_selected(
-        self, current: Optional[QListWidgetItem], previous: Optional[QListWidgetItem]
+        self, current: QListWidgetItem | None, previous: QListWidgetItem | None
     ) -> None:
         """Handle macro selection from list."""
         if current is None:

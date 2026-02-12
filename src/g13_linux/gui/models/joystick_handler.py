@@ -8,7 +8,7 @@ Handles G13 joystick input with two modes:
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Callable, Optional
+from typing import Callable
 
 from evdev import AbsInfo, UInput
 from evdev import ecodes as e
@@ -85,10 +85,10 @@ class JoystickHandler:
     CENTER_X = 128
     CENTER_Y = 128
 
-    def __init__(self, config: Optional[JoystickConfig] = None):
+    def __init__(self, config: JoystickConfig | None = None):
         self.config = config or JoystickConfig()
-        self._analog_device: Optional[UInput] = None
-        self._key_device: Optional[UInput] = None
+        self._analog_device: UInput | None = None
+        self._key_device: UInput | None = None
 
         # Track digital mode key states to avoid repeat events
         self._keys_pressed: set[str] = set()
@@ -98,7 +98,7 @@ class JoystickHandler:
         self._last_y = self.CENTER_Y
 
         # Callback for UI updates
-        self.on_direction_change: Optional[Callable[[str], None]] = None
+        self.on_direction_change: Callable[[str], None] | None = None
 
     def start(self) -> bool:
         """Initialize the joystick device based on mode"""

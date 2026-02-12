@@ -7,7 +7,6 @@ Manages CRUD operations for G13 button mapping profiles.
 import json
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import List, Optional
 
 
 @dataclass
@@ -50,20 +49,20 @@ class ProfileData:
 class ProfileManager:
     """Manages profile CRUD operations"""
 
-    def __init__(self, profiles_dir: Optional[str] = None):
+    def __init__(self, profiles_dir: str | None = None):
         if profiles_dir is None:
             # Default to configs/profiles in project root
             project_root = Path(__file__).parent.parent.parent.parent.parent
             profiles_dir = project_root / "configs" / "profiles"
 
         self.profiles_dir = Path(profiles_dir)
-        self.current_profile: Optional[ProfileData] = None
-        self.current_name: Optional[str] = None  # Filename (without .json)
+        self.current_profile: ProfileData | None = None
+        self.current_name: str | None = None  # Filename (without .json)
 
         # Ensure profiles directory exists
         self.profiles_dir.mkdir(parents=True, exist_ok=True)
 
-    def list_profiles(self) -> List[str]:
+    def list_profiles(self) -> list[str]:
         """Return list of available profile names"""
         return [p.stem for p in self.profiles_dir.glob("*.json")]
 
@@ -96,7 +95,7 @@ class ProfileManager:
         except (json.JSONDecodeError, TypeError) as e:
             raise ValueError(f"Invalid profile JSON in '{name}': {e}")
 
-    def save_profile(self, profile: ProfileData, name: Optional[str] = None):
+    def save_profile(self, profile: ProfileData, name: str | None = None):
         """
         Save profile to JSON file
 

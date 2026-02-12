@@ -9,7 +9,6 @@ through systematic testing by pressing each button and recording the raw USB dat
 """
 
 from dataclasses import dataclass
-from typing import List, Optional, Tuple, Union
 
 
 @dataclass
@@ -91,9 +90,9 @@ class EventDecoder:
     JOYSTICK_Y_BYTE = 2  # Byte 2: Y-axis (centered at ~127)
 
     def __init__(self):
-        self.last_state: Optional[G13ButtonState] = None
+        self.last_state: G13ButtonState | None = None
 
-    def decode_report(self, data: Union[bytes, list]) -> G13ButtonState:
+    def decode_report(self, data: bytes | list) -> G13ButtonState:
         """
         Decode 8-byte HID report into structured data.
 
@@ -182,11 +181,11 @@ class EventDecoder:
     # Buttons to check directly from raw data (not G1-G22 or M1-M3)
     OTHER_BUTTONS = ["BD", "L1", "L2", "L3", "L4", "MR", "LEFT", "DOWN", "STICK"]
 
-    def _get_bitmask_buttons(self, bitmask: int, prefix: str, count: int) -> List[str]:
+    def _get_bitmask_buttons(self, bitmask: int, prefix: str, count: int) -> list[str]:
         """Extract pressed button names from a bitmask."""
         return [f"{prefix}{i}" for i in range(1, count + 1) if bitmask & (1 << i)]
 
-    def _get_other_pressed(self, raw_data: bytes) -> List[str]:
+    def _get_other_pressed(self, raw_data: bytes) -> list[str]:
         """Extract pressed 'other' buttons from raw data."""
         pressed = []
         for button_name in self.OTHER_BUTTONS:
@@ -196,7 +195,7 @@ class EventDecoder:
                     pressed.append(button_name)
         return pressed
 
-    def get_pressed_buttons(self, state: G13ButtonState | None = None) -> List[str]:
+    def get_pressed_buttons(self, state: G13ButtonState | None = None) -> list[str]:
         """
         Return list of currently pressed button names.
 
@@ -219,7 +218,7 @@ class EventDecoder:
 
         return pressed
 
-    def get_button_changes(self, new_state: G13ButtonState) -> Tuple[List[str], List[str]]:
+    def get_button_changes(self, new_state: G13ButtonState) -> tuple[list[str], list[str]]:
         """
         Compare with previous state to detect button press/release events.
 

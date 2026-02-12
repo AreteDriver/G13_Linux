@@ -4,7 +4,6 @@ import time
 import uuid
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Optional, Union
 
 
 class MacroStepType(Enum):
@@ -37,7 +36,7 @@ class MacroStep:
     """Single step in a macro sequence."""
 
     step_type: MacroStepType
-    value: Union[str, int]  # KEY_A, G1, or delay_ms
+    value: str | int  # KEY_A, G1, or delay_ms
     is_press: bool = True  # True for press/down, False for release/up
     timestamp_ms: int = 0  # Relative time from macro start
 
@@ -72,7 +71,7 @@ class Macro:
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     name: str = "Untitled Macro"
     description: str = ""
-    steps: List[MacroStep] = field(default_factory=list)
+    steps: list[MacroStep] = field(default_factory=list)
 
     # Playback settings
     speed_multiplier: float = 1.0  # 0.5 = half speed, 2.0 = double
@@ -82,8 +81,8 @@ class Macro:
     fixed_delay_ms: int = 10  # For FIXED playback mode
 
     # Assignment
-    assigned_button: Optional[str] = None  # e.g., "G5"
-    global_hotkey: Optional[str] = None  # e.g., "Ctrl+Shift+F1"
+    assigned_button: str | None = None  # e.g., "G5"
+    global_hotkey: str | None = None  # e.g., "Ctrl+Shift+F1"
 
     # Metadata
     created_at: str = ""
@@ -148,7 +147,7 @@ class Macro:
     def add_step(
         self,
         step_type: MacroStepType,
-        value: Union[str, int],
+        value: str | int,
         is_press: bool = True,
         timestamp_ms: int = 0,
     ) -> MacroStep:

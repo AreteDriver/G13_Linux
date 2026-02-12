@@ -1,7 +1,6 @@
 """Macro recording with state machine and multi-source capture."""
 
 from enum import Enum
-from typing import List, Optional, Set
 
 from PyQt6.QtCore import QElapsedTimer, QObject, pyqtSignal
 
@@ -35,14 +34,14 @@ class MacroRecorder(QObject):
     recording_complete = pyqtSignal(object)  # Macro
     error_occurred = pyqtSignal(str)
 
-    def __init__(self, parent: Optional[QObject] = None):
+    def __init__(self, parent: QObject | None = None):
         super().__init__(parent)
         self._state = RecorderState.IDLE
         self._timer = QElapsedTimer()
-        self._steps: List[MacroStep] = []
+        self._steps: list[MacroStep] = []
         self._input_source = InputSource.BOTH
         self._system_listener = None
-        self._pressed_keys: Set[str] = set()  # Track held keys
+        self._pressed_keys: set[str] = set()  # Track held keys
 
     @property
     def state(self) -> RecorderState:
@@ -88,7 +87,7 @@ class MacroRecorder(QObject):
 
         self.state_changed.emit(self._state)
 
-    def stop_recording(self) -> Optional[Macro]:
+    def stop_recording(self) -> Macro | None:
         """
         Stop recording and return the captured macro.
 

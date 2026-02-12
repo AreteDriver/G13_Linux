@@ -1,6 +1,5 @@
 """Dialog for recording new macros."""
 
-from typing import Optional
 
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import (
@@ -27,10 +26,10 @@ class MacroRecordDialog(QDialog):
 
     macro_recorded = pyqtSignal(object)  # Macro
 
-    def __init__(self, recorder: Optional[MacroRecorder] = None, parent: Optional[object] = None):
+    def __init__(self, recorder: MacroRecorder | None = None, parent: object | None = None):
         super().__init__(parent)
         self.recorder = recorder or MacroRecorder()
-        self._recorded_macro: Optional[Macro] = None
+        self._recorded_macro: Macro | None = None
         self._init_ui()
         self._connect_signals()
 

@@ -3,7 +3,7 @@
 import json
 import time
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict
 
 from .macro_types import Macro
 
@@ -15,20 +15,20 @@ class MacroManager:
     Macros are stored as individual JSON files in the macros directory.
     """
 
-    def __init__(self, macros_dir: Optional[str] = None):
+    def __init__(self, macros_dir: str | None = None):
         if macros_dir is None:
             project_root = Path(__file__).parent.parent.parent.parent.parent
             macros_dir = project_root / "configs" / "macros"
 
         self.macros_dir = Path(macros_dir)
         self.macros_dir.mkdir(parents=True, exist_ok=True)
-        self._cache: Dict[str, Macro] = {}
+        self._cache: dict[str, Macro] = {}
 
-    def list_macros(self) -> List[str]:
+    def list_macros(self) -> list[str]:
         """Return list of macro IDs."""
         return [p.stem for p in self.macros_dir.glob("*.json")]
 
-    def list_macro_summaries(self) -> List[Dict]:
+    def list_macro_summaries(self) -> list[Dict]:
         """Return list of macro summaries (id, name, step_count, duration)."""
         summaries = []
         for macro_id in self.list_macros():
@@ -139,7 +139,7 @@ class MacroManager:
         """Clear the macro cache."""
         self._cache.clear()
 
-    def get_macro_by_button(self, button_id: str) -> Optional[Macro]:
+    def get_macro_by_button(self, button_id: str) -> Macro | None:
         """Find macro assigned to a specific button."""
         for macro_id in self.list_macros():
             try:
@@ -150,7 +150,7 @@ class MacroManager:
                 continue
         return None
 
-    def get_macro_by_hotkey(self, hotkey: str) -> Optional[Macro]:
+    def get_macro_by_hotkey(self, hotkey: str) -> Macro | None:
         """Find macro with a specific global hotkey."""
         for macro_id in self.list_macros():
             try:

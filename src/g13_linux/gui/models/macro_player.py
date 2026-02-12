@@ -2,7 +2,6 @@
 
 import time
 from enum import Enum
-from typing import Optional
 
 from PyQt6.QtCore import QObject, QThread, pyqtSignal
 
@@ -25,7 +24,7 @@ class MacroPlayerThread(QThread):
     playback_complete = pyqtSignal()
     error_occurred = pyqtSignal(str)
 
-    def __init__(self, macro: Macro, parent: Optional[QObject] = None):
+    def __init__(self, macro: Macro, parent: QObject | None = None):
         super().__init__(parent)
         self.macro = macro
         self._stop_requested = False
@@ -193,11 +192,11 @@ class MacroPlayer(QObject):
     playback_complete = pyqtSignal()
     error_occurred = pyqtSignal(str)
 
-    def __init__(self, parent: Optional[QObject] = None):
+    def __init__(self, parent: QObject | None = None):
         super().__init__(parent)
         self._state = PlaybackState.IDLE
-        self._player_thread: Optional[MacroPlayerThread] = None
-        self._current_macro: Optional[Macro] = None
+        self._player_thread: MacroPlayerThread | None = None
+        self._current_macro: Macro | None = None
 
     @property
     def state(self) -> PlaybackState:
@@ -210,7 +209,7 @@ class MacroPlayer(QObject):
         return self._state in (PlaybackState.PLAYING, PlaybackState.PAUSED)
 
     @property
-    def current_macro(self) -> Optional[Macro]:
+    def current_macro(self) -> Macro | None:
         """Currently playing macro."""
         return self._current_macro
 

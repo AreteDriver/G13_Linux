@@ -1,6 +1,6 @@
 """Global hotkey registration for standalone macro triggers."""
 
-from typing import Callable, Dict, Optional
+from typing import Callable
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
@@ -19,9 +19,9 @@ class GlobalHotkeyManager(QObject):
     hotkey_triggered = pyqtSignal(str)  # macro_id
     error_occurred = pyqtSignal(str)
 
-    def __init__(self, parent: Optional[QObject] = None):
+    def __init__(self, parent: QObject | None = None):
         super().__init__(parent)
-        self._hotkeys: Dict[str, str] = {}  # hotkey_string -> macro_id
+        self._hotkeys: dict[str, str] = {}  # hotkey_string -> macro_id
         self._listener = None
         self._running = False
 
@@ -31,7 +31,7 @@ class GlobalHotkeyManager(QObject):
         return self._running
 
     @property
-    def registered_hotkeys(self) -> Dict[str, str]:
+    def registered_hotkeys(self) -> dict[str, str]:
         """Return copy of registered hotkeys."""
         return self._hotkeys.copy()
 
@@ -97,12 +97,12 @@ class GlobalHotkeyManager(QObject):
 
         return len(to_remove)
 
-    def get_macro_for_hotkey(self, hotkey: str) -> Optional[str]:
+    def get_macro_for_hotkey(self, hotkey: str) -> str | None:
         """Get macro ID for a hotkey."""
         normalized = self._normalize_hotkey(hotkey)
         return self._hotkeys.get(normalized) if normalized else None
 
-    def get_hotkey_for_macro(self, macro_id: str) -> Optional[str]:
+    def get_hotkey_for_macro(self, macro_id: str) -> str | None:
         """Get hotkey string for a macro (first match)."""
         for hotkey, mid in self._hotkeys.items():
             if mid == macro_id:
@@ -182,7 +182,7 @@ class GlobalHotkeyManager(QObject):
         if self._running and self._hotkeys:
             self._start_listener()
 
-    def _normalize_hotkey(self, hotkey: str) -> Optional[str]:
+    def _normalize_hotkey(self, hotkey: str) -> str | None:
         """
         Normalize hotkey string to consistent format.
 
@@ -220,7 +220,7 @@ class GlobalHotkeyManager(QObject):
 
         return "+".join(valid_parts)
 
-    def _to_pynput_format(self, hotkey: str) -> Optional[str]:
+    def _to_pynput_format(self, hotkey: str) -> str | None:
         """
         Convert normalized hotkey to pynput GlobalHotKeys format.
 

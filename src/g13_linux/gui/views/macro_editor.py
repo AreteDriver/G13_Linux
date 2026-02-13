@@ -1,6 +1,5 @@
 """Macro editor widget with list, editor, and playback controls."""
 
-
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import (
     QComboBox,

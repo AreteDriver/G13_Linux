@@ -85,6 +85,10 @@ class G13Daemon:
         # Mode state (M1, M2, M3)
         self._current_mode = "M1"
 
+        # Lock for shared mutable state accessed from multiple threads
+        # Protects: _current_mode, _last_joystick
+        self._state_lock = threading.Lock()
+
         # Server settings
         self._enable_server = enable_server
         self._server_host = server_host
@@ -212,8 +216,9 @@ class G13Daemon:
             logger.warning(f"Invalid mode: {mode}")
             return
 
-        old_mode = self._current_mode
-        self._current_mode = mode
+        with self._state_lock:
+            old_mode = self._current_mode
+            self._current_mode = mode
 
         profile_name = "None"
         if self.profile_manager.current_profile:
@@ -473,8 +478,11 @@ class G13Daemon:
 
                 # Broadcast joystick position if changed significantly
                 joystick = (state.joystick_x, state.joystick_y)
-                if self._joystick_changed(joystick):
-                    self._last_joystick = joystick
+                with self._state_lock:
+                    changed = self._joystick_changed(joystick)
+                    if changed:
+                        self._last_joystick = joystick
+                if changed:
                     self._broadcast_joystick(joystick)
 
             except Exception as e:

@@ -6,8 +6,8 @@ Generator-based effects for LED animations.
 
 import math
 import time
+from collections.abc import Generator
 from enum import Enum
-from typing import Generator
 
 from .colors import RGB, blend, dim, hsv_to_rgb
 

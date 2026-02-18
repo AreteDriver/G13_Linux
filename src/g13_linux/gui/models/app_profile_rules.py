@@ -254,7 +254,7 @@ class AppProfileRulesManager(QObject):
                 with open(self.config_path) as f:
                     data = json.load(f)
                 self._config = AppProfileConfig.from_dict(data)
-            except (json.JSONDecodeError, IOError) as e:
+            except (OSError, json.JSONDecodeError) as e:
                 print(f"Error loading app profiles config: {e}")
                 self._config = AppProfileConfig()
         else:
@@ -266,5 +266,5 @@ class AppProfileRulesManager(QObject):
             self.config_path.parent.mkdir(parents=True, exist_ok=True)
             with open(self.config_path, "w") as f:
                 json.dump(self._config.to_dict(), f, indent=2)
-        except IOError as e:
+        except OSError as e:
             print(f"Error saving app profiles config: {e}")

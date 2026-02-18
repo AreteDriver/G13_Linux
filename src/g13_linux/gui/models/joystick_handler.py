@@ -6,9 +6,9 @@ Handles G13 joystick input with two modes:
 2. Digital mode: Maps joystick directions to keyboard keys
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
-from typing import Callable
 
 from evdev import AbsInfo, UInput
 from evdev import ecodes as e

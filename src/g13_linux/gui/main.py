@@ -33,7 +33,7 @@ def acquire_instance_lock() -> bool:
         _lock_file_handle.write(str(os.getpid()))
         _lock_file_handle.flush()
         return True
-    except (IOError, OSError):
+    except OSError:
         if _lock_file_handle:
             _lock_file_handle.close()
             _lock_file_handle = None
@@ -47,12 +47,12 @@ def release_instance_lock():
         try:
             fcntl.flock(_lock_file_handle.fileno(), fcntl.LOCK_UN)
             _lock_file_handle.close()
-        except (IOError, OSError):
+        except OSError:
             pass  # Best-effort unlock, file may already be closed
         _lock_file_handle = None
     try:
         LOCK_FILE.unlink(missing_ok=True)
-    except (IOError, OSError):
+    except OSError:
         pass  # Best-effort delete, another process may hold the lock
 
 

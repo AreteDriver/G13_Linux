@@ -86,7 +86,7 @@ class ProfileManager:
             raise FileNotFoundError(f"Profile '{name}' not found at {path}")
 
         try:
-            with open(path, "r") as f:
+            with open(path) as f:
                 data = json.load(f)
             profile = ProfileData(**data)
             self.current_profile = profile
@@ -224,7 +224,7 @@ class ProfileManager:
 
         # Load and validate the profile
         try:
-            with open(import_path, "r") as f:
+            with open(import_path) as f:
                 data = json.load(f)
 
             # Validate it can be parsed as ProfileData

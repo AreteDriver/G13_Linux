@@ -7,7 +7,7 @@ Processes G13 input and emits InputEvents for menu navigation.
 import logging
 import threading
 import time
-from typing import Callable
+from collections.abc import Callable
 
 from ..gui.models.event_decoder import EventDecoder
 from ..menu.screen import InputEvent

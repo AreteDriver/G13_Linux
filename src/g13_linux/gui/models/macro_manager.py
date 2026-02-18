@@ -3,7 +3,6 @@
 import json
 import time
 from pathlib import Path
-from typing import Dict
 
 from .macro_types import Macro
 
@@ -28,7 +27,7 @@ class MacroManager:
         """Return list of macro IDs."""
         return [p.stem for p in self.macros_dir.glob("*.json")]
 
-    def list_macro_summaries(self) -> list[Dict]:
+    def list_macro_summaries(self) -> list[dict]:
         """Return list of macro summaries (id, name, step_count, duration)."""
         summaries = []
         for macro_id in self.list_macros():
@@ -57,7 +56,7 @@ class MacroManager:
         if not path.exists():
             raise FileNotFoundError(f"Macro '{macro_id}' not found")
 
-        with open(path, "r") as f:
+        with open(path) as f:
             data = json.load(f)
 
         macro = Macro.from_dict(data)
@@ -120,7 +119,7 @@ class MacroManager:
         """Import macro from external file."""
         import uuid
 
-        with open(file_path, "r") as f:
+        with open(file_path) as f:
             data = json.load(f)
 
         macro = Macro.from_dict(data)

@@ -87,13 +87,13 @@ def find_g13_hidraw():
     for hidraw in glob.glob("/sys/class/hidraw/hidraw*"):
         uevent_path = os.path.join(hidraw, "device", "uevent")
         try:
-            with open(uevent_path, "r") as f:
+            with open(uevent_path) as f:
                 content = f.read()
                 # Check for G13 HID_ID (format: 0003:0000046D:0000C21C)
                 if "0000046D" in content.upper() and "0000C21C" in content.upper():
                     device_name = os.path.basename(hidraw)
                     return f"/dev/{device_name}"
-        except (IOError, OSError):
+        except OSError:
             continue
     return None
 

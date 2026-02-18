@@ -7,7 +7,7 @@ High-level LED control with effects support.
 import logging
 import threading
 import time
-from typing import Generator
+from collections.abc import Generator
 
 from ..hardware.backlight import G13Backlight
 from .colors import RGB

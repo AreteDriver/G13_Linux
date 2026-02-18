@@ -301,7 +301,7 @@ class TestG13LCDSendFramebuffer:
 
     def test_send_handles_exception(self, capsys):
         mock_device = MagicMock()
-        mock_device.write.side_effect = IOError("USB error")
+        mock_device.write.side_effect = OSError("USB error")
         lcd = G13LCD(mock_device)
         lcd._send_framebuffer()
         captured = capsys.readouterr()

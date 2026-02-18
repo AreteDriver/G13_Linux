@@ -25,10 +25,7 @@ def _is_source_checkout() -> bool:
     Returns True if both configs/ and pyproject.toml exist at the
     computed source root, indicating a development environment.
     """
-    return (
-        (_SOURCE_ROOT / "configs").is_dir()
-        and (_SOURCE_ROOT / "pyproject.toml").is_file()
-    )
+    return (_SOURCE_ROOT / "configs").is_dir() and (_SOURCE_ROOT / "pyproject.toml").is_file()
 
 
 def get_configs_dir() -> Path:

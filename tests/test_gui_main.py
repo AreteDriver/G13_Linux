@@ -35,7 +35,7 @@ class TestInstanceLocking:
         mock_file.fileno.return_value = 42
 
         with patch("builtins.open", return_value=mock_file):
-            with patch("fcntl.flock", side_effect=IOError("Resource busy")):
+            with patch("fcntl.flock", side_effect=OSError("Resource busy")):
                 result = main_module.acquire_instance_lock()
 
                 assert result is False
@@ -48,7 +48,7 @@ class TestInstanceLocking:
         """Test acquiring lock when file cannot be opened."""
         from g13_linux.gui import main as main_module
 
-        with patch("builtins.open", side_effect=IOError("Permission denied")):
+        with patch("builtins.open", side_effect=OSError("Permission denied")):
             result = main_module.acquire_instance_lock()
 
             assert result is False
@@ -87,11 +87,11 @@ class TestInstanceLocking:
 
         mock_file = MagicMock()
         mock_file.fileno.return_value = 42
-        mock_file.close.side_effect = IOError("Error closing")
+        mock_file.close.side_effect = OSError("Error closing")
         main_module._lock_file_handle = mock_file
 
-        with patch("fcntl.flock", side_effect=IOError("Error unlocking")):
-            with patch.object(Path, "unlink", side_effect=IOError("Error unlinking")):
+        with patch("fcntl.flock", side_effect=OSError("Error unlocking")):
+            with patch.object(Path, "unlink", side_effect=OSError("Error unlinking")):
                 # Should not raise
                 main_module.release_instance_lock()
 

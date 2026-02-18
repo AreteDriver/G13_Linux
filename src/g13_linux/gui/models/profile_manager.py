@@ -8,6 +8,8 @@ import json
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
+from g13_linux._paths import get_profiles_dir
+
 
 @dataclass
 class ProfileData:
@@ -51,9 +53,7 @@ class ProfileManager:
 
     def __init__(self, profiles_dir: str | None = None):
         if profiles_dir is None:
-            # Default to configs/profiles in project root
-            project_root = Path(__file__).parent.parent.parent.parent.parent
-            profiles_dir = project_root / "configs" / "profiles"
+            profiles_dir = get_profiles_dir()
 
         self.profiles_dir = Path(profiles_dir)
         self.current_profile: ProfileData | None = None

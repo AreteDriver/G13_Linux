@@ -4,6 +4,8 @@ import json
 import time
 from pathlib import Path
 
+from g13_linux._paths import get_macros_dir
+
 from .macro_types import Macro
 
 
@@ -16,8 +18,7 @@ class MacroManager:
 
     def __init__(self, macros_dir: str | None = None):
         if macros_dir is None:
-            project_root = Path(__file__).parent.parent.parent.parent.parent
-            macros_dir = project_root / "configs" / "macros"
+            macros_dir = get_macros_dir()
 
         self.macros_dir = Path(macros_dir)
         self.macros_dir.mkdir(parents=True, exist_ok=True)

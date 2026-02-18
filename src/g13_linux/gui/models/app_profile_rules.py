@@ -10,6 +10,8 @@ from pathlib import Path
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
+from g13_linux._paths import get_app_profiles_path
+
 
 @dataclass
 class AppProfileRule:
@@ -133,10 +135,7 @@ class AppProfileRulesManager(QObject):
         """
         super().__init__(parent)
         if config_path is None:
-            # Default to configs/app_profiles.json relative to package
-            self.config_path = (
-                Path(__file__).parent.parent.parent.parent.parent / "configs" / "app_profiles.json"
-            )
+            self.config_path = get_app_profiles_path()
         else:
             self.config_path = config_path
 

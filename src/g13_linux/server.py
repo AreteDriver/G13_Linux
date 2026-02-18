@@ -13,13 +13,15 @@ from typing import TYPE_CHECKING
 
 from aiohttp import web
 
+from ._paths import get_static_dir
+
 if TYPE_CHECKING:
     from .daemon import G13Daemon
 
 logger = logging.getLogger(__name__)
 
 # Default path to web GUI build output
-DEFAULT_STATIC_DIR = Path(__file__).parent.parent.parent.parent / "gui-web" / "dist"
+DEFAULT_STATIC_DIR = get_static_dir()
 
 
 class G13Server:

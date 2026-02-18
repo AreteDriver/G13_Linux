@@ -251,14 +251,16 @@ class TestApplicationControllerDeviceEvents:
         mock_main_window.set_status.assert_called_with("G13 device disconnected")
         mock_thread.stop.assert_called_once()
 
-    def test_on_error(self, mock_main_window, mock_dependencies, capsys):
+    def test_on_error(self, mock_main_window, mock_dependencies, caplog):
         """Test error handler."""
+        import logging
+
         controller = ApplicationController(mock_main_window)
-        controller._on_error("Test error message")
+        with caplog.at_level(logging.ERROR):
+            controller._on_error("Test error message")
 
         mock_main_window.set_status.assert_called_with("Error: Test error message")
-        captured = capsys.readouterr()
-        assert "ERROR: Test error message" in captured.out
+        assert "Test error message" in caplog.text
 
 
 class TestApplicationControllerProfiles:
@@ -679,15 +681,17 @@ class TestApplicationControllerRawEvent:
 
         mock_main_window.monitor_widget.on_joystick_event.assert_called_once_with(200, 100)
 
-    def test_on_raw_event_handles_decode_error(self, mock_main_window, mock_dependencies, capsys):
+    def test_on_raw_event_handles_decode_error(self, mock_main_window, mock_dependencies, caplog):
         """Test raw event handles decoder errors gracefully."""
+        import logging
+
         mock_dependencies["decoder"].decode_report.side_effect = ValueError("Bad data")
 
         controller = ApplicationController(mock_main_window)
-        controller._on_raw_event(b"\x00" * 8)
+        with caplog.at_level(logging.DEBUG):
+            controller._on_raw_event(b"\x00" * 8)
 
-        captured = capsys.readouterr()
-        assert "Decoder error" in captured.out
+        assert "Decoder error" in caplog.text
 
     def test_on_raw_event_forwards_to_recorder(self, mock_main_window, mock_dependencies):
         """Test raw event forwards button presses to recorder when recording."""
@@ -943,13 +947,15 @@ class TestApplicationControllerMissingCoverage:
 class TestPerApplicationProfiles:
     """Tests for per-application profile switching."""
 
-    def test_on_window_monitor_error(self, mock_main_window, mock_dependencies, capsys):
-        """Test window monitor error handler prints message."""
-        controller = ApplicationController(mock_main_window)
-        controller._on_window_monitor_error("xdotool not found")
+    def test_on_window_monitor_error(self, mock_main_window, mock_dependencies, caplog):
+        """Test window monitor error handler logs message."""
+        import logging
 
-        captured = capsys.readouterr()
-        assert "Window monitor: xdotool not found" in captured.out
+        controller = ApplicationController(mock_main_window)
+        with caplog.at_level(logging.WARNING):
+            controller._on_window_monitor_error("xdotool not found")
+
+        assert "Window monitor: xdotool not found" in caplog.text
 
     def test_on_app_profile_switch_same_profile(self, mock_main_window, mock_dependencies):
         """Test profile switch is skipped when already on same profile."""
@@ -965,17 +971,19 @@ class TestPerApplicationProfiles:
         mock_dependencies["profile_mgr"].load_profile.assert_not_called()
 
     def test_on_app_profile_switch_profile_not_found(
-        self, mock_main_window, mock_dependencies, capsys
+        self, mock_main_window, mock_dependencies, caplog
     ):
         """Test profile switch when profile doesn't exist."""
+        import logging
+
         controller = ApplicationController(mock_main_window)
         controller.current_profile_name = "old_profile"
         mock_dependencies["profile_mgr"].profile_exists.return_value = False
 
-        controller._on_app_profile_switch("missing_profile")
+        with caplog.at_level(logging.WARNING):
+            controller._on_app_profile_switch("missing_profile")
 
-        captured = capsys.readouterr()
-        assert "Profile 'missing_profile' not found" in captured.out
+        assert "Profile 'missing_profile' not found" in caplog.text
         mock_dependencies["profile_mgr"].load_profile.assert_not_called()
 
     def test_on_app_profile_switch_success(self, mock_main_window, mock_dependencies):

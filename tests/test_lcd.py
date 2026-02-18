@@ -1,5 +1,6 @@
 """Tests for G13 LCD module."""
 
+import logging
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -274,11 +275,11 @@ class TestG13LCDWriteBitmap:
 class TestG13LCDSendFramebuffer:
     """Tests for _send_framebuffer method."""
 
-    def test_send_without_device(self, capsys):
+    def test_send_without_device(self, caplog):
         lcd = G13LCD()
-        lcd._send_framebuffer()
-        captured = capsys.readouterr()
-        assert "No device connected" in captured.out
+        with caplog.at_level(logging.WARNING):
+            lcd._send_framebuffer()
+        assert "No device connected" in caplog.text
 
     def test_send_packet_format(self):
         mock_device = MagicMock()
@@ -291,33 +292,33 @@ class TestG13LCDSendFramebuffer:
         assert packet[0] == 0x03
         assert all(b == 0 for b in packet[1:32])
 
-    def test_partial_write_warning(self, capsys):
+    def test_partial_write_warning(self, caplog):
         mock_device = MagicMock()
         mock_device.write.return_value = 500
         lcd = G13LCD(mock_device)
-        lcd._send_framebuffer()
-        captured = capsys.readouterr()
-        assert "Partial write" in captured.out
+        with caplog.at_level(logging.WARNING):
+            lcd._send_framebuffer()
+        assert "Partial write" in caplog.text
 
-    def test_send_handles_exception(self, capsys):
+    def test_send_handles_exception(self, caplog):
         mock_device = MagicMock()
-        mock_device.write.side_effect = IOError("USB error")
+        mock_device.write.side_effect = OSError("USB error")
         lcd = G13LCD(mock_device)
-        lcd._send_framebuffer()
-        captured = capsys.readouterr()
-        assert "Failed to send framebuffer" in captured.out
+        with caplog.at_level(logging.ERROR):
+            lcd._send_framebuffer()
+        assert "Failed to send framebuffer" in caplog.text
 
 
 class TestG13LCDSetBrightness:
     """Tests for set_brightness method."""
 
-    def test_brightness_valid_range(self, capsys):
+    def test_brightness_valid_range(self, caplog):
         lcd = G13LCD()
-        lcd.set_brightness(0)
-        lcd.set_brightness(50)
-        lcd.set_brightness(100)
-        captured = capsys.readouterr()
-        assert "not supported" in captured.out
+        with caplog.at_level(logging.INFO):
+            lcd.set_brightness(0)
+            lcd.set_brightness(50)
+            lcd.set_brightness(100)
+        assert "not supported" in caplog.text
 
     def test_brightness_invalid_low(self):
         lcd = G13LCD()
@@ -344,14 +345,14 @@ class TestG13LCDInitLcd:
         lcd._init_lcd()
         mock_device._dev.ctrl_transfer.assert_called_once_with(0, 9, 1, 0, None, 1000)
 
-    def test_init_lcd_handles_exception(self, capsys):
+    def test_init_lcd_handles_exception(self, caplog):
         mock_device = MagicMock()
         mock_device._dev = MagicMock()
         mock_device._dev.ctrl_transfer.side_effect = Exception("USB error")
         lcd = G13LCD(mock_device)
-        lcd._init_lcd()
-        captured = capsys.readouterr()
-        assert "init_lcd failed" in captured.out
+        with caplog.at_level(logging.DEBUG):
+            lcd._init_lcd()
+        assert "init_lcd failed" in caplog.text
 
 
 class TestG13LCDMissingCoverage:

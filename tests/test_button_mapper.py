@@ -117,7 +117,7 @@ class TestButtonMapperWidget:
         widget = ButtonMapperWidget()
 
         # Highlight some buttons
-        for i, button_id in enumerate(list(widget.buttons.keys())[:3]):
+        for button_id in list(widget.buttons.keys())[:3]:
             widget.highlight_button(button_id, True)
 
         widget.clear_all_highlights()
@@ -221,7 +221,7 @@ class TestButtonMapperButtons:
 
         widget = ButtonMapperWidget()
 
-        for button_id, btn in widget.buttons.items():
+        for _button_id, btn in widget.buttons.items():
             # Each button should have non-zero dimensions
             assert btn.width() > 0
             assert btn.height() > 0

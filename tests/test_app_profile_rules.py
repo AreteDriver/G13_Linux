@@ -538,6 +538,6 @@ class TestAppProfileRulesManager:
         manager = AppProfileRulesManager(config_path=config_path)
 
         # Mock open to raise an error
-        with patch("builtins.open", side_effect=IOError("Permission denied")):
+        with patch("builtins.open", side_effect=OSError("Permission denied")):
             # Should not raise
             manager.save()

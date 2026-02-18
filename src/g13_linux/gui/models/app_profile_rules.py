@@ -4,11 +4,14 @@ Manages rules that map window patterns to G13 profiles.
 """
 
 import json
+import logging
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from PyQt6.QtCore import QObject, pyqtSignal
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -133,10 +136,9 @@ class AppProfileRulesManager(QObject):
         """
         super().__init__(parent)
         if config_path is None:
-            # Default to configs/app_profiles.json relative to package
-            self.config_path = (
-                Path(__file__).parent.parent.parent.parent.parent / "configs" / "app_profiles.json"
-            )
+            from ..._paths import get_app_profiles_path
+
+            self.config_path = get_app_profiles_path()
         else:
             self.config_path = config_path
 
@@ -254,8 +256,8 @@ class AppProfileRulesManager(QObject):
                 with open(self.config_path) as f:
                     data = json.load(f)
                 self._config = AppProfileConfig.from_dict(data)
-            except (json.JSONDecodeError, IOError) as e:
-                print(f"Error loading app profiles config: {e}")
+            except (OSError, json.JSONDecodeError) as e:
+                logger.error(f"Error loading app profiles config: {e}")
                 self._config = AppProfileConfig()
         else:
             self._config = AppProfileConfig()
@@ -266,5 +268,5 @@ class AppProfileRulesManager(QObject):
             self.config_path.parent.mkdir(parents=True, exist_ok=True)
             with open(self.config_path, "w") as f:
                 json.dump(self._config.to_dict(), f, indent=2)
-        except IOError as e:
-            print(f"Error saving app profiles config: {e}")
+        except OSError as e:
+            logger.error(f"Error saving app profiles config: {e}")

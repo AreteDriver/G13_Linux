@@ -118,7 +118,7 @@ class ColorPickerScreen(Screen):
         # Find current color in presets
         if self.led:
             current = self.led.current_color
-            for i, (name, color) in enumerate(self.PRESETS):
+            for i, (_name, color) in enumerate(self.PRESETS):
                 if color.r == current.r and color.g == current.g and color.b == current.b:
                     self.selected = i
                     break

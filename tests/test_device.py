@@ -257,11 +257,12 @@ class TestLibUSBDevice:
     def test_open_detach_exception(self):
         """Test open handles detach exception gracefully."""
         mock_core = MagicMock()
+        mock_core.USBError = type("USBError", (OSError,), {})
         mock_util = MagicMock()
         mock_dev = MagicMock()
         mock_core.find.return_value = mock_dev
         mock_dev.is_kernel_driver_active.return_value = True
-        mock_dev.detach_kernel_driver.side_effect = Exception("Detach failed")
+        mock_dev.detach_kernel_driver.side_effect = OSError("Detach failed")
         mock_intf = MagicMock()
         mock_cfg = MagicMock()
         mock_cfg.__getitem__ = MagicMock(return_value=mock_intf)
@@ -281,11 +282,12 @@ class TestLibUSBDevice:
     def test_open_set_configuration_exception(self):
         """Test open handles set_configuration exception."""
         mock_core = MagicMock()
+        mock_core.USBError = type("USBError", (OSError,), {})
         mock_util = MagicMock()
         mock_dev = MagicMock()
         mock_core.find.return_value = mock_dev
         mock_dev.is_kernel_driver_active.return_value = False
-        mock_dev.set_configuration.side_effect = Exception("Config failed")
+        mock_dev.set_configuration.side_effect = OSError("Config failed")
         mock_intf = MagicMock()
         mock_cfg = MagicMock()
         mock_cfg.__getitem__ = MagicMock(return_value=mock_intf)
@@ -305,6 +307,7 @@ class TestLibUSBDevice:
     def test_open_claim_interface_exception(self):
         """Test open handles claim_interface exception."""
         mock_core = MagicMock()
+        mock_core.USBError = type("USBError", (OSError,), {})
         mock_util = MagicMock()
         mock_dev = MagicMock()
         mock_core.find.return_value = mock_dev
@@ -313,7 +316,7 @@ class TestLibUSBDevice:
         mock_cfg = MagicMock()
         mock_cfg.__getitem__ = MagicMock(return_value=mock_intf)
         mock_dev.get_active_configuration.return_value = mock_cfg
-        mock_util.claim_interface.side_effect = Exception("Claim failed")
+        mock_util.claim_interface.side_effect = OSError("Claim failed")
         mock_ep_in = MagicMock()
         mock_ep_out = MagicMock()
         mock_util.find_descriptor.side_effect = [mock_ep_in, mock_ep_out]
@@ -336,7 +339,7 @@ class TestLibUSBDevice:
     def test_read_timeout(self):
         device = LibUSBDevice()
         device._ep_in = MagicMock()
-        device._ep_in.read.side_effect = Exception("Timeout")
+        device._ep_in.read.side_effect = OSError("Timeout")
         result = device.read(100)
         assert result is None
 
@@ -362,38 +365,46 @@ class TestLibUSBDevice:
         assert result == 3
 
     def test_close(self):
+        mock_core = MagicMock()
+        mock_core.USBError = type("USBError", (OSError,), {})
         mock_util = MagicMock()
         device = LibUSBDevice()
         device._dev = MagicMock()
         device._reattach = True
-        with patch.dict("sys.modules", {"usb.util": mock_util}):
+        with patch.dict("sys.modules", {"usb.core": mock_core, "usb.util": mock_util}):
             device.close()
             assert device._dev is None
 
     def test_close_no_reattach(self):
+        mock_core = MagicMock()
+        mock_core.USBError = type("USBError", (OSError,), {})
         mock_util = MagicMock()
         device = LibUSBDevice()
         device._dev = MagicMock()
         device._reattach = False
-        with patch.dict("sys.modules", {"usb.util": mock_util}):
+        with patch.dict("sys.modules", {"usb.core": mock_core, "usb.util": mock_util}):
             device.close()
 
     def test_close_release_exception(self):
+        mock_core = MagicMock()
+        mock_core.USBError = type("USBError", (OSError,), {})
         mock_util = MagicMock()
-        mock_util.release_interface.side_effect = Exception("Error")
+        mock_util.release_interface.side_effect = OSError("Error")
         device = LibUSBDevice()
         device._dev = MagicMock()
         device._reattach = False
-        with patch.dict("sys.modules", {"usb.util": mock_util}):
+        with patch.dict("sys.modules", {"usb.core": mock_core, "usb.util": mock_util}):
             device.close()
 
     def test_close_attach_exception(self):
+        mock_core = MagicMock()
+        mock_core.USBError = type("USBError", (OSError,), {})
         mock_util = MagicMock()
         device = LibUSBDevice()
         device._dev = MagicMock()
-        device._dev.attach_kernel_driver.side_effect = Exception("Error")
+        device._dev.attach_kernel_driver.side_effect = OSError("Error")
         device._reattach = True
-        with patch.dict("sys.modules", {"usb.util": mock_util}):
+        with patch.dict("sys.modules", {"usb.core": mock_core, "usb.util": mock_util}):
             device.close()
 
     def test_close_when_not_open(self):

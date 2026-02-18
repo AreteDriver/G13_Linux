@@ -4,6 +4,8 @@ Application Controller
 Main orchestrator connecting models to views.
 """
 
+import logging
+
 from PyQt6.QtCore import QObject, pyqtSlot
 from PyQt6.QtWidgets import QMessageBox
 
@@ -21,6 +23,8 @@ from ..models.profile_manager import ProfileManager
 from ..models.window_monitor import WindowMonitorThread
 from ..widgets.key_selector import KeySelectorDialog
 from .device_event_controller import DeviceEventThread
+
+logger = logging.getLogger(__name__)
 
 
 class ApplicationController(QObject):
@@ -211,7 +215,7 @@ class ApplicationController(QObject):
             self._handle_joystick_events(state, pressed, released)
 
         except Exception as e:
-            print(f"Decoder error: {e}")
+            logger.debug(f"Decoder error: {e}")
 
     @pyqtSlot()
     def _on_device_connected(self):
@@ -231,7 +235,7 @@ class ApplicationController(QObject):
     def _on_error(self, message: str):
         """Handle errors"""
         self.main_window.set_status(f"Error: {message}")
-        print(f"ERROR: {message}")
+        logger.error(message)
 
     @pyqtSlot(str)
     def _load_profile(self, profile_name: str):
@@ -543,7 +547,7 @@ class ApplicationController(QObject):
     @pyqtSlot(str)
     def _on_window_monitor_error(self, message: str) -> None:
         """Handle window monitor error."""
-        print(f"Window monitor: {message}")
+        logger.warning(f"Window monitor: {message}")
         # Don't show message box - just disable the feature silently
 
     @pyqtSlot(str)
@@ -553,7 +557,7 @@ class ApplicationController(QObject):
             return  # Already on this profile
 
         if not self.profile_manager.profile_exists(profile_name):
-            print(f"App profile switch: Profile '{profile_name}' not found")
+            logger.warning(f"App profile switch: Profile '{profile_name}' not found")
             return
 
         self._load_profile(profile_name)

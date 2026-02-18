@@ -10,6 +10,10 @@ Protocol (from g13-rs/libg13):
 - Total packet: 992 bytes via interrupt transfer to endpoint 2
 """
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 # 5x7 font table - each character is 5 columns of 7 bits (stored as 5 bytes)
 # Characters 32-126 (space to ~)
 FONT_5X7 = {
@@ -280,7 +284,7 @@ class G13LCD:
                 # bmRequestType=0, bRequest=9, wValue=1, wIndex=0
                 self.device._dev.ctrl_transfer(0, 9, 1, 0, None, 1000)
             except Exception as e:
-                print(f"[LCD] init_lcd failed: {e}")
+                logger.debug(f"init_lcd failed: {e}")
 
     def _send_framebuffer(self):
         """
@@ -290,7 +294,7 @@ class G13LCD:
         Total: 992 bytes sent via interrupt transfer to endpoint 2.
         """
         if not self.device:
-            print("[LCD] No device connected")
+            logger.warning("No device connected")
             return
 
         try:
@@ -308,9 +312,9 @@ class G13LCD:
             # Send to device - LibUSBDevice.write() sends to OUT endpoint
             bytes_written = self.device.write(packet)
             if bytes_written != len(packet):
-                print(f"[LCD] Partial write: {bytes_written}/{len(packet)} bytes")
+                logger.warning(f"Partial write: {bytes_written}/{len(packet)} bytes")
         except Exception as e:
-            print(f"[LCD] Failed to send framebuffer: {e}")
+            logger.error(f"Failed to send framebuffer: {e}")
 
     def set_brightness(self, level: int):
         """
@@ -324,4 +328,4 @@ class G13LCD:
         if not 0 <= level <= 100:
             raise ValueError("Brightness must be 0-100")
 
-        print("[LCD] Brightness control not supported on G13 LCD")
+        logger.info("Brightness control not supported on G13 LCD")

@@ -1,5 +1,6 @@
 """Tests for the backlight module."""
 
+import logging
 from unittest.mock import Mock
 
 import pytest
@@ -54,25 +55,25 @@ class TestSetColor:
 
         assert backlight._current_color == (255, 255, 255)
 
-    def test_set_color_no_device(self, capsys):
+    def test_set_color_no_device(self, caplog):
         backlight = G13Backlight()
 
-        backlight.set_color(255, 0, 0)
+        with caplog.at_level(logging.DEBUG):
+            backlight.set_color(255, 0, 0)
 
         assert backlight._current_color == (255, 0, 0)
-        captured = capsys.readouterr()
-        assert "No device" in captured.out
+        assert "No device" in caplog.text
 
-    def test_set_color_device_error(self, capsys):
+    def test_set_color_device_error(self, caplog):
         mock_device = Mock()
         mock_device.send_feature_report.side_effect = OSError("Device error")
         backlight = G13Backlight(mock_device)
 
-        backlight.set_color(255, 0, 0)
+        with caplog.at_level(logging.ERROR):
+            backlight.set_color(255, 0, 0)
 
         assert backlight._current_color == (255, 0, 0)
-        captured = capsys.readouterr()
-        assert "Failed to set color" in captured.out
+        assert "Failed to set color" in caplog.text
 
     def test_set_color_invalid_r_high(self):
         backlight = G13Backlight()
@@ -189,16 +190,16 @@ class TestApplyColor:
         # Should not raise
         backlight._apply_color()
 
-    def test_apply_color_device_error(self, capsys):
+    def test_apply_color_device_error(self, caplog):
         mock_device = Mock()
         mock_device.send_feature_report.side_effect = OSError("error")
         backlight = G13Backlight(mock_device)
         backlight._current_color = (255, 0, 0)
 
-        backlight._apply_color()
+        with caplog.at_level(logging.ERROR):
+            backlight._apply_color()
 
-        captured = capsys.readouterr()
-        assert "Failed to apply color" in captured.out
+        assert "Failed to apply color" in caplog.text
 
 
 class TestGetters:

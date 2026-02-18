@@ -71,7 +71,7 @@ jobs:
             --cov=g13_linux \
             --cov-report=term-missing \
             --cov-report=xml \
-            --cov-fail-under=0
+            --cov-fail-under=60
         env:
           QT_QPA_PLATFORM: offscreen
 

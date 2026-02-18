@@ -4,13 +4,16 @@ import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import g13_linux.gui.main  # noqa: F401 - ensure module is loaded
+
+main_module = sys.modules["g13_linux.gui.main"]
+
 
 class TestInstanceLocking:
     """Test single-instance locking functions."""
 
     def test_acquire_lock_success(self):
         """Test acquiring lock when no other instance."""
-        from g13_linux.gui import main as main_module
 
         mock_file = MagicMock()
         mock_file.fileno.return_value = 42
@@ -28,14 +31,11 @@ class TestInstanceLocking:
 
     def test_acquire_lock_failure_already_locked(self):
         """Test acquiring lock when another instance holds it."""
-
-        from g13_linux.gui import main as main_module
-
         mock_file = MagicMock()
         mock_file.fileno.return_value = 42
 
         with patch("builtins.open", return_value=mock_file):
-            with patch("fcntl.flock", side_effect=IOError("Resource busy")):
+            with patch("fcntl.flock", side_effect=OSError("Resource busy")):
                 result = main_module.acquire_instance_lock()
 
                 assert result is False
@@ -46,17 +46,13 @@ class TestInstanceLocking:
 
     def test_acquire_lock_failure_open_error(self):
         """Test acquiring lock when file cannot be opened."""
-        from g13_linux.gui import main as main_module
-
-        with patch("builtins.open", side_effect=IOError("Permission denied")):
+        with patch("builtins.open", side_effect=OSError("Permission denied")):
             result = main_module.acquire_instance_lock()
 
             assert result is False
 
     def test_release_lock(self):
         """Test releasing the lock."""
-        from g13_linux.gui import main as main_module
-
         mock_file = MagicMock()
         mock_file.fileno.return_value = 42
         main_module._lock_file_handle = mock_file
@@ -71,8 +67,6 @@ class TestInstanceLocking:
 
     def test_release_lock_when_no_handle(self):
         """Test releasing lock when none was acquired."""
-        from g13_linux.gui import main as main_module
-
         main_module._lock_file_handle = None
 
         with patch.object(Path, "unlink"):
@@ -83,15 +77,13 @@ class TestInstanceLocking:
 
     def test_release_lock_handles_errors(self):
         """Test release handles errors gracefully."""
-        from g13_linux.gui import main as main_module
-
         mock_file = MagicMock()
         mock_file.fileno.return_value = 42
-        mock_file.close.side_effect = IOError("Error closing")
+        mock_file.close.side_effect = OSError("Error closing")
         main_module._lock_file_handle = mock_file
 
-        with patch("fcntl.flock", side_effect=IOError("Error unlocking")):
-            with patch.object(Path, "unlink", side_effect=IOError("Error unlinking")):
+        with patch("fcntl.flock", side_effect=OSError("Error unlocking")):
+            with patch.object(Path, "unlink", side_effect=OSError("Error unlinking")):
                 # Should not raise
                 main_module.release_instance_lock()
 

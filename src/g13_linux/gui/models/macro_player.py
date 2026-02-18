@@ -24,12 +24,18 @@ class MacroPlayerThread(QThread):
     playback_complete = pyqtSignal()
     error_occurred = pyqtSignal(str)
 
-    def __init__(self, macro: Macro, parent: QObject | None = None):
+    def __init__(
+        self,
+        macro: Macro,
+        parent: QObject | None = None,
+        profile_mappings: dict[str, str] | None = None,
+    ):
         super().__init__(parent)
         self.macro = macro
         self._stop_requested = False
         self._pause_requested = False
         self._uinput = None
+        self._profile_mappings = profile_mappings or {}
 
     def run(self) -> None:
         """Execute macro with timing."""
@@ -64,10 +70,10 @@ class MacroPlayerThread(QThread):
             # Create UInput with common keys
             self._uinput = UInput()
             self._ecodes = e
-        except ImportError:
-            raise RuntimeError("evdev not installed")
-        except PermissionError:
-            raise RuntimeError("Permission denied - need root or uinput access")
+        except ImportError as err:
+            raise RuntimeError("evdev not installed") from err
+        except PermissionError as err:
+            raise RuntimeError("Permission denied - need root or uinput access") from err
 
     def _cleanup_uinput(self) -> None:
         """Cleanup UInput."""
@@ -129,11 +135,15 @@ class MacroPlayerThread(QThread):
             self._emit_key(step.value, step.is_press)
 
         elif step.step_type == MacroStepType.G13_BUTTON:
-            # G13 button events - these would need profile mapping
-            # For now, we just emit a placeholder or skip
-            # The ApplicationController should handle this by looking up
-            # the button's mapped key in the current profile
-            pass
+            # Resolve G13 button to mapped key via profile
+            mapped_key = self._profile_mappings.get(step.value)
+            if mapped_key and mapped_key != "KEY_RESERVED":
+                # Handle combo mappings (dict with 'keys' list)
+                if isinstance(mapped_key, dict):
+                    for key in mapped_key.get("keys", []):
+                        self._emit_key(key, step.is_press)
+                else:
+                    self._emit_key(mapped_key, step.is_press)
 
         elif step.step_type == MacroStepType.DELAY:
             self._interruptible_sleep(step.value / 1000.0)

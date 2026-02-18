@@ -81,7 +81,7 @@ class ButtonMapperWidget(QWidget):
 
     def _init_buttons(self):
         """Create all G13 buttons based on layout"""
-        for button_id, position in G13_BUTTON_POSITIONS.items():
+        for button_id in G13_BUTTON_POSITIONS:
             btn = G13Button(button_id, self)
             btn.clicked.connect(lambda checked=False, bid=button_id: self.button_clicked.emit(bid))
             self.buttons[button_id] = btn

@@ -41,8 +41,8 @@ class RGB:
             g = int(hex_string[2:4], 16)
             b = int(hex_string[4:6], 16)
             return cls(r, g, b)
-        except ValueError:
-            raise ValueError(f"Invalid hex color: {hex_string}")
+        except ValueError as err:
+            raise ValueError(f"Invalid hex color: {hex_string}") from err
 
     @classmethod
     def from_name(cls, name: str) -> "RGB":

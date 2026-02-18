@@ -24,16 +24,10 @@ class G13ButtonState:
 
 class EventDecoder:
     """
-    Decodes G13 USB HID reports (64 bytes) into structured button/joystick data.
+    Decodes G13 USB HID reports (8 bytes) into structured button/joystick data.
 
-    IMPLEMENTATION STATUS: STUB - Requires hardware testing
-
-    To complete this implementation:
-    1. Run: python -m g13_linux.cli
-    2. Press each button (G1-G22, M1-M3) individually
-    3. Record the RAW output showing which bytes change
-    4. Update BUTTON_MAP with correct (byte_index, bit_position) for each button
-    5. Update JOYSTICK_X_BYTE and JOYSTICK_Y_BYTE with correct positions
+    All button mappings and joystick byte positions have been confirmed
+    via hardware testing (2024-12-31).
 
     Reference implementation: https://github.com/ecraven/g13
     """
@@ -141,7 +135,6 @@ class EventDecoder:
         """
         result = 0
 
-        # STUB IMPLEMENTATION - needs hardware testing
         # Iterate through BUTTON_MAP to extract bits
         for button_name, (byte_idx, bit_pos) in self.BUTTON_MAP.items():
             if button_name.startswith("G") and len(button_name) > 1:
@@ -165,7 +158,6 @@ class EventDecoder:
         """
         result = 0
 
-        # STUB IMPLEMENTATION - needs hardware testing
         for button_name, (byte_idx, bit_pos) in self.BUTTON_MAP.items():
             if button_name.startswith("M") and len(button_name) > 1:
                 try:

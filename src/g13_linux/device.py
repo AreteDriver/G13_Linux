@@ -87,13 +87,13 @@ def find_g13_hidraw():
     for hidraw in glob.glob("/sys/class/hidraw/hidraw*"):
         uevent_path = os.path.join(hidraw, "device", "uevent")
         try:
-            with open(uevent_path, "r") as f:
+            with open(uevent_path) as f:
                 content = f.read()
                 # Check for G13 HID_ID (format: 0003:0000046D:0000C21C)
                 if "0000046D" in content.upper() and "0000C21C" in content.upper():
                     device_name = os.path.basename(hidraw)
                     return f"/dev/{device_name}"
-        except (IOError, OSError):
+        except OSError:
             continue
     return None
 
@@ -139,8 +139,8 @@ class LibUSBDevice:
         try:
             import usb.core
             import usb.util
-        except ImportError:
-            raise RuntimeError("pyusb not installed. Run: pip install pyusb")
+        except ImportError as err:
+            raise RuntimeError("pyusb not installed. Run: pip install pyusb") from err
 
         self._dev = usb.core.find(idVendor=G13_VENDOR_ID, idProduct=G13_PRODUCT_ID)
         if self._dev is None:
@@ -152,14 +152,14 @@ class LibUSBDevice:
                 if self._dev.is_kernel_driver_active(intf_num):
                     self._dev.detach_kernel_driver(intf_num)
                     self._reattach = True
-            except Exception:
-                pass
+            except (usb.core.USBError, OSError):
+                pass  # Driver may not be attached
 
         # Set configuration
         try:
             self._dev.set_configuration()
-        except Exception:
-            pass
+        except (usb.core.USBError, OSError):
+            pass  # May already be configured
 
         # Claim both interfaces
         import usb.util
@@ -167,8 +167,8 @@ class LibUSBDevice:
         for intf_num in range(2):
             try:
                 usb.util.claim_interface(self._dev, intf_num)
-            except Exception:
-                pass
+            except (usb.core.USBError, OSError):
+                pass  # May already be claimed
 
         # Get endpoints from interface 0
         cfg = self._dev.get_active_configuration()
@@ -197,7 +197,7 @@ class LibUSBDevice:
         try:
             data = self._ep_in.read(64, timeout=timeout_ms)
             return list(data) if data else None
-        except Exception:
+        except (OSError, ValueError):
             return None
 
     def write(self, data):
@@ -224,22 +224,23 @@ class LibUSBDevice:
     def close(self):
         """Close device and reattach kernel driver."""
         if self._dev:
+            import usb.core
             import usb.util
 
             # Release both interfaces
             for intf_num in range(2):
                 try:
                     usb.util.release_interface(self._dev, intf_num)
-                except Exception:
-                    pass
+                except (usb.core.USBError, OSError):
+                    pass  # Best-effort cleanup
 
             # Reattach kernel drivers
             if self._reattach:
                 for intf_num in range(2):
                     try:
                         self._dev.attach_kernel_driver(intf_num)
-                    except Exception:
-                        pass
+                    except (usb.core.USBError, OSError):
+                        pass  # Best-effort cleanup
 
             self._dev = None
 

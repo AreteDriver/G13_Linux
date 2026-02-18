@@ -4,8 +4,12 @@ Hardware Controller
 Unified facade for controlling G13 hardware (LCD and backlight).
 """
 
+import logging
+
 from ...hardware.backlight import G13Backlight
 from ...hardware.lcd import G13LCD
+
+logger = logging.getLogger(__name__)
 
 
 class HardwareController:
@@ -43,7 +47,7 @@ class HardwareController:
             self.lcd.clear()
             self.lcd.write_text(text)
         else:
-            print(f"[Hardware] LCD not initialized: {text}")
+            logger.warning(f"LCD not initialized: {text}")
 
     def clear_lcd(self):
         """Clear LCD display"""
@@ -60,7 +64,7 @@ class HardwareController:
         if self.backlight:
             self.backlight.set_color_hex(color_hex)
         else:
-            print(f"[Hardware] Backlight not initialized: {color_hex}")
+            logger.warning(f"Backlight not initialized: {color_hex}")
 
     def set_backlight_brightness(self, brightness: int):
         """
@@ -72,7 +76,7 @@ class HardwareController:
         if self.backlight:
             self.backlight.set_brightness(brightness)
         else:
-            print(f"[Hardware] Backlight not initialized: {brightness}%")
+            logger.warning(f"Backlight not initialized: {brightness}%")
 
     def get_backlight_color(self) -> tuple[int, int, int] | None:
         """Get current backlight RGB color"""

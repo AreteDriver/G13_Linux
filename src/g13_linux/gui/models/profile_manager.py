@@ -51,9 +51,9 @@ class ProfileManager:
 
     def __init__(self, profiles_dir: str | None = None):
         if profiles_dir is None:
-            # Default to configs/profiles in project root
-            project_root = Path(__file__).parent.parent.parent.parent.parent
-            profiles_dir = project_root / "configs" / "profiles"
+            from ..._paths import get_profiles_dir
+
+            profiles_dir = get_profiles_dir()
 
         self.profiles_dir = Path(profiles_dir)
         self.current_profile: ProfileData | None = None
@@ -86,14 +86,14 @@ class ProfileManager:
             raise FileNotFoundError(f"Profile '{name}' not found at {path}")
 
         try:
-            with open(path, "r") as f:
+            with open(path) as f:
                 data = json.load(f)
             profile = ProfileData(**data)
             self.current_profile = profile
             self.current_name = name  # Track the filename
             return profile
         except (json.JSONDecodeError, TypeError) as e:
-            raise ValueError(f"Invalid profile JSON in '{name}': {e}")
+            raise ValueError(f"Invalid profile JSON in '{name}': {e}") from e
 
     def save_profile(self, profile: ProfileData, name: str | None = None):
         """
@@ -224,13 +224,13 @@ class ProfileManager:
 
         # Load and validate the profile
         try:
-            with open(import_path, "r") as f:
+            with open(import_path) as f:
                 data = json.load(f)
 
             # Validate it can be parsed as ProfileData
             profile = ProfileData(**data)
         except (json.JSONDecodeError, TypeError) as e:
-            raise ValueError(f"Invalid profile JSON: {e}")
+            raise ValueError(f"Invalid profile JSON: {e}") from e
 
         # Determine the profile name
         if new_name:

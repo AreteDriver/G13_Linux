@@ -1,5 +1,6 @@
 """Tests for HardwareController."""
 
+import logging
 from unittest.mock import MagicMock, patch
 
 from g13_linux.gui.models.hardware_controller import HardwareController
@@ -62,15 +63,15 @@ class TestHardwareControllerInitialize:
 class TestHardwareControllerLCD:
     """Tests for LCD methods."""
 
-    def test_set_lcd_text_when_not_initialized(self, capsys):
+    def test_set_lcd_text_when_not_initialized(self, caplog):
         """Test set_lcd_text when LCD not initialized."""
         controller = HardwareController()
 
-        controller.set_lcd_text("Hello")
+        with caplog.at_level(logging.WARNING):
+            controller.set_lcd_text("Hello")
 
-        captured = capsys.readouterr()
-        assert "LCD not initialized" in captured.out
-        assert "Hello" in captured.out
+        assert "LCD not initialized" in caplog.text
+        assert "Hello" in caplog.text
 
     def test_set_lcd_text_when_initialized(self):
         """Test set_lcd_text calls LCD methods."""
@@ -104,15 +105,15 @@ class TestHardwareControllerLCD:
 class TestHardwareControllerBacklight:
     """Tests for backlight methods."""
 
-    def test_set_backlight_color_when_not_initialized(self, capsys):
+    def test_set_backlight_color_when_not_initialized(self, caplog):
         """Test set_backlight_color when backlight not initialized."""
         controller = HardwareController()
 
-        controller.set_backlight_color("#FF0000")
+        with caplog.at_level(logging.WARNING):
+            controller.set_backlight_color("#FF0000")
 
-        captured = capsys.readouterr()
-        assert "Backlight not initialized" in captured.out
-        assert "#FF0000" in captured.out
+        assert "Backlight not initialized" in caplog.text
+        assert "#FF0000" in caplog.text
 
     def test_set_backlight_color_when_initialized(self):
         """Test set_backlight_color calls backlight method."""
@@ -124,15 +125,15 @@ class TestHardwareControllerBacklight:
 
         mock_backlight.set_color_hex.assert_called_once_with("#00FF00")
 
-    def test_set_backlight_brightness_when_not_initialized(self, capsys):
+    def test_set_backlight_brightness_when_not_initialized(self, caplog):
         """Test set_backlight_brightness when backlight not initialized."""
         controller = HardwareController()
 
-        controller.set_backlight_brightness(50)
+        with caplog.at_level(logging.WARNING):
+            controller.set_backlight_brightness(50)
 
-        captured = capsys.readouterr()
-        assert "Backlight not initialized" in captured.out
-        assert "50%" in captured.out
+        assert "Backlight not initialized" in caplog.text
+        assert "50%" in caplog.text
 
     def test_set_backlight_brightness_when_initialized(self):
         """Test set_backlight_brightness calls backlight method."""

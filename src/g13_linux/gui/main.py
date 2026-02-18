@@ -10,6 +10,7 @@ Usage:
 
 import atexit
 import fcntl
+import logging
 import os
 import sys
 from pathlib import Path
@@ -19,8 +20,16 @@ from PyQt6.QtWidgets import QApplication, QMessageBox
 
 from .resources.styles import DARK_THEME
 
-# Lock file path - use /tmp for root, ~/.cache for user
-LOCK_FILE = Path("/tmp/g13-linux-gui.lock")
+logger = logging.getLogger(__name__)
+
+# Lock file path - prefer XDG_RUNTIME_DIR (per-user, tmpfs-backed), fallback to ~/.cache
+_runtime_dir = os.environ.get("XDG_RUNTIME_DIR")
+if _runtime_dir:
+    LOCK_FILE = Path(_runtime_dir) / "g13-linux-gui.lock"
+else:
+    _cache_dir = Path.home() / ".cache" / "g13-linux"
+    _cache_dir.mkdir(parents=True, exist_ok=True)
+    LOCK_FILE = _cache_dir / "g13-linux-gui.lock"
 _lock_file_handle = None
 
 
@@ -33,7 +42,7 @@ def acquire_instance_lock() -> bool:
         _lock_file_handle.write(str(os.getpid()))
         _lock_file_handle.flush()
         return True
-    except (IOError, OSError):
+    except OSError:
         if _lock_file_handle:
             _lock_file_handle.close()
             _lock_file_handle = None
@@ -47,12 +56,12 @@ def release_instance_lock():
         try:
             fcntl.flock(_lock_file_handle.fileno(), fcntl.LOCK_UN)
             _lock_file_handle.close()
-        except (IOError, OSError):
+        except OSError:
             pass  # Best-effort unlock, file may already be closed
         _lock_file_handle = None
     try:
         LOCK_FILE.unlink(missing_ok=True)
-    except (IOError, OSError):
+    except OSError:
         pass  # Best-effort delete, another process may hold the lock
 
 
@@ -69,14 +78,14 @@ def main():
         from PyQt6.QtCore import QT_VERSION_STR
 
         mode = "libusb" if use_libusb else "hidraw"
-        print(f"Starting G13LogitechOPS GUI (Qt {QT_VERSION_STR}, {mode} mode)")
+        logger.info(f"Starting G13LogitechOPS GUI (Qt {QT_VERSION_STR}, {mode} mode)")
     except ImportError:  # pragma: no cover
-        print("ERROR: PyQt6 not installed. Install with: pip install PyQt6")
+        logger.error("PyQt6 not installed. Install with: pip install PyQt6")
         return 1
 
     # Try to acquire single-instance lock
     if not acquire_instance_lock():
-        print("ERROR: Another instance of G13LogitechOPS GUI is already running.")
+        logger.error("Another instance of G13LogitechOPS GUI is already running.")
         # Show GUI message if possible
         app = QApplication(sys.argv)
         QMessageBox.warning(
@@ -94,7 +103,9 @@ def main():
     app = QApplication(sys.argv)
     app.setApplicationName("G13LogitechOPS")
     app.setOrganizationName("AreteDriver")
-    app.setApplicationVersion("1.5.3")
+    from .. import __version__
+
+    app.setApplicationVersion(__version__)
 
     # Set default font (try platform-specific fonts)
     font = QFont("Segoe UI", 10)

@@ -82,7 +82,7 @@ class SettingsManager:
             return self.settings
 
         try:
-            with open(self.settings_path, "r") as f:
+            with open(self.settings_path) as f:
                 data = json.load(f)
 
             # Update settings with loaded values (preserving defaults for missing keys)

@@ -4,4 +4,10 @@ GUI Controllers Module
 Business logic coordinators connecting models to views.
 """
 
-__all__ = []
+from .app_controller import ApplicationController
+from .device_event_controller import DeviceEventThread
+
+__all__ = [
+    "ApplicationController",
+    "DeviceEventThread",
+]

@@ -78,6 +78,9 @@ class G13Daemon:
         self._start_time: datetime | None = None
         self._key_count = 0
 
+        # Lock for state accessed by multiple threads (input, render, server)
+        self._state_lock = threading.Lock()
+
         # Event decoder for button state tracking (WebSocket broadcasts)
         self._event_decoder = EventDecoder()
         self._last_joystick = (128, 128)  # Track joystick for change detection
@@ -212,8 +215,9 @@ class G13Daemon:
             logger.warning(f"Invalid mode: {mode}")
             return
 
-        old_mode = self._current_mode
-        self._current_mode = mode
+        with self._state_lock:
+            old_mode = self._current_mode
+            self._current_mode = mode
 
         profile_name = "None"
         if self.profile_manager.current_profile:
@@ -473,8 +477,11 @@ class G13Daemon:
 
                 # Broadcast joystick position if changed significantly
                 joystick = (state.joystick_x, state.joystick_y)
-                if self._joystick_changed(joystick):
-                    self._last_joystick = joystick
+                with self._state_lock:
+                    changed = self._joystick_changed(joystick)
+                    if changed:
+                        self._last_joystick = joystick
+                if changed:
                     self._broadcast_joystick(joystick)
 
             except Exception as e:

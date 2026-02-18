@@ -8,6 +8,10 @@ Protocol:
 - Format: [0x07, R, G, B, 0x00] (5 bytes)
 """
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class G13Backlight:
     """RGB backlight controller for G13"""
@@ -46,9 +50,9 @@ class G13Backlight:
             try:
                 self.device.send_feature_report(report)
             except OSError as e:
-                print(f"[Backlight] Failed to set color: {e}")
+                logger.error(f"Failed to set color: {e}")
         else:
-            print(f"[Backlight] No device - would set RGB({r}, {g}, {b})")
+            logger.debug(f"No device - would set RGB({r}, {g}, {b})")
 
     def set_color_hex(self, color_hex: str):
         """
@@ -66,8 +70,8 @@ class G13Backlight:
             g = int(color_hex[2:4], 16)
             b = int(color_hex[4:6], 16)
             self.set_color(r, g, b)
-        except ValueError:
-            raise ValueError("Invalid hex color format")
+        except ValueError as err:
+            raise ValueError("Invalid hex color format") from err
 
     def set_brightness(self, brightness: int):
         """
@@ -96,7 +100,7 @@ class G13Backlight:
             try:
                 self.device.send_feature_report(report)
             except OSError as e:
-                print(f"[Backlight] Failed to apply color: {e}")
+                logger.error(f"Failed to apply color: {e}")
 
     def get_color(self) -> tuple[int, int, int]:
         """Get current RGB color"""

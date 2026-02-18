@@ -4,8 +4,9 @@ Menu Items
 Data structures for menu entries.
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ..lcd.icons import Icon

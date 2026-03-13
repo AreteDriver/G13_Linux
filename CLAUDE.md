@@ -4,7 +4,7 @@
 
 Linux userspace driver for Logitech G13 gaming keypad. Profile management, LCD control, RGB backlight, programmable macros, PyQt6 GUI, and WebSocket API.
 
-**Version**: 1.5.6
+**Version**: 1.6.0
 **Language**: Python 3.10+ (44,758 lines across 216 files)
 **License**: MIT
 **PyPI**: `g13-linux`
